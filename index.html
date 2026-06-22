@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <!-- 關鍵設定：讓網頁自適應手機螢幕 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    
+    <!-- 關鍵設定：開啟 iOS 全螢幕 App 模式 (隱藏 Safari 網址列) -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="兔兔的彩虹星球">
+    
+    <!-- 關鍵設定：App 的桌面圖標 (請換成你想顯示的兔兔頭像網址) -->
+    <link rel="apple-touch-icon" href="https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=180&auto=format&fit=crop">
+
+    <title>兔兔的彩虹星球</title>
+    
+    <style>
+        /* 療癒系淡粉色與溫暖粉藍 */
+        :root {
+            --bg-color: #FFF5F5;
+            --card-color: #FFFFFF;
+            --primary-color: #FFB7B2;
+            --text-color: #6D5959;
+            --accent-color: #B5E2FA;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            padding-bottom: 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* 頂部標題 */
+        .header {
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            color: #4A3E3E;
+        }
+        .header p {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin: 0;
+        }
+
+        /* 音樂播放按鈕 */
+        .music-btn {
+            background-color: var(--accent-color);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            color: #4A3E3E;
+            font-weight: bold;
+            font-size: 0.9rem;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            cursor: pointer;
+        }
+
+        /* 照片輪播牆 */
+        .section-card {
+            width: 100%;
+            max-width: 760px;
+            background-color: var(--card-color);
+            border-radius: 28px;
+            padding: 24px;
+            box-shadow: 0 16px 32px rgba(0,0,0,0.06);
+            margin: 20px auto;
+        }
+        .section-title {
+            font-size: 1.3rem;
+            margin-bottom: 12px;
+            color: #4A3E3E;
+        }
+        .section-subtitle {
+            font-size: 0.95rem;
+            color: #6D5959;
+            opacity: 0.85;
+            margin-bottom: 18px;
+            line-height: 1.6;
+        }
+        .home-welcome {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+        .home-welcome p {
+            margin: 0;
+        }
+        .home-banner {
+            width: 100%;
+            height: 170px;
+            border-radius: 22px;
+            background: linear-gradient(135deg, #F8F0FF 0%, #FFF5F2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: #5B4A4A;
+            padding: 20px;
+            box-sizing: border-box;
+            border: 1px solid rgba(138, 74, 33, 0.12);
+        }
+        .home-banner span {
+            font-size: 1.05rem;
+            line-height: 1.8;
+        }
+
+        .feed-section {
+            display: grid;
+            gap: 18px;
+        }
+        .feed-row {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+        .feed-row-inner {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .feed-panel {
+            flex: 1 1 260px;
+            min-width: 240px;
+        }
+        .bunny-scene {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+        .bunny-svg {
+            width: 100%;
+            max-width: 320px;
+            height: auto;
+        }
+        .feed-buttons {
+            display: grid;
+            gap: 12px;
+        }
+        .feed-btn {
+            background-color: #FFB7B2;
+            color: #4A3E3E;
+            border: none;
+            border-radius: 18px;
+            padding: 14px 16px;
+            font-size: 0.98rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 8px 18px rgba(255, 183, 178, 0.25);
+            transition: transform 0.15s ease, background-color 0.15s ease;
+        }
+        .feed-btn:hover {
+            transform: translateY(-2px);
+            background-color: #ffc7c1;
+        }
+        .feed-message {
+            background: #FFF0EA;
+            border-radius: 20px;
+            padding: 18px;
+            border: 1px solid rgba(255,183,178,0.45);
+            color: #5B4A4A;
+            min-height: 110px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 1rem;
+            line-height: 1.7;
+        }
+        .feed-counter {
+            margin-top: 6px;
+            text-align: center;
+            color: #8A4A21;
+            font-weight: 700;
+        }
+
+        .gallery-section {
+            position: relative;
+        }
+        .gallery-section {
+            position: relative;
+            overflow: hidden;
+        }
+        .gallery-track {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(200px, 1fr));
+            gap: 14px;
+            position: relative;
+        }
+        .gallery-card {
+            position: relative;
+            overflow: hidden;
+            border-radius: 22px;
+            height: 190px;
+            background: #EEE3D8;
+            border: 1px solid rgba(138,74,33,0.12);
+        }
+        .gallery-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .gallery-caption {
+            display: none;
+        }
+        .gallery-controls {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 16px;
+            justify-content: center;
+        }
+        .gallery-btn {
+            background-color: #B5E2FA;
+            color: #4A3E3E;
+            border: none;
+            border-radius: 18px;
+            padding: 12px 18px;
+            cursor: pointer;
+            font-weight: 700;
+            box-shadow: 0 7px 16px rgba(181,226,250,0.25);
+        }
+        .memory-message {
+            width: 100%;
+            border-radius: 20px;
+            background: #EFF7FF;
+            border: 1px solid rgba(118,162,226,0.38);
+            padding: 16px 18px;
+            color: #3A4A5C;
+            margin-top: 18px;
+            box-sizing: border-box;
+            font-size: 0.98rem;
+            line-height: 1.6;
+            text-align: center;
+            box-shadow: 0 12px 24px rgba(110,152,209,0.08);
+        }
+        .memory-toast {
+            position: absolute;
+            top: 14px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-12px);
+            background: rgba(255,255,255,0.92);
+            border: 1px solid rgba(255,183,178,0.5);
+            color: #4A3E3E;
+            padding: 12px 18px;
+            border-radius: 18px;
+            box-shadow: 0 16px 32px rgba(0,0,0,0.08);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.28s ease, transform 0.28s ease;
+            z-index: 3;
+        }
+        .memory-toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        .gallery-glow {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.35s ease;
+            z-index: 0;
+            background: radial-gradient(circle at 20% 20%, rgba(255, 246, 210, 0.45), transparent 24%),
+                        radial-gradient(circle at 80% 70%, rgba(255, 214, 214, 0.32), transparent 22%),
+                        radial-gradient(circle at 50% 45%, rgba(255, 255, 255, 0.22), transparent 28%);
+            filter: blur(14px);
+        }
+        .gallery-glow.active {
+            opacity: 1;
+        }
+        .star-overlay {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 2;
+        }
+        .star {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: radial-gradient(circle, #FFF9D5 0%, #F9D47F 50%, #FFC26A 100%);
+            transform: translate(-50%, -50%) scale(0);
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(255, 227, 135, 0.55);
+            animation: twinkle 1.2s ease forwards;
+        }
+        .star.small {
+            width: 8px;
+            height: 8px;
+            animation-duration: 0.95s;
+        }
+        .star.medium {
+            width: 12px;
+            height: 12px;
+            animation-duration: 1.15s;
+        }
+        .star.large {
+            width: 16px;
+            height: 16px;
+            animation-duration: 1.35s;
+        }
+        @keyframes twinkle {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0); }
+            40% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
+        }
+
+        .letter-area {
+            display: grid;
+            gap: 18px;
+        }
+        .letter-display {
+            min-height: 120px;
+            border-radius: 22px;
+            background: #F9F3EE;
+            border: 1px solid rgba(138,74,33,0.16);
+            padding: 20px;
+            color: #5B4A4A;
+            font-size: 1rem;
+            line-height: 1.8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .letter-btn {
+            background-color: #B5E2FA;
+            color: #4A3E3E;
+            border: none;
+            border-radius: 20px;
+            padding: 14px 20px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(181,226,250,0.3);
+        }
+        .letter-sign {
+            margin-top: 12px;
+            font-size: 0.9rem;
+            color: #8A4A21;
+            opacity: 0.9;
+            text-align: center;
+        }
+
+        @media (max-width: 720px) {
+            .gallery-track {
+                grid-template-columns: 1fr;
+            }
+            .feed-row-inner {
+                flex-direction: column;
+            }
+        }
+        .mailbox-card {
+            width: 90%;
+            max-width: 350px;
+            background-color: var(--card-color);
+            border-radius: 20px;
+            padding: 20px;
+            box-sizing: border-box;
+            margin-top: 30px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+        .mailbox-card h3 {
+            margin-top: 0;
+            font-size: 1.1rem;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            border: 1px solid #FFE3E3;
+            border-radius: 12px;
+            padding: 10px;
+            box-sizing: border-box;
+            resize: none;
+            font-size: 0.95rem;
+            color: var(--text-color);
+            background-color: #FFFDFD;
+        }
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        .send-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1rem;
+            margin-top: 15px;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(255, 183, 178, 0.4);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .send-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* 動畫效果 */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes flyAway {
+            0% { transform: scale(1) translateY(0); opacity: 1; }
+            100% { transform: scale(0.1) translateY(-200px); opacity: 0; }
+        }
+        .fly-animation {
+            animation: flyAway 1.2s forwards;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>🐰 兔兔的彩虹星球</h1>
+        <p>「牠沒有離開，只是先去美麗的星空奔跑了」</p>
+    </div>
+
+    <section class="section-card home-section">
+        <div class="section-title">歡迎回到兔兔的祕密花園</div>
+        <div class="home-welcome">
+            <div class="home-banner">
+                <span>歡迎來到兔兔的專屬花園，牠一直都在這裡陪著妳。</span>
+            </div>
+            <p class="section-subtitle">這裡是屬於你和兔兔的秘密角落。</p>
+        </div>
+    </section>
+
+    <section class="section-card feed-section">
+        <div class="section-title">肚子好餓快餵我</div>
+        <p class="section-subtitle">點一下下面的餵食按鈕，讓兔兔開心吃草、吃高麗菜，還有溫柔的摸摸互動。</p>
+        <div class="feed-row">
+            <div class="feed-row-inner">
+                <div class="feed-panel">
+                    <div class="feed-buttons">
+                        <button class="feed-btn" onclick="feedHay()">餵草</button>
+                        <button class="feed-btn" onclick="feedCabbage()">餵高麗菜</button>
+                        <button class="feed-btn" onclick="feedApple()">餵蘋果</button>
+                        <button class="feed-btn" onclick="feedBanana()">餵香蕉</button>
+                        <button class="feed-btn" onclick="petBunny()">摸摸小腦袋</button>
+                    </div>
+                    <div class="feed-message" id="feedMessage">兔兔正躺著等妳，快來跟牠說話吧！</div>
+                    <div class="feed-counter" id="feedCounter">今天已被姐姐寵愛了 0 次</div>
+                </div>
+                <div class="feed-panel bunny-scene">
+                    <img src="images/feed-bunny.jpeg" alt="兔兔" class="bunny-svg rabbit" id="rabbit">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-card gallery-section">
+        <div class="section-title">時光長廊：我們的專屬回憶</div>
+        <p class="section-subtitle">滑動回憶相簿，讓這些回憶化作小星星陪在牠身邊。</p>
+        <div class="gallery-track" id="galleryTrack">
+            <div class="gallery-glow" id="galleryGlow"></div>
+            <div class="star-overlay" id="starOverlay"></div>
+        </div>
+        <div class="memory-toast" id="memoryToast">回憶已送出，兔兔收到妳的小星星了</div>
+        <div class="memory-message" id="memoryMessage">兔兔正在感受這些星星的溫度。</div>
+        <div class="gallery-controls">
+            <button class="gallery-btn" onclick="prevMemory()">上一張</button>
+            <button class="gallery-btn" onclick="nextMemory()">下一張</button>
+            <button class="gallery-btn" onclick="submitMemory()">把回憶送成星星</button>
+        </div>
+    </section>
+
+    <section class="section-card letter-section">
+        <div class="section-title">暖心守護：兔兔的信箱</div>
+        <p class="section-subtitle">每天拆一封兔兔的小天使信，讓牠在信裡對姐姐說溫柔話。</p>
+        <div class="letter-area">
+            <div class="letter-display" id="letterDisplay">點一下「拆信」，兔兔的小天使就會送出一句暖心話給妳。</div>
+            <button class="letter-btn" onclick="openLetter()">拆信</button>
+            <div class="letter-sign">兔兔的信箱每天都會為妳準備一點小驚喜。</div>
+        </div>
+    </section>
+
+    <script>
+        // 1. 互動餵食邏輯
+        let feedCount = 0;
+        const feedMessage = document.getElementById('feedMessage');
+        const feedCounter = document.getElementById('feedCounter');
+        const rabbit = document.getElementById('rabbit');
+        const letterDisplay = document.getElementById('letterDisplay');
+        const starOverlay = document.getElementById('starOverlay');
+        const memoryToast = document.getElementById('memoryToast');
+        const galleryGlow = document.getElementById('galleryGlow');
+        const memoryMessage = document.getElementById('memoryMessage');
+        const memoryResponses = [
+            '兔兔聞到妳的回憶了，牠偷偷在心裡跳了好幾下。',
+            '妳的話變成星星送到我身邊了，我好暖好幸福。',
+            '兔兔感覺得到妳的溫柔，牠抬頭看著妳微笑。',
+            '妳每一句話都像一顆小星星，悄悄綻放在我心裡。',
+            '謝謝妳，兔兔會把妳的回憶放在最柔軟的地方。'
+        ];
+
+        const feedResponses = {
+            hay: [
+                '謝謝姐姐！好香，兔兔忍不住咬了一大口，肚子好溫暖～',
+                '這一口草讓兔兔覺得今天特別幸福，牠開心地抖了抖耳朵。',
+                '兔兔吃著吃著，閉上眼睛像在做一個甜甜的夢。',
+                '真好吃，兔兔想一直這樣被妳寵愛著。',
+                '真是貼心的安慰，兔兔覺得身體暖暖的。'
+            ],
+            cabbage: [
+                '高麗菜超級好吃！兔兔的最愛就是妳的溫柔味道。',
+                '這片高麗菜讓兔兔覺得自己好幸福，還想要再一口。',
+                '兔兔咬了一口高麗菜，眼睛亮晶晶的。',
+                '姐姐你知道嗎？高麗菜是兔兔心裡最甜的禮物。',
+                '兔兔一邊吃高麗菜一邊想著妳，感覺到了滿滿的愛。'
+            ],
+            apple: [
+                '蘋果甜甜的，兔兔吃了一口就把尾巴甩給妳看，好開心喔！',
+                '這顆蘋果太香了，兔兔覺得今天真的很幸福。',
+                '兔兔咬下蘋果時，心裡也像陽光一樣甜。',
+                '蘋果讓兔兔的胃也像心一樣暖暖的，謝謝姐姐。',
+                '兔兔吃完蘋果後，悄悄把它當成了跟妳的秘密禮物。'
+            ],
+            banana: [
+                '香蕉香香的，兔兔覺得這是今天最幸福的點心。',
+                '兔兔喜歡這個香甜的香蕉，吃完後眼睛都亮了起來。',
+                '這根香蕉讓兔兔心裡有種小小的慶祝感。',
+                '香蕉的香氣像妳的溫柔，讓兔兔覺得好安心。',
+                '兔兔吃香蕉吃得好開心，還想對妳說謝謝。'
+            ],
+            pet: [
+                '摸摸小腦袋好舒服，兔兔覺得姐姐會變得特別幸運❤️',
+                '我頭有幸運的氣息，今天一定會很順。',
+                '被摸頭的時候，兔兔想著姐姐也會變得幸福又幸運。',
+                '妳要考試了？',
+                '摸摸頭會讓姐姐變得特別幸運。'
+            ]
+        };
+
+        function getRandomFeedResponse(type) {
+            const responses = feedResponses[type] || [];
+            return responses[Math.floor(Math.random() * responses.length)];
+        }
+
+        function updateFeed(text) {
+            feedCount += 1;
+            feedMessage.innerText = text;
+            feedCounter.innerText = `今天已被姐姐寵愛了 ${feedCount} 次`;
+            rabbit.classList.remove('kicked');
+            void rabbit.offsetWidth;
+            rabbit.classList.add('kicked');
+        }
+
+        function feedHay() {
+            updateFeed(getRandomFeedResponse('hay'));
+        }
+
+        function feedCabbage() {
+            updateFeed(getRandomFeedResponse('cabbage'));
+        }
+
+        function feedApple() {
+            updateFeed(getRandomFeedResponse('apple'));
+        }
+
+        function feedBanana() {
+            updateFeed(getRandomFeedResponse('banana'));
+        }
+
+        function petBunny() {
+            updateFeed(getRandomFeedResponse('pet'));
+        }
+
+        // 2. 相簿與記憶星星
+        let currentMemory = 0;
+        const galleryPhotos = [
+            { src: 'images/IMG_0452.jpg', caption: '回憶照片 1' },
+            { src: 'images/IMG_20200816_124504.jpg', caption: '回憶照片 2' },
+            { src: 'images/IMG_20200816_191124.jpg', caption: '回憶照片 3' },
+            { src: 'images/IMG_20200831_183158.jpg', caption: '回憶照片 4' },
+            { src: 'images/IMG_20200902_185430.jpg', caption: '回憶照片 5' },
+            { src: 'images/IMG_20200906_133521.jpg', caption: '回憶照片 6' },
+            { src: 'images/IMG_20200917_205452.jpg', caption: '回憶照片 7' },
+            { src: 'images/IMG_20201004_124348.jpg', caption: '回憶照片 8' },
+            { src: 'images/IMG_20201102_195246.jpg', caption: '回憶照片 9' },
+            { src: 'images/IMG_20201213_122429.jpg', caption: '回憶照片 10' },
+            { src: 'images/IMG_20210707_104111.jpg', caption: '回憶照片 11' },
+            { src: 'images/IMG_20211031_222442.jpg', caption: '回憶照片 12' },
+            { src: 'images/IMG_2596.jpg', caption: '回憶照片 13' },
+            { src: 'images/IMG_3951.JPG', caption: '回憶照片 14' },
+            { src: 'images/IMG_4834.JPG', caption: '回憶照片 15' },
+            { src: 'images/IMG_5415.JPG', caption: '回憶照片 16' },
+            { src: 'images/1643638731182.jpg', caption: '回憶照片 17' },
+            { src: 'images/31938.jpeg', caption: '回憶照片 18' },
+            { src: 'images/32071.jpeg', caption: '回憶照片 19' },
+            { src: 'images/32153.jpeg', caption: '回憶照片 20' },
+            { src: 'images/32206.jpeg', caption: '回憶照片 21' },
+            { src: 'images/32340.jpeg', caption: '回憶照片 22' },
+            { src: 'images/32378.jpeg', caption: '回憶照片 23' }
+        ];
+        const galleryTrack = document.getElementById('galleryTrack');
+        let galleryImages = [];
+
+        function renderGallery() {
+            galleryPhotos.forEach(photo => {
+                const card = document.createElement('div');
+                card.className = 'gallery-card';
+                const img = document.createElement('img');
+                img.src = photo.src;
+                img.alt = photo.caption;
+                const caption = document.createElement('div');
+                caption.className = 'gallery-caption';
+                caption.innerText = photo.caption;
+                card.appendChild(img);
+                card.appendChild(caption);
+                galleryTrack.appendChild(card);
+            });
+            galleryImages = Array.from(document.querySelectorAll('.gallery-card'));
+        }
+
+        function showMemory(index) {
+            galleryImages.forEach((card, idx) => {
+                card.style.display = 'none';
+            });
+            for (let offset = 0; offset < 3; offset++) {
+                const visibleIndex = (index + offset) % galleryImages.length;
+                galleryImages[visibleIndex].style.display = 'block';
+            }
+        }
+
+        function nextMemory() {
+            currentMemory = (currentMemory + 3) % galleryImages.length;
+            showMemory(currentMemory);
+        }
+
+        function prevMemory() {
+            currentMemory = (currentMemory - 3 + galleryImages.length) % galleryImages.length;
+            showMemory(currentMemory);
+        }
+
+        renderGallery();
+        showMemory(currentMemory);
+
+        function submitMemory() {
+            const count = 16;
+            const message = '兔兔已經收到妳送出的回憶星星。';
+            memoryMessage.innerText = message;
+            showToast('回憶已送出，兔兔收到妳的小星星了');
+            galleryGlow.classList.add('active');
+            setTimeout(() => galleryGlow.classList.remove('active'), 1500);
+            createStars(count, 40);
+            setTimeout(() => {
+                const response = memoryResponses[Math.floor(Math.random() * memoryResponses.length)];
+                memoryMessage.innerText = response;
+            }, 800);
+        }
+
+        function showToast(text) {
+            memoryToast.innerText = text;
+            memoryToast.classList.add('show');
+            clearTimeout(showToast.timeoutId);
+            showToast.timeoutId = setTimeout(() => {
+                memoryToast.classList.remove('show');
+            }, 2000);
+        }
+
+        function createStars(count, length) {
+            const brightnessFactor = Math.min(1.2, 0.7 + length / 50);
+            for (let i = 0; i < count; i++) {
+                const star = document.createElement('div');
+                const chance = Math.random();
+                if (chance < Math.min(0.18, 0.08 + length / 80)) {
+                    star.className = 'star large';
+                } else if (chance < Math.min(0.55, 0.3 + length / 60)) {
+                    star.className = 'star medium';
+                } else {
+                    star.className = 'star small';
+                }
+                const x = Math.random() * 100;
+                const y = Math.random() * 100;
+                star.style.left = `${x}%`;
+                star.style.top = `${y}%`;
+                star.style.opacity = 0.7 + Math.random() * 0.25;
+                star.style.animationDuration = `${0.9 + Math.random() * 0.7}s`;
+                star.style.boxShadow = `0 0 ${8 + Math.random() * 14}px rgba(255, 226, 145, ${0.35 + brightnessFactor * 0.12})`;
+                starOverlay.appendChild(star);
+                setTimeout(() => star.remove(), 1500);
+            }
+        }
+
+        // 3. 兔兔信箱
+        const letterMessages = [
+            '姐姐，今天台北有沒有下雨？出門記得帶傘喔！',
+            '我在大草原吃得超飽，太陽剛剛好，妳也要乖乖吃飯喔！',
+            '來這裡摸摸我的幸運兔頭吧！',
+            '姐姐，晚安前記得抱抱自己 我也很想你喔。',
+            '我在雲朵上蹦蹦跳跳，覺得妳一定也要好好休息，讓心情慢慢回到暖暖的。',
+            '今天的風好柔，兔兔想妳了，記得吃一點甜甜的東西。',
+            '姐姐，當妳想念我時，摸摸自己的心，這裡有我陪妳。',
+            '我在草原看到一朵小花，覺得它就是妳。',
+            '如果感到累，記得在心裡對自己說：「我做得很好」。',
+            '兔兔想提醒妳，今天也要多喝水，身體健康才有力氣做夢。',
+            '雖然我現在在天上，心裡還是最想念妳最溫暖的擁抱。',
+            '如果妳覺得有點害怕，我就在妳心裡，陪妳一起勇敢。',
+            '妳今天的每一個小決定，都讓我覺得妳很勇敢。',
+            '好想吃香蕉。',
+            '妳值得被溫柔對待，要好好愛自己喔。',
+            '如果今天有點難過，就閉上眼睛想像我在妳身邊跳跳。',
+            '妳的每一個努力，我在天上都看見了。',
+            '好好睡一覺，明天我會在月亮下等妳一起做漂亮的夢。',
+            '臭狗狗到底對你好不好呀？',
+            '妳怎麼跟一隻臭狗狗在一起啦？',
+            '妳的開心是我最想守護的事情，願妳今天有被好好疼愛。',
+            '別忘了吃一點自己喜歡的小點心，給心情補一點甜。',
+            '不管發生什麼事，兔兔都希望妳能記得妳真的很重要。',
+            '如果有煩惱，試試把它畫下來，讓它慢慢變成彩色的雲。',
+            '希望妳每天都能多笑一點。',
+            '今天也要試著放慢腳步，讓自己的心先休息一下。',
+            '你在努力的樣子，溫柔又堅強，兔兔好為妳驕傲。',
+            '如果覺得壓力大，深呼吸三次，想像我在草地上輕輕跳。',
+            '妳是兔兔心中最溫暖的家',
+            '今晚抬頭看星星時，記得我也在同一片天空對妳微笑。',
+            '妳值得一個寧靜的夜晚，放下眼前的疲憊，好好休息。',
+            '明天如果遇到困難，記得問候自己：「我今天做得如何？」',
+            '即使世界變化很快，兔兔的思念一直留在妳身邊。',
+            '妳的溫柔能讓身邊的人都安心，請先讓自己感受安心。 '
+        ];
+
+        function openLetter() {
+            const index = Math.floor(Math.random() * letterMessages.length);
+            letterDisplay.innerText = letterMessages[index];
+        }
+    </script>
+</body>
+</html>
