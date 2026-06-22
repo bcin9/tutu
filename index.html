@@ -144,6 +144,49 @@
             display: flex;
             justify-content: center;
             position: relative;
+            padding-top: 32px;
+        }
+        .bunny-scene .feed-message {
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-8px);
+            width: min(240px, calc(100% - 26px));
+            background: #FFF6F2;
+            border: 1px solid rgba(255, 183, 178, 0.64);
+            border-radius: 26px;
+            padding: 14px 18px;
+            box-shadow: 0 16px 28px rgba(0,0,0,0.1);
+            color: #4A3E3E;
+            font-size: 0.98rem;
+            line-height: 1.6;
+            text-align: center;
+            min-height: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        .bunny-scene .feed-message.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        .bunny-scene .feed-message::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            bottom: -12px;
+            transform: translateX(-50%) rotate(45deg);
+            width: 22px;
+            height: 22px;
+            background: #FFF6F2;
+            border-left: 1px solid rgba(255, 183, 178, 0.64);
+            border-bottom: 1px solid rgba(255, 183, 178, 0.64);
+            border-radius: 4px;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.08);
         }
         .bunny-svg {
             width: auto;
@@ -264,6 +307,17 @@
             gap: 14px;
             position: relative;
         }
+        .gallery-track.mobile-view {
+            display: flex;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+        }
+        .gallery-track.mobile-view .gallery-card {
+            min-width: 85%;
+            flex: 0 0 85%;
+            scroll-snap-align: center;
+        }
         .gallery-card {
             position: relative;
             overflow: hidden;
@@ -305,14 +359,6 @@
             transform: scale(0.98);
             box-shadow: 0 4px 10px rgba(181,226,250,0.2);
             background-color: #a7d8f3;
-        }
-        .bunny-svg.kicked {
-            animation: bunnyKick 0.35s ease;
-        }
-        @keyframes bunnyKick {
-            0% { transform: scale(1) translateY(0); }
-            50% { transform: scale(1.04) translateY(-6px); }
-            100% { transform: scale(1) translateY(0); }
         }
         .memory-message {
             width: 100%;
@@ -405,11 +451,11 @@
             gap: 18px;
         }
         .letter-display {
-            min-height: 120px;
-            border-radius: 22px;
-            background: #F9F3EE;
-            border: 1px solid rgba(138,74,33,0.16);
-            padding: 20px;
+            min-height: 140px;
+            border-radius: 20px;
+            background: linear-gradient(180deg, #fffdfb 0%, #f6ece8 100%);
+            border: 1px solid rgba(230, 182, 169, 0.75);
+            padding: 30px 22px 20px;
             color: #5B4A4A;
             font-size: 1rem;
             line-height: 1.8;
@@ -417,6 +463,45 @@
             align-items: center;
             justify-content: center;
             text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 16px 30px rgba(129, 87, 74, 0.08);
+        }
+        .letter-display::before {
+            content: '';
+            position: absolute;
+            top: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            height: 72px;
+            background: #fff7f1;
+            clip-path: polygon(0 0, 100% 0, 50% 100%);
+            border-bottom: 1px solid rgba(230,182,169,0.75);
+            box-shadow: inset 0 4px 12px rgba(0,0,0,0.04);
+            z-index: 1;
+        }
+        .letter-display::after {
+            content: '❤';
+            position: absolute;
+            top: 36px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #ffe3e1;
+            color: #d76a76;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            z-index: 2;
+        }
+        .letter-display {
+            position: relative;
+            z-index: 1;
         }
         .letter-btn {
             background-color: #B5E2FA;
@@ -439,10 +524,7 @@
 
         @media (max-width: 720px) {
             .gallery-track {
-                display: flex;
                 gap: 14px;
-                overflow-x: auto;
-                scroll-snap-type: x mandatory;
                 padding-bottom: 8px;
             }
             .gallery-track::-webkit-scrollbar {
@@ -554,10 +636,10 @@
                         <button class="feed-btn" onclick="feedBanana(this)">餵香蕉</button>
                         <button class="feed-btn" onclick="petBunny(this)">摸摸小腦袋</button>
                     </div>
-                    <div class="feed-message" id="feedMessage">兔兔正躺著等妳，快來跟牠說話吧！</div>
                     <div class="feed-counter" id="feedCounter">今天已被姐姐寵愛了 0 次</div>
                 </div>
                 <div class="feed-panel bunny-scene">
+                    <div class="feed-message" id="feedMessage">兔兔正躺著等妳，快來跟牠說話吧！</div>
                     <img src="images/feed-bunny.jpeg" alt="兔兔" class="bunny-svg rabbit" id="rabbit">
                 </div>
             </div>
@@ -652,6 +734,8 @@
             return responses[Math.floor(Math.random() * responses.length)];
         }
 
+        let feedMessageTimeout;
+
         function updateFeed(text, type, sourceElement) {
             feedCount += 1;
             feedMessage.innerText = text;
@@ -659,6 +743,11 @@
             rabbit.classList.remove('kicked');
             void rabbit.offsetWidth;
             rabbit.classList.add('kicked');
+            feedMessage.classList.add('show');
+            clearTimeout(feedMessageTimeout);
+            feedMessageTimeout = setTimeout(() => {
+                feedMessage.classList.remove('show');
+            }, 3000);
             if (sourceElement && type !== 'pet') {
                 animateFoodToBunny(type, sourceElement);
             }
@@ -840,14 +929,22 @@
         }
 
         function showMemory(index) {
+            if (!galleryImages.length) return;
             const visibleCount = isMobileView() ? 1 : 3;
+            currentMemory = ((index % galleryImages.length) + galleryImages.length) % galleryImages.length;
             galleryImages.forEach(card => {
                 card.style.display = 'none';
             });
             for (let offset = 0; offset < visibleCount; offset++) {
-                const visibleIndex = (index + offset) % galleryImages.length;
+                const visibleIndex = (currentMemory + offset) % galleryImages.length;
                 galleryImages[visibleIndex].style.display = 'block';
             }
+        }
+
+        function updateGalleryLayout() {
+            const mobile = isMobileView();
+            galleryTrack.classList.toggle('mobile-view', mobile);
+            showMemory(currentMemory);
         }
 
         function nextMemory() {
@@ -862,8 +959,8 @@
         }
 
         renderGallery();
-        showMemory(currentMemory);
-        window.addEventListener('resize', () => showMemory(currentMemory));
+        updateGalleryLayout();
+        window.addEventListener('resize', updateGalleryLayout);
 
         function submitMemory() {
             const count = 16;
