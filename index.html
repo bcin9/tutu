@@ -237,6 +237,22 @@
             font-weight: 700;
             box-shadow: 0 7px 16px rgba(181,226,250,0.25);
         }
+        .feed-btn:active,
+        .gallery-btn:active,
+        .letter-btn:active,
+        .send-btn:active {
+            transform: scale(0.98);
+            box-shadow: 0 4px 10px rgba(181,226,250,0.2);
+            background-color: #a7d8f3;
+        }
+        .bunny-svg.kicked {
+            animation: bunnyKick 0.35s ease;
+        }
+        @keyframes bunnyKick {
+            0% { transform: scale(1) translateY(0); }
+            50% { transform: scale(1.04) translateY(-6px); }
+            100% { transform: scale(1) translateY(0); }
+        }
         .memory-message {
             width: 100%;
             border-radius: 20px;
@@ -362,7 +378,24 @@
 
         @media (max-width: 720px) {
             .gallery-track {
-                grid-template-columns: 1fr;
+                display: flex;
+                gap: 14px;
+                overflow-x: auto;
+                scroll-snap-type: x mandatory;
+                padding-bottom: 8px;
+            }
+            .gallery-track::-webkit-scrollbar {
+                display: none;
+            }
+            .gallery-track {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+            .gallery-card {
+                min-width: 85%;
+                flex: 0 0 85%;
+                height: 220px;
+                scroll-snap-align: center;
             }
             .feed-row-inner {
                 flex-direction: column;
@@ -624,6 +657,8 @@
                 const img = document.createElement('img');
                 img.src = photo.src;
                 img.alt = photo.caption;
+                img.loading = 'lazy';
+                img.decoding = 'async';
                 const caption = document.createElement('div');
                 caption.className = 'gallery-caption';
                 caption.innerText = photo.caption;
@@ -634,28 +669,35 @@
             galleryImages = Array.from(document.querySelectorAll('.gallery-card'));
         }
 
+        function isMobileView() {
+            return window.matchMedia('(max-width: 720px)').matches;
+        }
+
         function showMemory(index) {
-            galleryImages.forEach((card, idx) => {
+            const visibleCount = isMobileView() ? 1 : 3;
+            galleryImages.forEach(card => {
                 card.style.display = 'none';
             });
-            for (let offset = 0; offset < 3; offset++) {
+            for (let offset = 0; offset < visibleCount; offset++) {
                 const visibleIndex = (index + offset) % galleryImages.length;
                 galleryImages[visibleIndex].style.display = 'block';
             }
         }
 
         function nextMemory() {
-            currentMemory = (currentMemory + 3) % galleryImages.length;
+            currentMemory = (currentMemory + (isMobileView() ? 1 : 3)) % galleryImages.length;
             showMemory(currentMemory);
         }
 
         function prevMemory() {
-            currentMemory = (currentMemory - 3 + galleryImages.length) % galleryImages.length;
+            const step = isMobileView() ? 1 : 3;
+            currentMemory = (currentMemory - step + galleryImages.length) % galleryImages.length;
             showMemory(currentMemory);
         }
 
         renderGallery();
         showMemory(currentMemory);
+        window.addEventListener('resize', () => showMemory(currentMemory));
 
         function submitMemory() {
             const count = 16;
