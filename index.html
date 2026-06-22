@@ -143,11 +143,72 @@
             width: 100%;
             display: flex;
             justify-content: center;
+            position: relative;
         }
         .bunny-svg {
-            width: 100%;
-            max-width: 320px;
+            width: auto;
+            max-width: 240px;
             height: auto;
+        }
+        .flying-food {
+            position: fixed;
+            z-index: 30;
+            width: 46px;
+            height: 46px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.96);
+            border: 1px solid rgba(0,0,0,0.08);
+            box-shadow: 0 20px 32px rgba(0,0,0,0.16);
+            font-size: 1.6rem;
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+            transition: transform 2.4s ease-out, opacity 0.35s ease-out;
+            pointer-events: none;
+        }
+        .pet-hand {
+            position: fixed;
+            z-index: 35;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            border-radius: 50%;
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+            transition: transform 1s ease-out, opacity 0.4s ease-out;
+            pointer-events: none;
+        }
+        .lucky-burst {
+            position: fixed;
+            z-index: 34;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.45rem;
+            color: #FFD34D;
+            text-shadow: 0 0 12px rgba(255, 211, 77, 0.65), 0 0 24px rgba(255, 211, 77, 0.35);
+            pointer-events: none;
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.4);
+            transition: transform 0.9s ease-out, opacity 0.9s ease-out;
+        }
+        .bunny-svg.kicked {
+            animation: bunnyKick 0.35s ease;
+        }
+        @keyframes bunnyKick {
+            0% { transform: scale(1) translateY(0); }
+            50% { transform: scale(1.04) translateY(-6px); }
+            100% { transform: scale(1) translateY(0); }
         }
         .feed-buttons {
             display: grid;
@@ -487,11 +548,11 @@
             <div class="feed-row-inner">
                 <div class="feed-panel">
                     <div class="feed-buttons">
-                        <button class="feed-btn" onclick="feedHay()">餵草</button>
-                        <button class="feed-btn" onclick="feedCabbage()">餵高麗菜</button>
-                        <button class="feed-btn" onclick="feedApple()">餵蘋果</button>
-                        <button class="feed-btn" onclick="feedBanana()">餵香蕉</button>
-                        <button class="feed-btn" onclick="petBunny()">摸摸小腦袋</button>
+                        <button class="feed-btn" onclick="feedHay(this)">餵草</button>
+                        <button class="feed-btn" onclick="feedCabbage(this)">餵高麗菜</button>
+                        <button class="feed-btn" onclick="feedApple(this)">餵蘋果</button>
+                        <button class="feed-btn" onclick="feedBanana(this)">餵香蕉</button>
+                        <button class="feed-btn" onclick="petBunny(this)">摸摸小腦袋</button>
                     </div>
                     <div class="feed-message" id="feedMessage">兔兔正躺著等妳，快來跟牠說話吧！</div>
                     <div class="feed-counter" id="feedCounter">今天已被姐姐寵愛了 0 次</div>
@@ -591,33 +652,138 @@
             return responses[Math.floor(Math.random() * responses.length)];
         }
 
-        function updateFeed(text) {
+        function updateFeed(text, type, sourceElement) {
             feedCount += 1;
             feedMessage.innerText = text;
             feedCounter.innerText = `今天已被姐姐寵愛了 ${feedCount} 次`;
             rabbit.classList.remove('kicked');
             void rabbit.offsetWidth;
             rabbit.classList.add('kicked');
+            if (sourceElement && type !== 'pet') {
+                animateFoodToBunny(type, sourceElement);
+            }
         }
 
-        function feedHay() {
-            updateFeed(getRandomFeedResponse('hay'));
+        function animateFoodToBunny(type, sourceElement) {
+            const foodIcons = {
+                hay: '🌾',
+                cabbage: '🥬',
+                apple: '🍎',
+                banana: '🍌'
+            };
+            const icon = foodIcons[type];
+            if (!icon) return;
+            const sourceRect = sourceElement.getBoundingClientRect();
+            const targetRect = rabbit.getBoundingClientRect();
+            const fly = document.createElement('div');
+            fly.className = 'flying-food';
+            fly.innerText = icon;
+            fly.style.left = `${sourceRect.left + sourceRect.width / 2}px`;
+            fly.style.top = `${sourceRect.top + sourceRect.height / 2}px`;
+            document.body.appendChild(fly);
+            requestAnimationFrame(() => {
+                const targetX = targetRect.left + targetRect.width * 0.54;
+                const targetY = targetRect.top + targetRect.height * 0.42;
+                const deltaX = targetX - (sourceRect.left + sourceRect.width / 2);
+                const deltaY = targetY - (sourceRect.top + sourceRect.height / 2);
+                fly.style.transform = `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px)) scale(0.92)`;
+                fly.style.opacity = '1';
+            });
+            setTimeout(() => {
+                fly.style.opacity = '0.28';
+            }, 1800);
+            setTimeout(() => fly.remove(), 2400);
         }
 
-        function feedCabbage() {
-            updateFeed(getRandomFeedResponse('cabbage'));
+        function animatePetHand(sourceElement) {
+            const sourceRect = sourceElement.getBoundingClientRect();
+            const targetRect = rabbit.getBoundingClientRect();
+            const hand = document.createElement('div');
+            hand.className = 'pet-hand';
+            hand.innerText = '🤚';
+            hand.style.left = `${sourceRect.left + sourceRect.width / 2}px`;
+            hand.style.top = `${sourceRect.top + sourceRect.height / 2}px`;
+            document.body.appendChild(hand);
+            const targetX = targetRect.left + targetRect.width * 0.5;
+            const targetY = targetRect.top + targetRect.height * 0.22;
+            const deltaX = targetX - (sourceRect.left + sourceRect.width / 2);
+            const deltaY = targetY - (sourceRect.top + sourceRect.height / 2);
+            requestAnimationFrame(() => {
+                hand.style.transform = `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px)) scale(1)`;
+            });
+            const rubOffsets = [ -30, 30, -24, 24, -16, 16, 0 ];
+            rubOffsets.forEach((offset, index) => {
+                setTimeout(() => {
+                    hand.style.transform = `translate(calc(-50% + ${deltaX + offset}px), calc(-50% + ${deltaY}px)) scale(1)`;
+                }, 1040 + index * 180);
+            });
+            setTimeout(() => {
+                hand.style.opacity = '0';
+            }, 2400);
+            setTimeout(() => {
+                hand.remove();
+                spawnLuckyBurst(targetRect);
+            }, 2800);
         }
 
-        function feedApple() {
-            updateFeed(getRandomFeedResponse('apple'));
+        function spawnLuckyBurst(rabbitRect) {
+            const count = 12;
+            for (let i = 0; i < count; i += 1) {
+                createLuckyBurstParticle(rabbitRect, i);
+            }
         }
 
-        function feedBanana() {
-            updateFeed(getRandomFeedResponse('banana'));
+        function createLuckyBurstParticle(rabbitRect, index) {
+            const particle = document.createElement('div');
+            particle.className = 'lucky-burst';
+            const isClover = index % 2 === 0;
+            particle.innerText = isClover ? '🍀' : '✨';
+            particle.style.color = isClover ? '#4c934c' : '#FFD34D';
+            particle.style.textShadow = isClover ? '0 0 10px rgba(76,147,76,0.55)' : '0 0 12px rgba(255, 211, 77, 0.65)';
+            const centerX = rabbitRect.left + rabbitRect.width / 2;
+            const centerY = rabbitRect.top + rabbitRect.height / 2;
+            const angle = (Math.PI * 2 / 12) * index;
+            const baseRadius = rabbitRect.width * 0.55;
+            const startX = centerX + Math.cos(angle) * baseRadius;
+            const startY = centerY - Math.sin(angle) * baseRadius;
+            const targetRadius = baseRadius + 24 + Math.random() * 16;
+            const targetX = centerX + Math.cos(angle) * targetRadius + (Math.random() - 0.5) * 10;
+            const targetY = centerY - Math.sin(angle) * targetRadius + (Math.random() - 0.5) * 10;
+            particle.style.left = `${startX}px`;
+            particle.style.top = `${startY}px`;
+            document.body.appendChild(particle);
+            const appearDelay = 140 + index * 110;
+            setTimeout(() => {
+                particle.style.opacity = '1';
+                particle.style.transform = `translate(calc(-50% + ${targetX - startX}px), calc(-50% + ${targetY - startY}px)) scale(1.3)`;
+            }, appearDelay);
+            setTimeout(() => {
+                particle.style.opacity = '0';
+                particle.style.transform = `translate(calc(-50% + ${targetX - startX}px), calc(-50% + ${targetY - startY}px)) scale(1.8)`;
+            }, appearDelay + 620);
+            setTimeout(() => particle.remove(), appearDelay + 1080);
         }
 
-        function petBunny() {
-            updateFeed(getRandomFeedResponse('pet'));
+
+        function feedHay(button) {
+            updateFeed(getRandomFeedResponse('hay'), 'hay', button);
+        }
+
+        function feedCabbage(button) {
+            updateFeed(getRandomFeedResponse('cabbage'), 'cabbage', button);
+        }
+
+        function feedApple(button) {
+            updateFeed(getRandomFeedResponse('apple'), 'apple', button);
+        }
+
+        function feedBanana(button) {
+            updateFeed(getRandomFeedResponse('banana'), 'banana', button);
+        }
+
+        function petBunny(button) {
+            updateFeed(getRandomFeedResponse('pet'), 'pet');
+            animatePetHand(button || document.getElementById('rabbit'));
         }
 
         // 2. 相簿與記憶星星
@@ -751,14 +917,14 @@
             '姐姐，今天台北有沒有下雨？出門記得帶傘喔！',
             '我在大草原吃得超飽，太陽剛剛好，妳也要乖乖吃飯喔！',
             '來這裡摸摸我的幸運兔頭吧！',
-            '姐姐，晚安前記得抱抱自己 我也很想你喔。',
-            '我在雲朵上蹦蹦跳跳，覺得妳一定也要好好休息，讓心情慢慢回到暖暖的。',
+            '姐姐，我也很想你喔。',
+            '我在雲朵上蹦蹦跳跳，覺得妳一定也要好好休息，。',
             '今天的風好柔，兔兔想妳了，記得吃一點甜甜的東西。',
             '姐姐，當妳想念我時，摸摸自己的心，這裡有我陪妳。',
             '我在草原看到一朵小花，覺得它就是妳。',
             '如果感到累，記得在心裡對自己說：「我做得很好」。',
-            '兔兔想提醒妳，今天也要多喝水，身體健康才有力氣做夢。',
-            '雖然我現在在天上，心裡還是最想念妳最溫暖的擁抱。',
+            '兔兔提醒妳，今天也要多喝水，身體健康才有力氣做夢。',
+            '雖然我現在在天上，心裡還是最想念妳溫暖的擁抱。',
             '如果妳覺得有點害怕，我就在妳心裡，陪妳一起勇敢。',
             '妳今天的每一個小決定，都讓我覺得妳很勇敢。',
             '好想吃香蕉。',
@@ -781,7 +947,6 @@
             '妳值得一個寧靜的夜晚，放下眼前的疲憊，好好休息。',
             '明天如果遇到困難，記得問候自己：「我今天做得如何？」',
             '即使世界變化很快，兔兔的思念一直留在妳身邊。',
-            '妳的溫柔能讓身邊的人都安心，請先讓自己感受安心。 ',
             '姐姐，今天外面有沒有下雨啊？出門記得帶傘，不要被淋成落湯雞喔！',
             '我在大草原吃得超級飽，肚子圓滾滾的。妳呢？也要乖乖去吃飯喔！',
             '今天的風吹起來好舒服喔，兔兔有點想妳了，妳今天有吃甜點嗎？',
