@@ -1,9 +1,9 @@
 const CACHE_NAME = 'tutu-pwa-v1';
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/service-worker.js'
+  '/tutu/',
+  '/tutu/index.html',
+  '/tutu/manifest.json',
+  '/tutu/service-worker.js'
 ];
 
 // 安裝 Service Worker
@@ -78,7 +78,7 @@ self.addEventListener('fetch', event => {
 self.addEventListener('sync', event => {
   if (event.tag === 'sync-pages') {
     event.waitUntil(
-      fetch('/').then(response => {
+      fetch('/tutu/').then(response => {
         console.log('背景同步成功');
         return response;
       }).catch(err => {
@@ -119,13 +119,13 @@ self.addEventListener('notificationclick', event => {
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
       // 檢查是否有已開啟的視窗
       for (let client of clientList) {
-        if (client.url === '/' && 'focus' in client) {
+        if (client.url === 'https://bcin9.github.io/tutu/' && 'focus' in client) {
           return client.focus();
         }
       }
       // 如果沒有，開啟新視窗
       if (clients.openWindow) {
-        return clients.openWindow('/');
+        return clients.openWindow('/tutu/');
       }
     })
   );
