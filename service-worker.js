@@ -3,7 +3,8 @@ const urlsToCache = [
   '/tutu/',
   '/tutu/index.html',
   '/tutu/manifest.json',
-  '/tutu/service-worker.js'
+  '/tutu/service-worker.js',
+  '/tutu/images/IMG_2596.jpg'
 ];
 
 // 安裝 Service Worker
