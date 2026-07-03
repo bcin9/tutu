@@ -258,6 +258,45 @@ function doGet(e) {
       return jsonResponse({ ok: true, replies });
     }
 
+    if (action === 'get_public_replies') {
+      const limitValue = parseInt(sanitizeText(params.limit || '50', 6), 10);
+      const limit = Number.isNaN(limitValue) ? 50 : Math.max(1, Math.min(limitValue, 200));
+
+      const messagesSheet = getOrCreateSheet(MESSAGES_SHEET, MESSAGES_HEADER);
+      const messageRows = messagesSheet.getDataRange().getValues();
+      const messageMap = {};
+
+      messageRows.slice(1).forEach((row, idx) => {
+        const msgId = String(row[0] || '');
+        if (!msgId) {
+          return;
+        }
+        messageMap[msgId] = {
+          msgNumber: idx + 1,
+          userMessage: String(row[2] || '')
+        };
+      });
+
+      const repliesSheet = getOrCreateSheet(REPLIES_SHEET, REPLIES_HEADER);
+      const replyRows = repliesSheet.getDataRange().getValues();
+      const replies = replyRows.slice(1).map(row => {
+        const msgId = String(row[1] || '');
+        const messageInfo = messageMap[msgId] || { msgNumber: null, userMessage: '' };
+        return {
+          replyId: String(row[0] || ''),
+          msgId,
+          reply: String(row[2] || ''),
+          repliedAt: String(row[3] || ''),
+          msgNumber: messageInfo.msgNumber,
+          userMessage: messageInfo.userMessage
+        };
+      });
+
+      replies.sort((a, b) => String(b.repliedAt).localeCompare(String(a.repliedAt)));
+
+      return jsonResponse({ ok: true, replies: replies.slice(0, limit) });
+    }
+
     return jsonResponse({ ok: true, service: 'tutu-message-api' });
   } catch (err) {
     return jsonResponse({ ok: false, error: String(err) }, 500);

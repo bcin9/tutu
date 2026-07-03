@@ -378,16 +378,36 @@
             }
         }
 
+        async function loadPublicInbox(showToastWhenDone) {
+            try {
+                const query = new URLSearchParams({
+                    action: 'get_public_replies',
+                    limit: '80'
+                });
+                const response = await fetch(`${API_URL}?${query.toString()}`);
+                const data = await response.json();
+
+                if (!data.ok) {
+                    throw new Error(data.error || 'request-failed');
+                }
+
+                renderInbox(Array.isArray(data.replies) ? data.replies : []);
+                if (showToastWhenDone) {
+                    showNotification('信箱已更新', 'success');
+                }
+            } catch (err) {
+                document.getElementById('mailList').style.display = 'none';
+                document.getElementById('emptyState').classList.add('show');
+                showNotification('讀取信箱失敗: ' + err.message, 'error');
+            }
+        }
+
         async function loadInbox(showToastWhenDone) {
             const msgIds = getMessageIds();
             const msgNumbers = getMessageNumbers();
 
             if (!msgIds.length && !msgNumbers.length) {
-                document.getElementById('mailList').style.display = 'none';
-                document.getElementById('emptyState').classList.add('show');
-                if (showToastWhenDone) {
-                    showNotification('尚未找到妳送出的留言紀錄', 'error');
-                }
+                await loadPublicInbox(showToastWhenDone);
                 return;
             }
 
