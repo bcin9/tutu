@@ -250,6 +250,7 @@
         const BUNNY_USER_MSG_IDS_KEY = 'tutu_user_message_ids';
         const BUNNY_USER_MSG_NUMBERS_KEY = 'tutu_user_message_numbers';
         const BUNNY_READ_REPLY_IDS_KEY = 'tutu_read_reply_ids';
+        const BUNNY_PUBLIC_REPLIES_CACHE_KEY = 'tutu_public_replies_cache';
 
         function showNotification(message, type) {
             const notif = document.getElementById('notification');
@@ -275,6 +276,25 @@
         function getReadReplyIds() {
             const ids = JSON.parse(localStorage.getItem(BUNNY_READ_REPLY_IDS_KEY) || '[]');
             return ids.filter(id => typeof id === 'string');
+        }
+
+        function getCachedReplies() {
+            try {
+                const cached = JSON.parse(localStorage.getItem(BUNNY_PUBLIC_REPLIES_CACHE_KEY) || '[]');
+                if (!Array.isArray(cached)) {
+                    return [];
+                }
+                return cached;
+            } catch (_) {
+                return [];
+            }
+        }
+
+        function saveCachedReplies(replies) {
+            if (!Array.isArray(replies)) {
+                return;
+            }
+            localStorage.setItem(BUNNY_PUBLIC_REPLIES_CACHE_KEY, JSON.stringify(replies.slice(0, 500)));
         }
 
         function saveReadReplyIds(ids) {
@@ -390,7 +410,9 @@
                     throw new Error(data.error || 'request-failed');
                 }
 
-                renderInbox(Array.isArray(data.replies) ? data.replies : []);
+                const replies = Array.isArray(data.replies) ? data.replies : [];
+                renderInbox(replies);
+                saveCachedReplies(replies);
                 if (showToastWhenDone) {
                     showNotification('信箱已更新', 'success');
                 }
@@ -412,6 +434,10 @@
         }
 
         window.addEventListener('load', () => {
+            const cachedReplies = getCachedReplies();
+            if (cachedReplies.length) {
+                renderInbox(cachedReplies);
+            }
             loadInbox(false);
         });
     </script>
