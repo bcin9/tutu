@@ -251,6 +251,8 @@
         const BUNNY_USER_MSG_NUMBERS_KEY = 'tutu_user_message_numbers';
         const BUNNY_READ_REPLY_IDS_KEY = 'tutu_read_reply_ids';
         const BUNNY_PUBLIC_REPLIES_CACHE_KEY = 'tutu_public_replies_cache';
+        const INBOX_POLL_INTERVAL_MS = 10000;
+        let inboxPollTimer = null;
 
         function showNotification(message, type) {
             const notif = document.getElementById('notification');
@@ -401,9 +403,12 @@
         async function loadPublicInbox(showToastWhenDone) {
             try {
                 const query = new URLSearchParams({
-                    action: 'get_public_replies'
+                    action: 'get_public_replies',
+                    t: String(Date.now())
                 });
-                const response = await fetch(`${API_URL}?${query.toString()}`);
+                const response = await fetch(`${API_URL}?${query.toString()}`, {
+                    cache: 'no-store'
+                });
                 const data = await response.json();
 
                 if (!data.ok) {
@@ -427,6 +432,18 @@
             await loadPublicInbox(showToastWhenDone);
         }
 
+        function startInboxPolling() {
+            if (inboxPollTimer) {
+                clearInterval(inboxPollTimer);
+            }
+
+            inboxPollTimer = setInterval(() => {
+                if (document.visibilityState === 'visible') {
+                    loadInbox(false);
+                }
+            }, INBOX_POLL_INTERVAL_MS);
+        }
+
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
@@ -439,6 +456,20 @@
                 renderInbox(cachedReplies);
             }
             loadInbox(false);
+            startInboxPolling();
+        });
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                loadInbox(false);
+            }
+        });
+
+        window.addEventListener('beforeunload', () => {
+            if (inboxPollTimer) {
+                clearInterval(inboxPollTimer);
+                inboxPollTimer = null;
+            }
         });
     </script>
 </body>
