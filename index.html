@@ -804,13 +804,15 @@
                     throw new Error('backend-not-configured');
                 }
 
-                const response = await fetch(BUNNY_MESSAGE_API, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(payload)
+                const query = new URLSearchParams({
+                    action: 'submit',
+                    sender: payload.sender,
+                    message: payload.message,
+                    createdAt: payload.createdAt,
+                    userAgent: payload.userAgent
                 });
+
+                const response = await fetch(`${BUNNY_MESSAGE_API}?${query.toString()}`);
 
                 if (!response.ok) {
                     throw new Error('request-failed');

@@ -29,8 +29,38 @@ function doPost(e) {
   }
 }
 
-function doGet() {
-  return jsonResponse({ ok: true, service: 'tutu-message-api' });
+function doGet(e) {
+  try {
+    const params = (typeof e !== 'undefined' && e && e.parameter) ? e.parameter : {};
+    const action = sanitizeText(params.action || '', 30);
+
+    if (action === 'submit') {
+      const sender = sanitizeText(params.sender || '匿名', 60);
+      const message = sanitizeText(params.message || '', 2000);
+      const createdAt = sanitizeText(params.createdAt || '', 64);
+      const userAgent = sanitizeText(params.userAgent || '', 500);
+
+      if (!message) {
+        return jsonResponse({ ok: false, error: 'message-required' }, 400);
+      }
+
+      const sheet = getOrCreateSheet();
+      sheet.appendRow([
+        new Date(),
+        sender,
+        message,
+        createdAt,
+        userAgent,
+        ''
+      ]);
+
+      return jsonResponse({ ok: true, mode: 'get-submit' });
+    }
+
+    return jsonResponse({ ok: true, service: 'tutu-message-api' });
+  } catch (err) {
+    return jsonResponse({ ok: false, error: String(err) }, 500);
+  }
 }
 
 function sanitizeText(value, maxLen) {
