@@ -248,6 +248,7 @@
     <script>
         const API_URL = localStorage.getItem('tutu_message_api_url') || 'https://script.google.com/macros/s/AKfycbyd7atzwHYEOYkhd4SfizGstZ1glpTXAw15JtlhLCcEUGbXuS6eqgdr4Mz8QVTzfwKk/exec';
         const BUNNY_USER_MSG_IDS_KEY = 'tutu_user_message_ids';
+        const BUNNY_USER_MSG_NUMBERS_KEY = 'tutu_user_message_numbers';
         const BUNNY_READ_REPLY_IDS_KEY = 'tutu_read_reply_ids';
 
         function showNotification(message, type) {
@@ -262,6 +263,13 @@
         function getMessageIds() {
             const ids = JSON.parse(localStorage.getItem(BUNNY_USER_MSG_IDS_KEY) || '[]');
             return ids.filter(id => typeof id === 'string' && id.indexOf('M_') === 0);
+        }
+
+        function getMessageNumbers() {
+            const numbers = JSON.parse(localStorage.getItem(BUNNY_USER_MSG_NUMBERS_KEY) || '[]');
+            return numbers
+                .map(value => Number(value))
+                .filter(value => Number.isInteger(value) && value > 0);
         }
 
         function getReadReplyIds() {
@@ -300,7 +308,8 @@
             listEl.style.display = 'grid';
 
             listEl.innerHTML = replies.map(item => {
-                const isUnread = item.replyId && !readSet[item.replyId];
+                const readKey = item.replyReadKey || item.replyId;
+                const isUnread = readKey && !readSet[readKey];
                 const messageTag = item.msgNumber ? `第 ${item.msgNumber} 則留言` : '一則留言';
                 return `
                     <article class="mail-item ${isUnread ? 'unread' : ''}">
@@ -320,22 +329,70 @@
 
             const mergedReadIds = readIds.slice();
             replies.forEach(item => {
-                if (item.replyId && mergedReadIds.indexOf(item.replyId) === -1) {
-                    mergedReadIds.push(item.replyId);
+                const readKey = item.replyReadKey || item.replyId;
+                if (readKey && mergedReadIds.indexOf(readKey) === -1) {
+                    mergedReadIds.push(readKey);
                 }
             });
             saveReadReplyIds(mergedReadIds);
         }
 
-        async function loadInbox(showToastWhenDone) {
-            const msgIds = getMessageIds();
-
-            if (!msgIds.length) {
+        async function loadInboxFallbackByNumbers(msgNumbers, showToastWhenDone) {
+            const uniqueNumbers = Array.from(new Set(msgNumbers)).sort((a, b) => b - a);
+            if (!uniqueNumbers.length) {
                 document.getElementById('mailList').style.display = 'none';
                 document.getElementById('emptyState').classList.add('show');
                 if (showToastWhenDone) {
                     showNotification('尚未找到妳送出的留言紀錄', 'error');
                 }
+                return;
+            }
+
+            const results = await Promise.all(uniqueNumbers.map(async msgNumber => {
+                try {
+                    const response = await fetch(`${API_URL}?action=get_reply&msgNumber=${encodeURIComponent(msgNumber)}`);
+                    const data = await response.json();
+                    if (data && data.ok && data.reply) {
+                        return {
+                            msgNumber,
+                            reply: String(data.reply),
+                            repliedAt: '',
+                            replyReadKey: `N_${msgNumber}_${String(data.reply)}`
+                        };
+                    }
+                    return null;
+                } catch (_) {
+                    return null;
+                }
+            }));
+
+            const replies = results.filter(Boolean);
+            renderInbox(replies);
+
+            if (showToastWhenDone) {
+                if (replies.length) {
+                    showNotification('信箱已更新（相容模式）', 'success');
+                } else {
+                    showNotification('目前還沒有可顯示的回信', 'error');
+                }
+            }
+        }
+
+        async function loadInbox(showToastWhenDone) {
+            const msgIds = getMessageIds();
+            const msgNumbers = getMessageNumbers();
+
+            if (!msgIds.length && !msgNumbers.length) {
+                document.getElementById('mailList').style.display = 'none';
+                document.getElementById('emptyState').classList.add('show');
+                if (showToastWhenDone) {
+                    showNotification('尚未找到妳送出的留言紀錄', 'error');
+                }
+                return;
+            }
+
+            if (!msgIds.length && msgNumbers.length) {
+                await loadInboxFallbackByNumbers(msgNumbers, showToastWhenDone);
                 return;
             }
 
@@ -346,6 +403,11 @@
                 });
                 const response = await fetch(`${API_URL}?${query.toString()}`);
                 const data = await response.json();
+
+                if (data && data.service === 'tutu-message-api') {
+                    await loadInboxFallbackByNumbers(msgNumbers, showToastWhenDone);
+                    return;
+                }
 
                 if (!data.ok) {
                     throw new Error(data.error || 'request-failed');
