@@ -2,6 +2,8 @@ const MESSAGES_SHEET = 'messages';
 const REPLIES_SHEET = 'replies';
 const MESSAGES_HEADER = ['msgId', 'timestamp', 'message', 'createdAt', 'userAgent', 'ip'];
 const REPLIES_HEADER = ['replyId', 'msgId', 'reply', 'repliedAt'];
+const ADMIN_PASSWORD_DEFAULT = 'tutu2024';
+const ADMIN_PASSWORD_KEY = 'admin_password';
 
 function doPost(e) {
   try {
@@ -11,12 +13,28 @@ function doPost(e) {
     const userAgent = sanitizeText(body.userAgent || '', 500);
     const action = sanitizeText(body.action || '', 30);
 
+    if (action === 'admin_change_password') {
+      const adminPassword = sanitizeText(body.adminPassword || '', 100);
+      const newPassword = sanitizeText(body.newPassword || '', 100);
+
+      if (!isAdminPasswordValid(adminPassword)) {
+        return jsonResponse({ ok: false, error: 'unauthorized' }, 403);
+      }
+
+      if (!newPassword || newPassword.length < 4) {
+        return jsonResponse({ ok: false, error: 'new-password-too-short' }, 400);
+      }
+
+      setAdminPassword(newPassword);
+      return jsonResponse({ ok: true });
+    }
+
     if (action === 'admin_reply') {
       const adminPassword = sanitizeText(body.adminPassword || '', 100);
       const msgId = sanitizeText(body.msgId || '', 50);
       const reply = sanitizeText(body.reply || '', 2000);
       
-      if (adminPassword !== 'tutu2024') {
+      if (!isAdminPasswordValid(adminPassword)) {
         return jsonResponse({ ok: false, error: 'unauthorized' }, 403);
       }
       
@@ -59,6 +77,42 @@ function doGet(e) {
     const params = (typeof e !== 'undefined' && e && e.parameter) ? e.parameter : {};
     const action = sanitizeText(params.action || '', 30);
 
+    if (action === 'admin_change_password') {
+      const adminPassword = sanitizeText(params.adminPassword || '', 100);
+      const newPassword = sanitizeText(params.newPassword || '', 100);
+
+      if (!isAdminPasswordValid(adminPassword)) {
+        return jsonResponse({ ok: false, error: 'unauthorized' }, 403);
+      }
+
+      if (!newPassword || newPassword.length < 4) {
+        return jsonResponse({ ok: false, error: 'new-password-too-short' }, 400);
+      }
+
+      setAdminPassword(newPassword);
+      return jsonResponse({ ok: true, mode: 'get-admin-change-password' });
+    }
+
+    if (action === 'admin_reply') {
+      const adminPassword = sanitizeText(params.adminPassword || '', 100);
+      const msgId = sanitizeText(params.msgId || '', 50);
+      const reply = sanitizeText(params.reply || '', 2000);
+
+      if (!isAdminPasswordValid(adminPassword)) {
+        return jsonResponse({ ok: false, error: 'unauthorized' }, 403);
+      }
+
+      if (!msgId || !reply) {
+        return jsonResponse({ ok: false, error: 'missing-fields' }, 400);
+      }
+
+      const repliesSheet = getOrCreateSheet(REPLIES_SHEET, REPLIES_HEADER);
+      const replyId = 'R_' + new Date().getTime();
+      repliesSheet.appendRow([replyId, msgId, reply, new Date().toISOString()]);
+
+      return jsonResponse({ ok: true, replyId, mode: 'get-admin-reply' });
+    }
+
     if (action === 'submit') {
       const message = sanitizeText(params.message || '', 2000);
       const createdAt = sanitizeText(params.createdAt || '', 64);
@@ -86,7 +140,7 @@ function doGet(e) {
 
     if (action === 'admin_list') {
       const adminPassword = sanitizeText(params.adminPassword || '', 100);
-      if (adminPassword !== 'tutu2024') {
+      if (!isAdminPasswordValid(adminPassword)) {
         return jsonResponse({ ok: false, error: 'unauthorized' }, 403);
       }
 
@@ -153,6 +207,20 @@ function doGet(e) {
 function sanitizeText(value, maxLen) {
   const text = String(value || '').replace(/[\u0000-\u001F\u007F]/g, '').trim();
   return text.slice(0, maxLen);
+}
+
+function getAdminPassword() {
+  const props = PropertiesService.getScriptProperties();
+  const saved = props.getProperty(ADMIN_PASSWORD_KEY);
+  return saved || ADMIN_PASSWORD_DEFAULT;
+}
+
+function setAdminPassword(newPassword) {
+  PropertiesService.getScriptProperties().setProperty(ADMIN_PASSWORD_KEY, newPassword);
+}
+
+function isAdminPasswordValid(inputPassword) {
+  return inputPassword === getAdminPassword();
 }
 
 function getOrCreateSheet(sheetName, header) {

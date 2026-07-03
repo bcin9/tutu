@@ -236,6 +236,53 @@
             padding: 40px;
             color: #999;
         }
+
+        .password-section {
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .password-section h3 {
+            margin-bottom: 10px;
+            color: #333;
+            font-size: 1rem;
+        }
+
+        .password-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .password-form input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .password-form button {
+            padding: 10px 14px;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .password-form button:hover {
+            background: #555;
+        }
+
+        @media (max-width: 900px) {
+            .password-form {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
@@ -254,6 +301,16 @@
         <div id="notification" class="notification"></div>
 
         <div id="adminPanel" style="display: none;">
+            <div class="password-section">
+                <h3>變更管理員密碼</h3>
+                <form class="password-form" onsubmit="changeAdminPassword(event)">
+                    <input type="password" id="oldPassword" placeholder="目前密碼" required />
+                    <input type="password" id="newPassword" placeholder="新密碼（至少4碼）" required minlength="4" />
+                    <input type="password" id="confirmPassword" placeholder="確認新密碼" required minlength="4" />
+                    <button type="submit">更新密碼</button>
+                </form>
+            </div>
+
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                 <div>
                     <h2 style="margin-bottom: 15px; color: #333;">所有留言</h2>
@@ -314,6 +371,61 @@
             document.getElementById('adminPanel').style.display = 'block';
 
             await loadMessages();
+        }
+
+        async function changeAdminPassword(event) {
+            event.preventDefault();
+
+            const oldPassword = document.getElementById('oldPassword').value.trim();
+            const newPassword = document.getElementById('newPassword').value.trim();
+            const confirmPassword = document.getElementById('confirmPassword').value.trim();
+
+            if (!oldPassword || !newPassword || !confirmPassword) {
+                showNotification('請完整填寫密碼欄位', 'error');
+                return;
+            }
+
+            if (newPassword.length < 4) {
+                showNotification('新密碼至少 4 碼', 'error');
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                showNotification('新密碼與確認密碼不一致', 'error');
+                return;
+            }
+
+            try {
+                const query = new URLSearchParams({
+                    action: 'admin_change_password',
+                    adminPassword: oldPassword,
+                    newPassword
+                });
+                const response = await fetch(`${API_URL}?${query.toString()}`);
+
+                const data = await response.json();
+                if (!data.ok) {
+                    if (data.error === 'unauthorized') {
+                        showNotification('密碼更新失敗：目前密碼錯誤', 'error');
+                    } else if (data.error === 'new-password-too-short') {
+                        showNotification('密碼更新失敗：新密碼至少 4 碼', 'error');
+                    } else if (data.error === 'message-required') {
+                        showNotification('密碼更新失敗：後端尚未更新，請先重新部署 Apps Script', 'error');
+                    } else {
+                        showNotification('密碼更新失敗：' + (data.error || '未知錯誤'), 'error');
+                    }
+                    return;
+                }
+
+                adminPassword = newPassword;
+                sessionStorage.setItem('adminPassword', newPassword);
+                document.getElementById('oldPassword').value = '';
+                document.getElementById('newPassword').value = '';
+                document.getElementById('confirmPassword').value = '';
+                showNotification('管理員密碼已更新', 'success');
+            } catch (err) {
+                showNotification('密碼更新失敗: ' + err.message, 'error');
+            }
         }
 
         async function loadMessages() {
@@ -416,15 +528,13 @@
             }
 
             try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        action: 'admin_reply',
-                        adminPassword,
-                        msgId: currentMessage.msgId,
-                        reply: replyText
-                    })
+                const query = new URLSearchParams({
+                    action: 'admin_reply',
+                    adminPassword,
+                    msgId: currentMessage.msgId,
+                    reply: replyText
                 });
+                const response = await fetch(`${API_URL}?${query.toString()}`);
 
                 const data = await response.json();
                 if (data.ok) {
@@ -458,7 +568,6 @@
         });
 
         // 登入時保存密碼到 sessionStorage
-        const originalAuthenticate = authenticate;
         authenticate = async function() {
             const password = document.getElementById('adminPassword').value;
             if (!password) {
