@@ -381,8 +381,7 @@
         async function loadPublicInbox(showToastWhenDone) {
             try {
                 const query = new URLSearchParams({
-                    action: 'get_public_replies',
-                    limit: '80'
+                    action: 'get_public_replies'
                 });
                 const response = await fetch(`${API_URL}?${query.toString()}`);
                 const data = await response.json();
@@ -403,45 +402,7 @@
         }
 
         async function loadInbox(showToastWhenDone) {
-            const msgIds = getMessageIds();
-            const msgNumbers = getMessageNumbers();
-
-            if (!msgIds.length && !msgNumbers.length) {
-                await loadPublicInbox(showToastWhenDone);
-                return;
-            }
-
-            if (!msgIds.length && msgNumbers.length) {
-                await loadInboxFallbackByNumbers(msgNumbers, showToastWhenDone);
-                return;
-            }
-
-            try {
-                const query = new URLSearchParams({
-                    action: 'get_replies_by_msg_ids',
-                    msgIds: msgIds.join(',')
-                });
-                const response = await fetch(`${API_URL}?${query.toString()}`);
-                const data = await response.json();
-
-                if (data && data.service === 'tutu-message-api') {
-                    await loadInboxFallbackByNumbers(msgNumbers, showToastWhenDone);
-                    return;
-                }
-
-                if (!data.ok) {
-                    throw new Error(data.error || 'request-failed');
-                }
-
-                renderInbox(Array.isArray(data.replies) ? data.replies : []);
-                if (showToastWhenDone) {
-                    showNotification('信箱已更新', 'success');
-                }
-            } catch (err) {
-                document.getElementById('mailList').style.display = 'none';
-                document.getElementById('emptyState').classList.add('show');
-                showNotification('讀取信箱失敗: ' + err.message, 'error');
-            }
+            await loadPublicInbox(showToastWhenDone);
         }
 
         function escapeHtml(text) {

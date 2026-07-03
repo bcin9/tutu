@@ -259,8 +259,9 @@ function doGet(e) {
     }
 
     if (action === 'get_public_replies') {
-      const limitValue = parseInt(sanitizeText(params.limit || '50', 6), 10);
-      const limit = Number.isNaN(limitValue) ? 50 : Math.max(1, Math.min(limitValue, 200));
+      const hasLimit = Object.prototype.hasOwnProperty.call(params, 'limit');
+      const limitValue = parseInt(sanitizeText(params.limit || '', 6), 10);
+      const limit = Number.isNaN(limitValue) ? null : Math.max(1, Math.min(limitValue, 500));
 
       const messagesSheet = getOrCreateSheet(MESSAGES_SHEET, MESSAGES_HEADER);
       const messageRows = messagesSheet.getDataRange().getValues();
@@ -293,6 +294,10 @@ function doGet(e) {
       });
 
       replies.sort((a, b) => String(b.repliedAt).localeCompare(String(a.repliedAt)));
+
+      if (!hasLimit || limit === null) {
+        return jsonResponse({ ok: true, replies });
+      }
 
       return jsonResponse({ ok: true, replies: replies.slice(0, limit) });
     }
