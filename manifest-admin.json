@@ -1,0 +1,40 @@
+{
+  "name": "兔兔後台管理",
+  "short_name": "兔兔後台",
+  "description": "兔兔的管理後台，可以回覆留言和管理內容",
+  "start_url": "/tutu/admin.html",
+  "display": "standalone",
+  "scope": "/tutu/",
+  "orientation": "portrait-primary",
+  "background_color": "#f5f5f5",
+  "theme_color": "#FFB7B2",
+  "icons": [
+    {
+      "src": "images/IMG_2596-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "images/IMG_2596-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "images/IMG_2596-icon-1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["productivity"],
+  "screenshots": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 720'><rect fill='%23f5f5f5' width='540' height='720'/><text x='50%' y='50%' font-size='100' text-anchor='middle' dominant-baseline='middle' font-family='system-ui'>🔐 兔兔後台</text></svg>",
+      "sizes": "540x720",
+      "type": "image/svg+xml",
+      "form_factor": "narrow"
+    }
+  ]
+}
