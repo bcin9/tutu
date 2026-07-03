@@ -161,6 +161,48 @@
             color: #6d5959;
             opacity: 0.9;
         }
+        .msg-success-info {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 12px;
+            padding: 15px;
+            color: #155724;
+            margin-top: 15px;
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+        .msg-success-info.show {
+            display: block;
+        }
+        .msg-number {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #28a745;
+        }
+        .mailbox-link {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 8px 16px;
+            background: #B5E2FA;
+            color: #4A3E3E;
+            text-decoration: none;
+            border-radius: 16px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .mailbox-link:hover {
+            background: #a7d8f3;
+        }
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
         .feed-section {
             display: grid;
@@ -682,7 +724,12 @@
             </div>
             <div class="message-actions">
                 <button class="send-btn" id="bunnySendBtn">送給兔兔</button>
-                <div class="message-status" id="bunnySendStatus">送出後會同步到後台。</div>
+                <div class="message-status" id="bunnySendStatus">送出後兔兔會收到。</div>
+            </div>
+            <div class="msg-success-info" id="msgSuccessInfo">
+                <div>✅ 留言已送出！</div>
+                <div style="font-size: 0.95rem; margin-top: 8px;">妳的留言序號: <span class="msg-number" id="msgNumberDisplay"></span></div>
+                <a href="mailbox.html" class="mailbox-link">📬 進入信箱查看回信</a>
             </div>
         </div>
     </section>
@@ -803,13 +850,20 @@
                 });
 
                 const response = await fetch(`${BUNNY_MESSAGE_API}?${query.toString()}`);
+                const data = await response.json();
 
-                if (!response.ok) {
+                if (!response.ok || !data.ok) {
                     throw new Error('request-failed');
                 }
 
                 bunnyMessageInput.value = '';
-                bunnySendStatus.innerText = '已送出，兔兔將會收到這則留言。';
+                bunnySendStatus.innerText = '送出後兔兔會收到。';
+                
+                // 顯示成功訊息和序號
+                const msgNumber = data.msgNumber;
+                document.getElementById('msgNumberDisplay').innerText = `第 ${msgNumber} 則`;
+                document.getElementById('msgSuccessInfo').classList.add('show');
+                
                 showToast('留言已送達兔兔信箱');
             } catch (error) {
                 saveMessageToLocalBackup(payload);

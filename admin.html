@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>兔兔後台管理</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .auth-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .auth-section input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            flex: 1;
+        }
+
+        .auth-section button {
+            padding: 10px 20px;
+            background: #FFB7B2;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+        }
+
+        .auth-section button:hover {
+            background: #ffc7c1;
+        }
+
+        .messages-list {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .message-item {
+            border-bottom: 1px solid #eee;
+            padding: 20px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .message-item:hover {
+            background: #f9f9f9;
+        }
+
+        .message-item.active {
+            background: #fff5f2;
+            border-left: 4px solid #FFB7B2;
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .msg-number {
+            font-weight: bold;
+            color: #FFB7B2;
+            font-size: 1.1rem;
+        }
+
+        .msg-time {
+            font-size: 0.85rem;
+            color: #999;
+        }
+
+        .msg-content {
+            color: #333;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .reply-badge {
+            display: inline-block;
+            background: #4CAF50;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-left: 10px;
+        }
+
+        .reply-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .reply-section h2 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .reply-form {
+            display: grid;
+            gap: 15px;
+        }
+
+        .reply-form textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .reply-form textarea:focus {
+            outline: none;
+            border-color: #FFB7B2;
+            box-shadow: 0 0 0 2px rgba(255,183,178,0.1);
+        }
+
+        .reply-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .reply-buttons button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .submit-reply {
+            background: #4CAF50;
+            color: white;
+            flex: 1;
+        }
+
+        .submit-reply:hover {
+            background: #45a049;
+        }
+
+        .cancel-reply {
+            background: #ddd;
+            color: #333;
+        }
+
+        .cancel-reply:hover {
+            background: #ccc;
+        }
+
+        .existing-reply {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .existing-reply p {
+            white-space: pre-wrap;
+            word-break: break-word;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .message-empty {
+            padding: 40px;
+            text-align: center;
+            color: #999;
+        }
+
+        .notification {
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .notification.show {
+            display: block;
+        }
+
+        .notification.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .notification.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .login-required {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🐰 兔兔後台管理</h1>
+            <div class="auth-section" id="authSection">
+                <input type="password" id="adminPassword" placeholder="輸入管理員密碼" />
+                <button onclick="authenticate()">登入</button>
+            </div>
+            <div id="loginRequired" class="login-required">
+                請先輸入密碼登入
+            </div>
+        </div>
+
+        <div id="notification" class="notification"></div>
+
+        <div id="adminPanel" style="display: none;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div>
+                    <h2 style="margin-bottom: 15px; color: #333;">所有留言</h2>
+                    <div class="messages-list" id="messagesList">
+                        <div class="message-empty">載入中...</div>
+                    </div>
+                </div>
+
+                <div>
+                    <div id="replyPanel" style="display: none;">
+                        <div class="reply-section">
+                            <h2>回覆留言</h2>
+                            <div id="selectedMessage" class="msg-content" style="background: #f9f9f9; padding: 15px; border-radius: 4px; margin-bottom: 15px; display: none;"></div>
+                            <div id="existingReplyContainer"></div>
+                            <form class="reply-form" onsubmit="submitReply(event)">
+                                <textarea id="replyText" placeholder="寫兔兔的回信..."></textarea>
+                                <div class="reply-buttons">
+                                    <button type="submit" class="submit-reply">送出回信</button>
+                                    <button type="button" class="cancel-reply" onclick="closeReplyPanel()">取消</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div id="noSelection" style="background: white; border-radius: 8px; padding: 40px; text-align: center; color: #999; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        請點選一則留言進行回覆
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = localStorage.getItem('tutu_message_api_url') || 'https://script.google.com/macros/s/AKfycbw1TkFY797BFK7LrgbvMINeq333Powpim7futyUBeNwS7Krw9uVS7vOucjfyx4LOKmt/exec';
+        let adminPassword = '';
+        let currentMessage = null;
+        let allMessages = [];
+
+        function showNotification(message, type) {
+            const notif = document.getElementById('notification');
+            notif.textContent = message;
+            notif.className = `notification show ${type}`;
+            setTimeout(() => {
+                notif.classList.remove('show');
+            }, 3000);
+        }
+
+        async function authenticate() {
+            const password = document.getElementById('adminPassword').value;
+            if (!password) {
+                showNotification('請輸入密碼', 'error');
+                return;
+            }
+
+            adminPassword = password;
+            document.getElementById('authSection').style.display = 'none';
+            document.getElementById('loginRequired').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'block';
+
+            await loadMessages();
+        }
+
+        async function loadMessages() {
+            try {
+                const response = await fetch(`${API_URL}?action=admin_list&adminPassword=${encodeURIComponent(adminPassword)}`);
+                const data = await response.json();
+
+                if (!data.ok) {
+                    showNotification('密碼錯誤', 'error');
+                    document.getElementById('authSection').style.display = 'flex';
+                    document.getElementById('loginRequired').style.display = 'block';
+                    document.getElementById('adminPanel').style.display = 'none';
+                    adminPassword = '';
+                    return;
+                }
+
+                allMessages = data.messages;
+                renderMessagesList();
+            } catch (err) {
+                showNotification('載入失敗: ' + err.message, 'error');
+            }
+        }
+
+        function renderMessagesList() {
+            const messagesList = document.getElementById('messagesList');
+            
+            if (allMessages.length === 0) {
+                messagesList.innerHTML = '<div class="message-empty">暫無留言</div>';
+                return;
+            }
+
+            messagesList.innerHTML = allMessages.map(msg => `
+                <div class="message-item" onclick="selectMessage(${msg.msgNumber})">
+                    <div class="message-header">
+                        <span class="msg-number">第 ${msg.msgNumber} 則留言</span>
+                        <span class="msg-time">${new Date(msg.timestamp).toLocaleString('zh-TW')}</span>
+                        ${msg.hasReply ? '<span class="reply-badge">已回覆</span>' : ''}
+                    </div>
+                    <div class="msg-content">${escapeHtml(msg.message)}</div>
+                </div>
+            `).join('');
+        }
+
+        function selectMessage(msgNumber) {
+            const msg = allMessages.find(m => m.msgNumber === msgNumber);
+            if (!msg) return;
+
+            currentMessage = msg;
+
+            // 更新列表高亮
+            document.querySelectorAll('.message-item').forEach(el => {
+                el.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+
+            // 顯示回覆面板
+            document.getElementById('noSelection').style.display = 'none';
+            document.getElementById('replyPanel').style.display = 'block';
+
+            // 填充內容
+            document.getElementById('selectedMessage').textContent = msg.message;
+            document.getElementById('selectedMessage').style.display = 'block';
+            document.getElementById('replyText').value = '';
+
+            // 顯示現有回覆
+            const existingContainer = document.getElementById('existingReplyContainer');
+            if (msg.hasReply && msg.reply) {
+                existingContainer.innerHTML = `
+                    <div class="existing-reply">
+                        <strong>已有回信:</strong>
+                        <p>${escapeHtml(msg.reply)}</p>
+                    </div>
+                `;
+            } else {
+                existingContainer.innerHTML = '';
+            }
+        }
+
+        function closeReplyPanel() {
+            currentMessage = null;
+            document.getElementById('replyPanel').style.display = 'none';
+            document.getElementById('noSelection').style.display = 'block';
+            document.querySelectorAll('.message-item').forEach(el => {
+                el.classList.remove('active');
+            });
+        }
+
+        async function submitReply(event) {
+            event.preventDefault();
+
+            if (!currentMessage) {
+                showNotification('請選擇一則留言', 'error');
+                return;
+            }
+
+            const replyText = document.getElementById('replyText').value.trim();
+            if (!replyText) {
+                showNotification('請輸入回信內容', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'admin_reply',
+                        adminPassword,
+                        msgId: currentMessage.msgId,
+                        reply: replyText
+                    })
+                });
+
+                const data = await response.json();
+                if (data.ok) {
+                    showNotification('回信已送出！', 'success');
+                    await loadMessages();
+                    closeReplyPanel();
+                } else {
+                    showNotification('回信失敗: ' + data.error, 'error');
+                }
+            } catch (err) {
+                showNotification('送出失敗: ' + err.message, 'error');
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 頁面載入時檢查是否已登入
+        window.addEventListener('load', () => {
+            const savedPassword = sessionStorage.getItem('adminPassword');
+            if (savedPassword) {
+                adminPassword = savedPassword;
+                document.getElementById('authSection').style.display = 'none';
+                document.getElementById('loginRequired').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'block';
+                loadMessages();
+            }
+        });
+
+        // 登入時保存密碼到 sessionStorage
+        const originalAuthenticate = authenticate;
+        authenticate = async function() {
+            const password = document.getElementById('adminPassword').value;
+            if (!password) {
+                showNotification('請輸入密碼', 'error');
+                return;
+            }
+
+            adminPassword = password;
+            sessionStorage.setItem('adminPassword', password);
+            
+            document.getElementById('authSection').style.display = 'none';
+            document.getElementById('loginRequired').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'block';
+
+            await loadMessages();
+        };
+    </script>
+</body>
+</html>

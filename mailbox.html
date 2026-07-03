@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>兔兔的信箱</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #FFF5F5 0%, #FFF9F7 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            color: #4A3E3E;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #6D5959;
+            opacity: 0.8;
+        }
+
+        .search-section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 16px 32px rgba(0,0,0,0.06);
+            margin-bottom: 30px;
+        }
+
+        .search-section h2 {
+            color: #4A3E3E;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .search-form {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .search-form input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #FFE3E3;
+            border-radius: 12px;
+            font-size: 1rem;
+            background: #FFFDFD;
+        }
+
+        .search-form input:focus {
+            outline: none;
+            border-color: #FFB7B2;
+            box-shadow: 0 0 0 2px rgba(255,183,178,0.1);
+        }
+
+        .search-btn {
+            padding: 12px 30px;
+            background: #FFB7B2;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .search-btn:hover {
+            background: #ffc7c1;
+        }
+
+        .search-btn:active {
+            transform: scale(0.98);
+        }
+
+        .instructions {
+            background: #EFF7FF;
+            border: 1px solid rgba(118,162,226,0.38);
+            border-radius: 12px;
+            padding: 15px;
+            color: #3A4A5C;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            text-align: center;
+        }
+
+        .reply-display {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 16px 32px rgba(0,0,0,0.06);
+            margin-bottom: 30px;
+            display: none;
+        }
+
+        .reply-display.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .reply-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .reply-header h3 {
+            color: #4A3E3E;
+            font-size: 1.1rem;
+        }
+
+        .msg-number-badge {
+            background: #FFB7B2;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .reply-content {
+            background: linear-gradient(135deg, #fffdfb 0%, #f6ece8 100%);
+            border: 1px solid rgba(230, 182, 169, 0.75);
+            border-radius: 16px;
+            padding: 25px;
+            color: #5B4A4A;
+            font-size: 1.05rem;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            word-break: break-word;
+            box-shadow: 0 8px 16px rgba(129, 87, 74, 0.08);
+        }
+
+        .notification {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 16px 32px rgba(0,0,0,0.06);
+            margin-bottom: 20px;
+            display: none;
+            border-left: 4px solid;
+        }
+
+        .notification.show {
+            display: block;
+        }
+
+        .notification.success {
+            border-left-color: #4CAF50;
+            background: #f1f8f4;
+            color: #2d5a2d;
+        }
+
+        .notification.error {
+            border-left-color: #f44336;
+            background: #fef5f4;
+            color: #8B0000;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #FFB7B2;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .back-link:hover {
+            color: #ffc7c1;
+        }
+
+        .empty-state {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 16px 32px rgba(0,0,0,0.06);
+            display: none;
+        }
+
+        .empty-state.show {
+            display: block;
+        }
+
+        .empty-state p {
+            color: #999;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📬 兔兔的信箱</h1>
+            <p>輸入妳的留言序號查看兔兔的回信</p>
+        </div>
+
+        <a href="index.html" class="back-link">← 回到主頁</a>
+
+        <div class="search-section">
+            <h2>查詢回信</h2>
+            <div class="search-form">
+                <input 
+                    type="text" 
+                    id="msgNumberInput" 
+                    placeholder="輸入留言序號 (例如: 5)" 
+                    onkeypress="handleKeypress(event)"
+                />
+                <button class="search-btn" onclick="searchReply()">查詢</button>
+            </div>
+            <div class="instructions">
+                💡 提交留言時會收到一個序號，例如「第5則留言」，直接輸入數字 5 即可
+            </div>
+        </div>
+
+        <div id="notification" class="notification"></div>
+
+        <div id="replyDisplay" class="reply-display">
+            <div class="reply-header">
+                <h3>✉️ 兔兔的回信</h3>
+                <span class="msg-number-badge" id="msgNumberDisplay"></span>
+            </div>
+            <div class="reply-content" id="replyContent"></div>
+        </div>
+
+        <div id="emptyState" class="empty-state">
+            <p>暫時還沒有兔兔的回信喔</p>
+            <p style="margin-top: 10px; font-size: 0.9rem; opacity: 0.7;">兔兔正在努力思考，過幾天再來看看吧 💕</p>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = localStorage.getItem('tutu_message_api_url') || 'https://script.google.com/macros/s/AKfycbw1TkFY797BFK7LrgbvMINeq333Powpim7futyUBeNwS7Krw9uVS7vOucjfyx4LOKmt/exec';
+
+        function showNotification(message, type) {
+            const notif = document.getElementById('notification');
+            notif.textContent = message;
+            notif.className = `notification show ${type}`;
+            setTimeout(() => {
+                notif.classList.remove('show');
+            }, 4000);
+        }
+
+        function handleKeypress(event) {
+            if (event.key === 'Enter') {
+                searchReply();
+            }
+        }
+
+        async function searchReply() {
+            const msgNumber = document.getElementById('msgNumberInput').value.trim();
+
+            if (!msgNumber) {
+                showNotification('請輸入留言序號', 'error');
+                return;
+            }
+
+            if (!/^\d+$/.test(msgNumber)) {
+                showNotification('序號應該是數字', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}?action=get_reply&msgNumber=${encodeURIComponent(msgNumber)}`);
+                const data = await response.json();
+
+                document.getElementById('replyDisplay').classList.remove('show');
+                document.getElementById('emptyState').classList.remove('show');
+
+                if (data.ok && data.reply) {
+                    document.getElementById('msgNumberDisplay').textContent = `第 ${msgNumber} 則`;
+                    document.getElementById('replyContent').textContent = data.reply;
+                    document.getElementById('replyDisplay').classList.add('show');
+                    showNotification('收到兔兔的回信！', 'success');
+                } else {
+                    document.getElementById('emptyState').classList.add('show');
+                    showNotification('還沒有兔兔的回信呢', 'error');
+                }
+            } catch (err) {
+                document.getElementById('emptyState').classList.add('show');
+                showNotification('查詢失敗: ' + err.message, 'error');
+            }
+        }
+
+        // 頁面載入時自動聚焦輸入框
+        window.addEventListener('load', () => {
+            document.getElementById('msgNumberInput').focus();
+        });
+    </script>
+</body>
+</html>
