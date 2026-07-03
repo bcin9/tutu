@@ -2,7 +2,20 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    
+    <!-- PWA 相關設置 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="兔兔信箱">
+    
+    <link rel="apple-touch-icon" href="images/IMG_2596-icon-1024.png">
+    <link rel="icon" href="images/IMG_2596-icon-1024.png" sizes="1024x1024" type="image/png">
+    <link rel="shortcut icon" href="images/IMG_2596-icon-1024.png">
+    
+    <link rel="manifest" href="manifest-mailbox.json">
+    <meta name="theme-color" content="#FFB7B2">
+    
     <title>兔兔的信箱</title>
     <style>
         * {
@@ -471,6 +484,15 @@
                 inboxPollTimer = null;
             }
         });
+
+        // 註冊 Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js').then(reg => {
+                console.log('Service Worker 已註冊:', reg);
+            }).catch(err => {
+                console.log('Service Worker 註冊失敗:', err);
+            });
+        }
     </script>
 </body>
 </html>
