@@ -757,7 +757,7 @@
         const bunnyMessageInput = document.getElementById('bunnyMessageInput');
         const bunnySendBtn = document.getElementById('bunnySendBtn');
         const bunnySendStatus = document.getElementById('bunnySendStatus');
-        const BUNNY_MESSAGE_API = 'REPLACE_WITH_YOUR_WEB_APP_URL';
+        const BUNNY_MESSAGE_API = localStorage.getItem('tutu_message_api_url') || 'REPLACE_WITH_YOUR_WEB_APP_URL';
         const BUNNY_LOCAL_MESSAGES_KEY = 'tutu_local_messages_backup';
         const memoryResponses = [
             '兔兔聞到妳的回憶了，牠偷偷在心裡跳了好幾下。',
@@ -771,6 +771,10 @@
             const history = JSON.parse(localStorage.getItem(BUNNY_LOCAL_MESSAGES_KEY) || '[]');
             history.unshift(payload);
             localStorage.setItem(BUNNY_LOCAL_MESSAGES_KEY, JSON.stringify(history.slice(0, 100)));
+        }
+
+        function hasBackendConfigured() {
+            return BUNNY_MESSAGE_API.startsWith('http');
         }
 
         async function submitBunnyMessage() {
@@ -796,7 +800,7 @@
             bunnySendStatus.innerText = '兔兔正在收信中...';
 
             try {
-                if (!BUNNY_MESSAGE_API.startsWith('http')) {
+                if (!hasBackendConfigured()) {
                     throw new Error('backend-not-configured');
                 }
 
@@ -1095,6 +1099,9 @@
 
         if (bunnySendBtn) {
             bunnySendBtn.addEventListener('click', submitBunnyMessage);
+            if (!hasBackendConfigured()) {
+                bunnySendStatus.innerText = '尚未連接後台，請先在 index.html 設定 BUNNY_MESSAGE_API。';
+            }
         }
 
         renderGallery();
