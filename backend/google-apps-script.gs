@@ -1,10 +1,9 @@
 const SHEET_NAME = 'messages';
-const HEADER = ['timestamp', 'sender', 'message', 'createdAt', 'userAgent', 'ip'];
+const HEADER = ['timestamp', 'message', 'createdAt', 'userAgent', 'ip'];
 
 function doPost(e) {
   try {
     const body = JSON.parse(e.postData && e.postData.contents ? e.postData.contents : '{}');
-    const sender = sanitizeText(body.sender || '匿名', 60);
     const message = sanitizeText(body.message || '', 2000);
     const createdAt = sanitizeText(body.createdAt || '', 64);
     const userAgent = sanitizeText(body.userAgent || '', 500);
@@ -16,7 +15,6 @@ function doPost(e) {
     const sheet = getOrCreateSheet();
     sheet.appendRow([
       new Date(),
-      sender,
       message,
       createdAt,
       userAgent,
@@ -35,7 +33,6 @@ function doGet(e) {
     const action = sanitizeText(params.action || '', 30);
 
     if (action === 'submit') {
-      const sender = sanitizeText(params.sender || '匿名', 60);
       const message = sanitizeText(params.message || '', 2000);
       const createdAt = sanitizeText(params.createdAt || '', 64);
       const userAgent = sanitizeText(params.userAgent || '', 500);
@@ -47,7 +44,6 @@ function doGet(e) {
       const sheet = getOrCreateSheet();
       sheet.appendRow([
         new Date(),
-        sender,
         message,
         createdAt,
         userAgent,
