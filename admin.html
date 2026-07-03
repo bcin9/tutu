@@ -278,6 +278,44 @@
             background: #555;
         }
 
+        .search-section {
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: grid;
+            gap: 10px;
+        }
+
+        .search-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .search-row input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .search-row button {
+            padding: 10px 14px;
+            background: #B5E2FA;
+            color: #4A3E3E;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .search-hint {
+            color: #777;
+            font-size: 0.88rem;
+        }
+
         @media (max-width: 900px) {
             .password-form {
                 grid-template-columns: 1fr;
@@ -309,6 +347,15 @@
                     <input type="password" id="confirmPassword" placeholder="確認新密碼" required minlength="4" />
                     <button type="submit">更新密碼</button>
                 </form>
+            </div>
+
+            <div class="search-section">
+                <div class="search-row">
+                    <input type="text" id="messageSearchInput" placeholder="輸入關鍵字快速查找留言..." />
+                    <button type="button" onclick="triggerSearch()">搜尋</button>
+                    <button type="button" onclick="clearSearch()">清除</button>
+                </div>
+                <div class="search-hint">預設載入最新 200 則；輸入關鍵字會切換成後端快速搜尋。</div>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
@@ -348,6 +395,7 @@
         let adminPassword = '';
         let currentMessage = null;
         let allMessages = [];
+        let searchDebounceTimer;
 
         function showNotification(message, type) {
             const notif = document.getElementById('notification');
@@ -370,7 +418,7 @@
             document.getElementById('loginRequired').style.display = 'none';
             document.getElementById('adminPanel').style.display = 'block';
 
-            await loadMessages();
+            await loadMessages('');
         }
 
         async function changeAdminPassword(event) {
@@ -428,9 +476,19 @@
             }
         }
 
-        async function loadMessages() {
+        async function loadMessages(keyword) {
+            const text = (keyword || '').trim();
             try {
-                const response = await fetch(`${API_URL}?action=admin_list&adminPassword=${encodeURIComponent(adminPassword)}`);
+                const query = new URLSearchParams({
+                    action: text ? 'admin_search' : 'admin_list',
+                    adminPassword,
+                    limit: text ? '100' : '200'
+                });
+                if (text) {
+                    query.set('keyword', text);
+                }
+
+                const response = await fetch(`${API_URL}?${query.toString()}`);
                 const data = await response.json();
 
                 if (!data.ok) {
@@ -449,6 +507,16 @@
             }
         }
 
+        function triggerSearch() {
+            const keyword = document.getElementById('messageSearchInput').value;
+            loadMessages(keyword);
+        }
+
+        function clearSearch() {
+            document.getElementById('messageSearchInput').value = '';
+            loadMessages('');
+        }
+
         function renderMessagesList() {
             const messagesList = document.getElementById('messagesList');
             
@@ -458,7 +526,7 @@
             }
 
             messagesList.innerHTML = allMessages.map(msg => `
-                <div class="message-item" onclick="selectMessage(${msg.msgNumber})">
+                <div class="message-item" onclick="selectMessage(${msg.msgNumber}, this)">
                     <div class="message-header">
                         <span class="msg-number">第 ${msg.msgNumber} 則留言</span>
                         <span class="msg-time">${new Date(msg.timestamp).toLocaleString('zh-TW')}</span>
@@ -469,7 +537,7 @@
             `).join('');
         }
 
-        function selectMessage(msgNumber) {
+        function selectMessage(msgNumber, element) {
             const msg = allMessages.find(m => m.msgNumber === msgNumber);
             if (!msg) return;
 
@@ -479,7 +547,9 @@
             document.querySelectorAll('.message-item').forEach(el => {
                 el.classList.remove('active');
             });
-            event.currentTarget.classList.add('active');
+            if (element) {
+                element.classList.add('active');
+            }
 
             // 顯示回覆面板
             document.getElementById('noSelection').style.display = 'none';
@@ -558,12 +628,22 @@
         // 頁面載入時檢查是否已登入
         window.addEventListener('load', () => {
             const savedPassword = sessionStorage.getItem('adminPassword');
+            const searchInput = document.getElementById('messageSearchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', () => {
+                    clearTimeout(searchDebounceTimer);
+                    searchDebounceTimer = setTimeout(() => {
+                        triggerSearch();
+                    }, 250);
+                });
+            }
+
             if (savedPassword) {
                 adminPassword = savedPassword;
                 document.getElementById('authSection').style.display = 'none';
                 document.getElementById('loginRequired').style.display = 'none';
                 document.getElementById('adminPanel').style.display = 'block';
-                loadMessages();
+                loadMessages('');
             }
         });
 
@@ -582,7 +662,7 @@
             document.getElementById('loginRequired').style.display = 'none';
             document.getElementById('adminPanel').style.display = 'block';
 
-            await loadMessages();
+            await loadMessages('');
         };
     </script>
 </body>

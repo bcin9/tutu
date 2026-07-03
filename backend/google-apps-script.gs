@@ -144,15 +144,21 @@ function doGet(e) {
         return jsonResponse({ ok: false, error: 'unauthorized' }, 403);
       }
 
+      const limitValue = parseInt(sanitizeText(params.limit || '200', 6), 10);
+      const limit = Number.isNaN(limitValue) ? 200 : Math.max(1, Math.min(limitValue, 1000));
+
       const messagesSheet = getOrCreateSheet(MESSAGES_SHEET, MESSAGES_HEADER);
       const data = messagesSheet.getDataRange().getValues();
-      const messages = data.slice(1).map((row, idx) => ({
+      const rawMessages = data.slice(1).map((row, idx) => ({
         msgNumber: idx + 1,
-        msgId: row[0],
-        message: row[2],
-        timestamp: row[1].toString(),
+        msgId: String(row[0] || ''),
+        message: String(row[2] || ''),
+        timestamp: String(row[1] || ''),
         hasReply: false
       }));
+
+      rawMessages.reverse();
+      const messages = rawMessages.slice(0, limit);
 
       const repliesSheet = getOrCreateSheet(REPLIES_SHEET, REPLIES_HEADER);
       const repliesData = repliesSheet.getDataRange().getValues();
@@ -169,6 +175,55 @@ function doGet(e) {
       });
 
       return jsonResponse({ ok: true, messages });
+    }
+
+    if (action === 'admin_search') {
+      const adminPassword = sanitizeText(params.adminPassword || '', 100);
+      if (!isAdminPasswordValid(adminPassword)) {
+        return jsonResponse({ ok: false, error: 'unauthorized' }, 403);
+      }
+
+      const keyword = sanitizeText(params.keyword || '', 200).toLowerCase();
+      const limitValue = parseInt(sanitizeText(params.limit || '100', 6), 10);
+      const limit = Number.isNaN(limitValue) ? 100 : Math.max(1, Math.min(limitValue, 1000));
+
+      const messagesSheet = getOrCreateSheet(MESSAGES_SHEET, MESSAGES_HEADER);
+      const data = messagesSheet.getDataRange().getValues();
+      const matchedMessages = [];
+
+      for (let i = data.length - 1; i >= 1; i -= 1) {
+        const row = data[i];
+        const messageText = String(row[2] || '');
+        if (!keyword || messageText.toLowerCase().indexOf(keyword) !== -1) {
+          matchedMessages.push({
+            msgNumber: i,
+            msgId: String(row[0] || ''),
+            message: messageText,
+            timestamp: String(row[1] || ''),
+            hasReply: false
+          });
+
+          if (matchedMessages.length >= limit) {
+            break;
+          }
+        }
+      }
+
+      const repliesSheet = getOrCreateSheet(REPLIES_SHEET, REPLIES_HEADER);
+      const repliesData = repliesSheet.getDataRange().getValues();
+      const replies = {};
+      repliesData.slice(1).forEach(row => {
+        replies[String(row[1] || '')] = row[2];
+      });
+
+      matchedMessages.forEach(msg => {
+        if (replies[msg.msgId]) {
+          msg.hasReply = true;
+          msg.reply = replies[msg.msgId];
+        }
+      });
+
+      return jsonResponse({ ok: true, messages: matchedMessages });
     }
 
     if (action === 'get_reply') {
