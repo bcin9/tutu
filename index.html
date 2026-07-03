@@ -91,6 +91,16 @@
             margin-bottom: 12px;
             color: #4A3E3E;
         }
+        .message-title-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .message-title-row .section-title {
+            margin-bottom: 0;
+        }
         .section-subtitle {
             font-size: 0.95rem;
             color: #6D5959;
@@ -161,27 +171,8 @@
             color: #6d5959;
             opacity: 0.9;
         }
-        .msg-success-info {
-            background: #d4edda;
-            border: 1px solid #c3e6cb;
-            border-radius: 12px;
-            padding: 15px;
-            color: #155724;
-            margin-top: 15px;
-            display: none;
-            animation: slideDown 0.3s ease;
-        }
-        .msg-success-info.show {
-            display: block;
-        }
-        .msg-number {
-            font-weight: bold;
-            font-size: 1.1rem;
-            color: #28a745;
-        }
         .mailbox-link {
             display: inline-block;
-            margin-top: 10px;
             padding: 8px 16px;
             background: #B5E2FA;
             color: #4A3E3E;
@@ -189,6 +180,7 @@
             border-radius: 16px;
             font-weight: 600;
             font-size: 0.9rem;
+            white-space: nowrap;
         }
         .mailbox-link:hover {
             background: #a7d8f3;
@@ -716,7 +708,10 @@
     </section>
 
     <section class="section-card message-section">
-        <div class="section-title">對兔兔說說話</div>
+        <div class="message-title-row">
+            <div class="section-title">對兔兔說說話</div>
+            <a href="mailbox.html" class="mailbox-link">📬 進入信箱查看回信</a>
+        </div>
         <p class="section-subtitle">兔兔的留言兔兔會看之外還會回信給你喔。</p>
         <div class="message-layout">
             <div class="message-field">
@@ -725,11 +720,6 @@
             <div class="message-actions">
                 <button class="send-btn" id="bunnySendBtn">送給兔兔</button>
                 <div class="message-status" id="bunnySendStatus">送出後兔兔會收到。</div>
-            </div>
-            <div class="msg-success-info" id="msgSuccessInfo">
-                <div>✅ 留言已送出！</div>
-                <div style="font-size: 0.95rem; margin-top: 8px;">妳的留言序號: <span class="msg-number" id="msgNumberDisplay"></span></div>
-                <a href="mailbox.html" class="mailbox-link">📬 進入信箱查看回信</a>
             </div>
         </div>
     </section>
@@ -774,12 +764,11 @@
     </section>
 
     <section class="section-card letter-section">
-        <div class="section-title">暖心守護：兔兔的信箱</div>
-        <p class="section-subtitle">每天拆一封兔兔的小天使信，讓牠在信裡對姐姐說溫柔話。</p>
+        <div class="section-title">暖心守護：兔兔的每日一句</div>
+        <p class="section-subtitle">每天開一次兔兔的小天使留言。</p>
         <div class="letter-area">
             <div class="letter-display" id="letterDisplay">點一下「拆信」，兔兔的小天使就會送出一句暖心話給妳。</div>
             <button class="letter-btn" onclick="openLetter()">拆信</button>
-            <div class="letter-sign">兔兔的信箱每天都會為妳準備一點小驚喜。</div>
         </div>
     </section>
 
@@ -797,7 +786,7 @@
         const bunnyMessageInput = document.getElementById('bunnyMessageInput');
         const bunnySendBtn = document.getElementById('bunnySendBtn');
         const bunnySendStatus = document.getElementById('bunnySendStatus');
-        const BUNNY_MESSAGE_API = localStorage.getItem('tutu_message_api_url') || 'https://script.google.com/macros/s/AKfycbzG6NrB1WhWQE5YYCDzVJttuq-2qWYn1U3KbIVkYTSnc599SSQ8AAo9RlPyL8ltL_15/exec';
+        const BUNNY_MESSAGE_API = localStorage.getItem('tutu_message_api_url') || 'https://script.google.com/macros/s/AKfycbz6EjuzhjP06-f30c2rkZpLY5JWGf0A4c7ma05EHcntdhvnJ5YaI0I5XTe-aGT2gkDB/exec';
         const BUNNY_LOCAL_MESSAGES_KEY = 'tutu_local_messages_backup';
         const BUNNY_USER_MSG_IDS_KEY = 'tutu_user_message_ids';
         const BUNNY_USER_MSG_NUMBERS_KEY = 'tutu_user_message_numbers';
@@ -888,11 +877,6 @@
 
                 rememberUserMessageId(data.msgId);
                 rememberUserMessageNumber(data.msgNumber);
-                
-                // 顯示成功訊息和序號
-                const msgNumber = data.msgNumber;
-                document.getElementById('msgNumberDisplay').innerText = `第 ${msgNumber} 則`;
-                document.getElementById('msgSuccessInfo').classList.add('show');
                 
                 showToast('留言已送達兔兔信箱');
             } catch (error) {
