@@ -19,7 +19,7 @@
         }
 
         .container {
-            max-width: 600px;
+            max-width: 760px;
             margin: 0 auto;
         }
 
@@ -39,61 +39,6 @@
             opacity: 0.8;
         }
 
-        .search-section {
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 16px 32px rgba(0,0,0,0.06);
-            margin-bottom: 30px;
-        }
-
-        .search-section h2 {
-            color: #4A3E3E;
-            font-size: 1.2rem;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .search-form {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 15px;
-        }
-
-        .search-form input {
-            flex: 1;
-            padding: 12px 16px;
-            border: 1px solid #FFE3E3;
-            border-radius: 12px;
-            font-size: 1rem;
-            background: #FFFDFD;
-        }
-
-        .search-form input:focus {
-            outline: none;
-            border-color: #FFB7B2;
-            box-shadow: 0 0 0 2px rgba(255,183,178,0.1);
-        }
-
-        .search-btn {
-            padding: 12px 30px;
-            background: #FFB7B2;
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .search-btn:hover {
-            background: #ffc7c1;
-        }
-
-        .search-btn:active {
-            transform: scale(0.98);
-        }
-
         .instructions {
             background: #EFF7FF;
             border: 1px solid rgba(118,162,226,0.38);
@@ -103,20 +48,16 @@
             font-size: 0.95rem;
             line-height: 1.6;
             text-align: center;
+            margin-bottom: 20px;
         }
 
-        .reply-display {
+        .mail-list {
             background: white;
             border-radius: 20px;
-            padding: 30px;
+            padding: 18px;
             box-shadow: 0 16px 32px rgba(0,0,0,0.06);
-            margin-bottom: 30px;
-            display: none;
-        }
-
-        .reply-display.show {
-            display: block;
-            animation: slideIn 0.3s ease;
+            display: grid;
+            gap: 14px;
         }
 
         @keyframes slideIn {
@@ -130,13 +71,24 @@
             }
         }
 
+        .mail-item {
+            border-radius: 16px;
+            border: 1px solid rgba(255, 183, 178, 0.3);
+            padding: 16px;
+            background: linear-gradient(135deg, #fffdfb 0%, #fff6f1 100%);
+        }
+
+        .mail-item.unread {
+            border-color: #ff8f86;
+            box-shadow: 0 8px 18px rgba(255, 143, 134, 0.18);
+        }
+
         .reply-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #f0f0f0;
+            margin-bottom: 10px;
+            gap: 8px;
         }
 
         .reply-header h3 {
@@ -151,6 +103,32 @@
             border-radius: 20px;
             font-size: 0.9rem;
             font-weight: bold;
+        }
+
+        .badge-unread {
+            background: #d4382a;
+            color: white;
+            border-radius: 999px;
+            padding: 4px 10px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .mail-meta {
+            color: #8a6d6d;
+            font-size: 0.86rem;
+            margin-bottom: 10px;
+        }
+
+        .user-message {
+            color: #6D5959;
+            font-size: 0.92rem;
+            line-height: 1.6;
+            margin-bottom: 10px;
+            padding: 10px 12px;
+            background: rgba(255,255,255,0.75);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 183, 178, 0.24);
         }
 
         .reply-content {
@@ -222,51 +200,55 @@
             font-size: 1rem;
             line-height: 1.6;
         }
+
+        .top-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 16px;
+        }
+
+        .refresh-btn {
+            border: none;
+            background: #B5E2FA;
+            color: #4A3E3E;
+            font-weight: 700;
+            border-radius: 16px;
+            padding: 10px 14px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>📬 兔兔的信箱</h1>
-            <p>輸入妳的留言序號查看兔兔的回信</p>
+            <p>一打開就能看到兔兔回給妳的信</p>
         </div>
 
         <a href="index.html" class="back-link">← 回到主頁</a>
 
-        <div class="search-section">
-            <h2>查詢回信</h2>
-            <div class="search-form">
-                <input 
-                    type="text" 
-                    id="msgNumberInput" 
-                    placeholder="輸入留言序號 (例如: 5)" 
-                    onkeypress="handleKeypress(event)"
-                />
-                <button class="search-btn" onclick="searchReply()">查詢</button>
-            </div>
-            <div class="instructions">
-                💡 提交留言時會收到一個序號，例如「第5則留言」，直接輸入數字 5 即可
-            </div>
+        <div class="instructions">
+            這裡會自動顯示妳送出留言後收到的回信，依照新到舊排序，最新未讀會有標示。
+        </div>
+
+        <div class="top-actions">
+            <button class="refresh-btn" onclick="loadInbox(true)">重新整理</button>
         </div>
 
         <div id="notification" class="notification"></div>
 
-        <div id="replyDisplay" class="reply-display">
-            <div class="reply-header">
-                <h3>✉️ 兔兔的回信</h3>
-                <span class="msg-number-badge" id="msgNumberDisplay"></span>
-            </div>
-            <div class="reply-content" id="replyContent"></div>
-        </div>
+        <div id="mailList" class="mail-list" style="display:none;"></div>
 
         <div id="emptyState" class="empty-state">
             <p>暫時還沒有兔兔的回信喔</p>
-            <p style="margin-top: 10px; font-size: 0.9rem; opacity: 0.7;">兔兔正在努力思考，過幾天再來看看吧 💕</p>
+            <p style="margin-top: 10px; font-size: 0.9rem; opacity: 0.7;">可以先去主頁留下一句話，兔兔回信後這裡會自動出現 💕</p>
         </div>
     </div>
 
     <script>
         const API_URL = localStorage.getItem('tutu_message_api_url') || 'https://script.google.com/macros/s/AKfycbyd7atzwHYEOYkhd4SfizGstZ1glpTXAw15JtlhLCcEUGbXuS6eqgdr4Mz8QVTzfwKk/exec';
+        const BUNNY_USER_MSG_IDS_KEY = 'tutu_user_message_ids';
+        const BUNNY_READ_REPLY_IDS_KEY = 'tutu_read_reply_ids';
 
         function showNotification(message, type) {
             const notif = document.getElementById('notification');
@@ -277,50 +259,117 @@
             }, 4000);
         }
 
-        function handleKeypress(event) {
-            if (event.key === 'Enter') {
-                searchReply();
-            }
+        function getMessageIds() {
+            const ids = JSON.parse(localStorage.getItem(BUNNY_USER_MSG_IDS_KEY) || '[]');
+            return ids.filter(id => typeof id === 'string' && id.indexOf('M_') === 0);
         }
 
-        async function searchReply() {
-            const msgNumber = document.getElementById('msgNumberInput').value.trim();
+        function getReadReplyIds() {
+            const ids = JSON.parse(localStorage.getItem(BUNNY_READ_REPLY_IDS_KEY) || '[]');
+            return ids.filter(id => typeof id === 'string');
+        }
 
-            if (!msgNumber) {
-                showNotification('請輸入留言序號', 'error');
+        function saveReadReplyIds(ids) {
+            localStorage.setItem(BUNNY_READ_REPLY_IDS_KEY, JSON.stringify(ids.slice(-500)));
+        }
+
+        function formatDateTime(value) {
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) {
+                return value || '時間未記錄';
+            }
+            return date.toLocaleString('zh-TW');
+        }
+
+        function renderInbox(replies) {
+            const listEl = document.getElementById('mailList');
+            const emptyEl = document.getElementById('emptyState');
+            const readIds = getReadReplyIds();
+            const readSet = {};
+            readIds.forEach(id => {
+                readSet[id] = true;
+            });
+
+            if (!replies.length) {
+                listEl.style.display = 'none';
+                emptyEl.classList.add('show');
                 return;
             }
 
-            if (!/^\d+$/.test(msgNumber)) {
-                showNotification('序號應該是數字', 'error');
+            emptyEl.classList.remove('show');
+            listEl.style.display = 'grid';
+
+            listEl.innerHTML = replies.map(item => {
+                const isUnread = item.replyId && !readSet[item.replyId];
+                const messageTag = item.msgNumber ? `第 ${item.msgNumber} 則留言` : '一則留言';
+                return `
+                    <article class="mail-item ${isUnread ? 'unread' : ''}">
+                        <div class="reply-header">
+                            <h3>✉️ 兔兔回信了</h3>
+                            <div>
+                                <span class="msg-number-badge">${messageTag}</span>
+                                ${isUnread ? '<span class="badge-unread">未讀</span>' : ''}
+                            </div>
+                        </div>
+                        <div class="mail-meta">回信時間：${formatDateTime(item.repliedAt)}</div>
+                        ${item.userMessage ? `<div class="user-message">妳之前寫：${escapeHtml(item.userMessage)}</div>` : ''}
+                        <div class="reply-content">${escapeHtml(item.reply || '')}</div>
+                    </article>
+                `;
+            }).join('');
+
+            const mergedReadIds = readIds.slice();
+            replies.forEach(item => {
+                if (item.replyId && mergedReadIds.indexOf(item.replyId) === -1) {
+                    mergedReadIds.push(item.replyId);
+                }
+            });
+            saveReadReplyIds(mergedReadIds);
+        }
+
+        async function loadInbox(showToastWhenDone) {
+            const msgIds = getMessageIds();
+
+            if (!msgIds.length) {
+                document.getElementById('mailList').style.display = 'none';
+                document.getElementById('emptyState').classList.add('show');
+                if (showToastWhenDone) {
+                    showNotification('尚未找到妳送出的留言紀錄', 'error');
+                }
                 return;
             }
 
             try {
-                const response = await fetch(`${API_URL}?action=get_reply&msgNumber=${encodeURIComponent(msgNumber)}`);
+                const query = new URLSearchParams({
+                    action: 'get_replies_by_msg_ids',
+                    msgIds: msgIds.join(',')
+                });
+                const response = await fetch(`${API_URL}?${query.toString()}`);
                 const data = await response.json();
 
-                document.getElementById('replyDisplay').classList.remove('show');
-                document.getElementById('emptyState').classList.remove('show');
+                if (!data.ok) {
+                    throw new Error(data.error || 'request-failed');
+                }
 
-                if (data.ok && data.reply) {
-                    document.getElementById('msgNumberDisplay').textContent = `第 ${msgNumber} 則`;
-                    document.getElementById('replyContent').textContent = data.reply;
-                    document.getElementById('replyDisplay').classList.add('show');
-                    showNotification('收到兔兔的回信！', 'success');
-                } else {
-                    document.getElementById('emptyState').classList.add('show');
-                    showNotification('還沒有兔兔的回信呢', 'error');
+                renderInbox(Array.isArray(data.replies) ? data.replies : []);
+                if (showToastWhenDone) {
+                    showNotification('信箱已更新', 'success');
                 }
             } catch (err) {
+                document.getElementById('mailList').style.display = 'none';
                 document.getElementById('emptyState').classList.add('show');
-                showNotification('查詢失敗: ' + err.message, 'error');
+                showNotification('讀取信箱失敗: ' + err.message, 'error');
             }
         }
 
-        // 頁面載入時自動聚焦輸入框
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
         window.addEventListener('load', () => {
-            document.getElementById('msgNumberInput').focus();
+            loadInbox(false);
         });
     </script>
 </body>

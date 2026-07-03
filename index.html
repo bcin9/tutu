@@ -799,6 +799,7 @@
         const bunnySendStatus = document.getElementById('bunnySendStatus');
         const BUNNY_MESSAGE_API = localStorage.getItem('tutu_message_api_url') || 'https://script.google.com/macros/s/AKfycbyd7atzwHYEOYkhd4SfizGstZ1glpTXAw15JtlhLCcEUGbXuS6eqgdr4Mz8QVTzfwKk/exec';
         const BUNNY_LOCAL_MESSAGES_KEY = 'tutu_local_messages_backup';
+        const BUNNY_USER_MSG_IDS_KEY = 'tutu_user_message_ids';
         const memoryResponses = [
             '兔兔聞到妳的回憶了，牠偷偷在心裡跳了好幾下。',
             '妳的話變成星星送到我身邊了，我好暖好幸福。',
@@ -815,6 +816,18 @@
 
         function hasBackendConfigured() {
             return BUNNY_MESSAGE_API.startsWith('http');
+        }
+
+        function rememberUserMessageId(msgId) {
+            if (!msgId) {
+                return;
+            }
+
+            const history = JSON.parse(localStorage.getItem(BUNNY_USER_MSG_IDS_KEY) || '[]');
+            if (history.indexOf(msgId) === -1) {
+                history.push(msgId);
+            }
+            localStorage.setItem(BUNNY_USER_MSG_IDS_KEY, JSON.stringify(history.slice(-200)));
         }
 
         async function submitBunnyMessage() {
@@ -858,6 +871,8 @@
 
                 bunnyMessageInput.value = '';
                 bunnySendStatus.innerText = '送出後兔兔會收到。';
+
+                rememberUserMessageId(data.msgId);
                 
                 // 顯示成功訊息和序號
                 const msgNumber = data.msgNumber;

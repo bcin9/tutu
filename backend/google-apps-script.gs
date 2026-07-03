@@ -198,6 +198,66 @@ function doGet(e) {
       return jsonResponse({ ok: false, error: 'no-reply-yet' }, 404);
     }
 
+    if (action === 'get_replies_by_msg_ids') {
+      const msgIdsRaw = sanitizeText(params.msgIds || '', 5000);
+      if (!msgIdsRaw) {
+        return jsonResponse({ ok: true, replies: [] });
+      }
+
+      const requestedIds = msgIdsRaw
+        .split(',')
+        .map(id => sanitizeText(id, 60))
+        .filter(id => id && id.indexOf('M_') === 0);
+
+      if (!requestedIds.length) {
+        return jsonResponse({ ok: true, replies: [] });
+      }
+
+      const requestedSet = {};
+      requestedIds.forEach(id => {
+        requestedSet[id] = true;
+      });
+
+      const messagesSheet = getOrCreateSheet(MESSAGES_SHEET, MESSAGES_HEADER);
+      const messageRows = messagesSheet.getDataRange().getValues();
+      const messageMap = {};
+
+      messageRows.slice(1).forEach((row, idx) => {
+        const msgId = String(row[0] || '');
+        if (requestedSet[msgId]) {
+          messageMap[msgId] = {
+            msgNumber: idx + 1,
+            userMessage: String(row[2] || '')
+          };
+        }
+      });
+
+      const repliesSheet = getOrCreateSheet(REPLIES_SHEET, REPLIES_HEADER);
+      const replyRows = repliesSheet.getDataRange().getValues();
+      const replies = [];
+
+      replyRows.slice(1).forEach(row => {
+        const msgId = String(row[1] || '');
+        if (!requestedSet[msgId]) {
+          return;
+        }
+
+        const messageInfo = messageMap[msgId] || { msgNumber: null, userMessage: '' };
+        replies.push({
+          replyId: String(row[0] || ''),
+          msgId,
+          reply: String(row[2] || ''),
+          repliedAt: String(row[3] || ''),
+          msgNumber: messageInfo.msgNumber,
+          userMessage: messageInfo.userMessage
+        });
+      });
+
+      replies.sort((a, b) => String(b.repliedAt).localeCompare(String(a.repliedAt)));
+
+      return jsonResponse({ ok: true, replies });
+    }
+
     return jsonResponse({ ok: true, service: 'tutu-message-api' });
   } catch (err) {
     return jsonResponse({ ok: false, error: String(err) }, 500);
