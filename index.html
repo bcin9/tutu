@@ -124,72 +124,42 @@
             font-size: 1.05rem;
             line-height: 1.8;
         }
-        .daily-section {
+        .message-section {
             background: linear-gradient(135deg, #fff6f1 0%, #fefcf8 100%);
             border: 1px solid rgba(255, 183, 178, 0.45);
         }
-        .daily-layout {
+        .message-layout {
             display: grid;
             gap: 14px;
         }
-        .daily-quote {
+        .message-note {
             border-radius: 18px;
             background: #ffffff;
             border: 1px solid rgba(181, 226, 250, 0.45);
-            padding: 16px;
+            padding: 14px 16px;
             line-height: 1.7;
             color: #4a3e3e;
             box-shadow: 0 10px 18px rgba(0,0,0,0.04);
         }
-        .daily-stats {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
+        .message-field {
+            display: grid;
+            gap: 8px;
         }
-        .daily-chip {
-            flex: 1 1 140px;
-            border-radius: 16px;
-            background: #fff;
-            border: 1px solid rgba(255, 183, 178, 0.35);
-            padding: 12px 14px;
-            box-sizing: border-box;
+        .message-field label {
+            font-size: 0.9rem;
+            color: #6d5959;
+            font-weight: 600;
         }
-        .daily-chip-label {
-            font-size: 0.84rem;
-            opacity: 0.75;
-            margin-bottom: 4px;
-        }
-        .daily-chip-value {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: #8a4a21;
-        }
-        .daily-actions {
+        .message-actions {
             display: flex;
             flex-wrap: wrap;
             align-items: center;
             gap: 12px;
         }
-        .daily-btn {
-            background-color: #ffb7b2;
-            color: #4a3e3e;
-            border: none;
-            border-radius: 18px;
-            padding: 12px 18px;
-            font-size: 0.95rem;
-            font-weight: 700;
-            cursor: pointer;
-            box-shadow: 0 8px 18px rgba(255, 183, 178, 0.28);
-        }
-        .daily-btn:disabled {
-            background-color: #ffd8d5;
-            cursor: not-allowed;
-            box-shadow: none;
-        }
-        .daily-status {
+        .message-status {
             font-size: 0.9rem;
             color: #6d5959;
-            opacity: 0.85;
+            opacity: 0.9;
         }
 
         .feed-section {
@@ -635,19 +605,23 @@
             margin-top: 0;
             font-size: 1.1rem;
         }
-        textarea {
+        textarea,
+        input[type="text"] {
             width: 100%;
-            height: 100px;
             border: 1px solid #FFE3E3;
             border-radius: 12px;
             padding: 10px;
             box-sizing: border-box;
-            resize: none;
             font-size: 0.95rem;
             color: var(--text-color);
             background-color: #FFFDFD;
         }
-        textarea:focus {
+        textarea {
+            height: 100px;
+            resize: none;
+        }
+        textarea:focus,
+        input[type="text"]:focus {
             outline: none;
             border-color: var(--primary-color);
         }
@@ -699,24 +673,22 @@
         </div>
     </section>
 
-    <section class="section-card daily-section">
-        <div class="section-title">每日一句：兔兔今天想對妳說</div>
-        <p class="section-subtitle">每天來打卡，累積和兔兔的連續相遇天數。</p>
-        <div class="daily-layout">
-            <div class="daily-quote" id="dailyQuoteText">兔兔正在準備今天的小話語...</div>
-            <div class="daily-stats">
-                <div class="daily-chip">
-                    <div class="daily-chip-label">目前連續天數</div>
-                    <div class="daily-chip-value" id="dailyStreakCount">0</div>
-                </div>
-                <div class="daily-chip">
-                    <div class="daily-chip-label">最高連續紀錄</div>
-                    <div class="daily-chip-value" id="dailyBestCount">0</div>
-                </div>
+    <section class="section-card message-section">
+        <div class="section-title">對兔兔說說話</div>
+        <p class="section-subtitle">訪客寫給兔兔的留言會送到後台，妳可以集中查看。</p>
+        <div class="message-layout">
+            <div class="message-note">這裡可以寫下當下想說的話，兔兔和妳都會收到這份心意。</div>
+            <div class="message-field">
+                <label for="bunnySenderInput">你的名字（可選）</label>
+                <input id="bunnySenderInput" type="text" placeholder="例如：姐姐" maxlength="30">
             </div>
-            <div class="daily-actions">
-                <button class="daily-btn" id="dailyCheckinBtn">今天打卡</button>
-                <div class="daily-status" id="dailyStatusText">按下打卡，讓兔兔知道妳今天來過。</div>
+            <div class="message-field">
+                <label for="bunnyMessageInput">想對兔兔說的話</label>
+                <textarea id="bunnyMessageInput" placeholder="兔兔，我今天有乖乖吃飯，也有很想你。" maxlength="500"></textarea>
+            </div>
+            <div class="message-actions">
+                <button class="send-btn" id="bunnySendBtn">送給兔兔</button>
+                <div class="message-status" id="bunnySendStatus">送出後會同步到後台。</div>
             </div>
         </div>
     </section>
@@ -781,26 +753,12 @@
         const memoryToast = document.getElementById('memoryToast');
         const galleryGlow = document.getElementById('galleryGlow');
         const memoryMessage = document.getElementById('memoryMessage');
-        const dailyQuoteText = document.getElementById('dailyQuoteText');
-        const dailyStreakCount = document.getElementById('dailyStreakCount');
-        const dailyBestCount = document.getElementById('dailyBestCount');
-        const dailyCheckinBtn = document.getElementById('dailyCheckinBtn');
-        const dailyStatusText = document.getElementById('dailyStatusText');
-        const DAILY_LAST_CHECKIN_KEY = 'tutu_daily_last_checkin';
-        const DAILY_STREAK_KEY = 'tutu_daily_streak';
-        const DAILY_BEST_KEY = 'tutu_daily_best';
-        const dailyMessages = [
-            '兔兔今天想說：妳已經很努力了，請給自己一點掌聲。',
-            '兔兔今天想說：記得吃飯喝水，先把自己照顧好。',
-            '兔兔今天想說：慢慢來也沒關係，我會一直陪著妳。',
-            '兔兔今天想說：就算今天有點亂，妳還是很棒。',
-            '兔兔今天想說：累了就休息，休息也是前進的一部分。',
-            '兔兔今天想說：妳的溫柔是我最喜歡的光。',
-            '兔兔今天想說：今天也試著對自己說一句謝謝。',
-            '兔兔今天想說：想我時就抬頭看天，我在那裡對妳笑。',
-            '兔兔今天想說：妳不用完美，只要好好呼吸就很了不起。',
-            '兔兔今天想說：今天就做一件讓自己開心的小事吧。'
-        ];
+        const bunnySenderInput = document.getElementById('bunnySenderInput');
+        const bunnyMessageInput = document.getElementById('bunnyMessageInput');
+        const bunnySendBtn = document.getElementById('bunnySendBtn');
+        const bunnySendStatus = document.getElementById('bunnySendStatus');
+        const BUNNY_MESSAGE_API = 'REPLACE_WITH_YOUR_WEB_APP_URL';
+        const BUNNY_LOCAL_MESSAGES_KEY = 'tutu_local_messages_backup';
         const memoryResponses = [
             '兔兔聞到妳的回憶了，牠偷偷在心裡跳了好幾下。',
             '妳的話變成星星送到我身邊了，我好暖好幸福。',
@@ -809,78 +767,63 @@
             '謝謝妳，兔兔會把妳的回憶放在最柔軟的地方。'
         ];
 
-        function toLocalDateString(date) {
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
+        function saveMessageToLocalBackup(payload) {
+            const history = JSON.parse(localStorage.getItem(BUNNY_LOCAL_MESSAGES_KEY) || '[]');
+            history.unshift(payload);
+            localStorage.setItem(BUNNY_LOCAL_MESSAGES_KEY, JSON.stringify(history.slice(0, 100)));
         }
 
-        function parseLocalDate(dateString) {
-            const [year, month, day] = dateString.split('-').map(Number);
-            return new Date(year, month - 1, day);
-        }
-
-        function getDiffInDays(fromDateString, toDateString) {
-            const fromDate = parseLocalDate(fromDateString);
-            const toDate = parseLocalDate(toDateString);
-            const fromUtc = Date.UTC(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate());
-            const toUtc = Date.UTC(toDate.getFullYear(), toDate.getMonth(), toDate.getDate());
-            return Math.round((toUtc - fromUtc) / 86400000);
-        }
-
-        function getDailyMessageByDate(dateString) {
-            const seed = dateString.split('').reduce((total, ch) => total + ch.charCodeAt(0), 0);
-            return dailyMessages[seed % dailyMessages.length];
-        }
-
-        function renderDailyCard() {
-            if (!dailyQuoteText || !dailyStreakCount || !dailyBestCount || !dailyCheckinBtn || !dailyStatusText) {
+        async function submitBunnyMessage() {
+            if (!bunnyMessageInput || !bunnySendBtn || !bunnySendStatus) {
                 return;
             }
-            const today = toLocalDateString(new Date());
-            const lastCheckin = localStorage.getItem(DAILY_LAST_CHECKIN_KEY) || '';
-            const streak = Number(localStorage.getItem(DAILY_STREAK_KEY) || 0);
-            const best = Number(localStorage.getItem(DAILY_BEST_KEY) || 0);
-            const doneToday = lastCheckin === today;
+            const sender = bunnySenderInput ? bunnySenderInput.value.trim() : '';
+            const message = bunnyMessageInput.value.trim();
 
-            dailyQuoteText.innerText = getDailyMessageByDate(today);
-            dailyStreakCount.innerText = String(streak);
-            dailyBestCount.innerText = String(best);
-            dailyCheckinBtn.disabled = doneToday;
-            dailyCheckinBtn.innerText = doneToday ? '今天已打卡' : '今天打卡';
-            dailyStatusText.innerText = doneToday
-                ? '今天已經見過兔兔了，明天再來保持連續紀錄。'
-                : '按下打卡，讓兔兔知道妳今天來過。';
-        }
-
-        function handleDailyCheckin() {
-            const today = toLocalDateString(new Date());
-            const lastCheckin = localStorage.getItem(DAILY_LAST_CHECKIN_KEY) || '';
-            let streak = Number(localStorage.getItem(DAILY_STREAK_KEY) || 0);
-
-            if (lastCheckin === today) {
-                renderDailyCard();
+            if (!message) {
+                bunnySendStatus.innerText = '請先寫下想對兔兔說的話。';
                 return;
             }
 
-            if (!lastCheckin) {
-                streak = 1;
-            } else {
-                const diffDays = getDiffInDays(lastCheckin, today);
-                streak = diffDays === 1 ? streak + 1 : 1;
-            }
+            const payload = {
+                sender: sender || '匿名',
+                message,
+                createdAt: new Date().toISOString(),
+                userAgent: navigator.userAgent
+            };
 
-            let best = Number(localStorage.getItem(DAILY_BEST_KEY) || 0);
-            if (streak > best) {
-                best = streak;
-            }
+            bunnySendBtn.disabled = true;
+            bunnySendStatus.innerText = '兔兔正在收信中...';
 
-            localStorage.setItem(DAILY_LAST_CHECKIN_KEY, today);
-            localStorage.setItem(DAILY_STREAK_KEY, String(streak));
-            localStorage.setItem(DAILY_BEST_KEY, String(best));
-            showToast(`打卡成功，連續 ${streak} 天見到兔兔`);
-            renderDailyCard();
+            try {
+                if (!BUNNY_MESSAGE_API.startsWith('http')) {
+                    throw new Error('backend-not-configured');
+                }
+
+                const response = await fetch(BUNNY_MESSAGE_API, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error('request-failed');
+                }
+
+                bunnyMessageInput.value = '';
+                if (bunnySenderInput) {
+                    bunnySenderInput.value = '';
+                }
+                bunnySendStatus.innerText = '已送出，妳可以在後台查看這則留言。';
+                showToast('留言已送達兔兔信箱');
+            } catch (error) {
+                saveMessageToLocalBackup(payload);
+                bunnySendStatus.innerText = '目前後台未連線，已先暫存在本機備份。';
+            } finally {
+                bunnySendBtn.disabled = false;
+            }
         }
 
         const feedResponses = {
@@ -1150,9 +1093,8 @@
             showMemory(currentMemory);
         }
 
-        if (dailyCheckinBtn) {
-            dailyCheckinBtn.addEventListener('click', handleDailyCheckin);
-            renderDailyCard();
+        if (bunnySendBtn) {
+            bunnySendBtn.addEventListener('click', submitBunnyMessage);
         }
 
         renderGallery();
