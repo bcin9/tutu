@@ -603,22 +603,27 @@
         }
         .letter-card-scene {
             perspective: 1100px;
+            -webkit-perspective: 1100px;
         }
         .letter-card {
             position: relative;
             min-height: 182px;
             transform-style: preserve-3d;
+            -webkit-transform-style: preserve-3d;
             transition: transform 0.9s cubic-bezier(0.22, 0.61, 0.36, 1);
             border-radius: 20px;
+            will-change: transform;
         }
         .letter-card.is-open {
             transform: rotateY(180deg);
+            -webkit-transform: rotateY(180deg);
         }
         .letter-face {
             position: absolute;
             inset: 0;
             border-radius: 20px;
             backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
             overflow: hidden;
             box-shadow: 0 16px 30px rgba(129, 87, 74, 0.12);
             border: 1px solid rgba(230, 182, 169, 0.75);
@@ -629,6 +634,8 @@
             line-height: 1.8;
             padding: 28px 22px;
             color: #5B4A4A;
+            transform: translateZ(0);
+            -webkit-transform: translateZ(0);
         }
         .letter-front {
             background: linear-gradient(180deg, #fffdfb 0%, #f6ece8 100%);
@@ -654,7 +661,8 @@
         }
         .letter-back {
             background: linear-gradient(180deg, #fffdfb 0%, #f8f1ea 100%);
-            transform: rotateY(180deg);
+            transform: rotateY(180deg) translateZ(1px);
+            -webkit-transform: rotateY(180deg) translateZ(1px);
             font-size: 1rem;
         }
         .letter-btn {
