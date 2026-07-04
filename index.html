@@ -47,60 +47,19 @@
 
         /* 頂部標題 */
         .header {
-            position: relative;
-            width: 100%;
-            max-width: 760px;
             text-align: center;
             margin-top: 20px;
             margin-bottom: 30px;
-            padding: 28px 16px;
-            border-radius: 28px;
-            overflow: hidden;
-            background: linear-gradient(180deg, #14203f 0%, #242b4e 48%, #3a3d6a 100%);
-            box-shadow: 0 18px 34px rgba(18, 23, 54, 0.32);
-            color: #fdf7ff;
-        }
-        .header-sky {
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            overflow: hidden;
-        }
-        .header-content {
-            position: relative;
-            z-index: 2;
-        }
-        .header-star {
-            position: absolute;
-            border-radius: 50%;
-            background: radial-gradient(circle, #fffadf 0%, #ffd88a 55%, rgba(255, 216, 138, 0.15) 100%);
-            box-shadow: 0 0 10px rgba(255, 225, 158, 0.62);
-            opacity: 0;
-            transform: scale(0.2);
-            animation: headerStarAppear 1.2s ease forwards;
-        }
-        .header-star.twinkle {
-            animation: headerStarAppear 1.2s ease forwards, headerTwinkle 2.8s ease-in-out infinite 1.2s;
-        }
-        @keyframes headerStarAppear {
-            0% { opacity: 0; transform: scale(0.2); }
-            100% { opacity: 0.94; transform: scale(1); }
-        }
-        @keyframes headerTwinkle {
-            0%, 100% { opacity: 0.62; }
-            50% { opacity: 1; }
         }
         .header h1 {
             font-size: 1.5rem;
             margin-bottom: 5px;
-            color: #fff7ff;
-            text-shadow: 0 2px 14px rgba(0, 0, 0, 0.35);
+            color: #4A3E3E;
         }
         .header p {
             font-size: 0.9rem;
-            opacity: 0.92;
+            opacity: 0.8;
             margin: 0;
-            color: #f8eefe;
         }
 
         /* 音樂播放按鈕 */
@@ -796,11 +755,8 @@
 <body>
 
     <div class="header">
-        <div class="header-sky" id="headerSky"></div>
-        <div class="header-content">
-            <h1>🐰 兔兔的彩虹星球</h1>
-            <p>「牠沒有離開，只是先去美麗的星空奔跑了」</p>
-        </div>
+        <h1>🐰 兔兔的彩虹星球</h1>
+        <p>「牠沒有離開，只是先去美麗的星空奔跑了」</p>
     </div>
 
     <section class="section-card home-section">
@@ -896,7 +852,6 @@
         const letterCard = document.getElementById('letterCard');
         const letterBackText = document.getElementById('letterBackText');
         const starOverlay = document.getElementById('starOverlay');
-        const headerSky = document.getElementById('headerSky');
         const memoryToast = document.getElementById('memoryToast');
         const galleryGlow = document.getElementById('galleryGlow');
         const memoryMessage = document.getElementById('memoryMessage');
@@ -910,8 +865,6 @@
         const BUNNY_USER_MSG_NUMBERS_KEY = 'tutu_user_message_numbers';
         const BUNNY_READ_REPLY_IDS_KEY = 'tutu_read_reply_ids';
         const BUNNY_BADGE_POLL_MS = 20000;
-        const HEADER_STAR_COUNT_KEY = 'tutu_header_star_count';
-        const HEADER_VIEWED_PHOTOS_KEY = 'tutu_header_viewed_memory';
         const DAILY_LETTER_DATE_KEY = 'tutu_daily_letter_date';
         const DAILY_LETTER_TEXT_KEY = 'tutu_daily_letter_text';
         const memoryResponses = [
@@ -928,8 +881,6 @@
             '兔兔湊近妳的手掌，輕輕蹭了一下。',
             '兔兔在原地跳了一小下，心情超好！'
         ];
-        let headerStarCount = 0;
-        let viewedMemorySet = new Set();
         let mailboxBadgeTimer = null;
 
         function saveMessageToLocalBackup(payload) {
@@ -944,10 +895,6 @@
 
         function getRandomMoodMessage() {
             return bunnyMoodMessages[Math.floor(Math.random() * bunnyMoodMessages.length)];
-        }
-
-        function saveViewedMemorySet() {
-            localStorage.setItem(HEADER_VIEWED_PHOTOS_KEY, JSON.stringify(Array.from(viewedMemorySet).slice(-800)));
         }
 
         function getReadReplyIdsFromLocal() {
@@ -1027,55 +974,6 @@
                     refreshMailboxBadge();
                 }
             }, BUNNY_BADGE_POLL_MS);
-        }
-
-        function createHeaderStar() {
-            if (!headerSky) {
-                return;
-            }
-
-            const star = document.createElement('div');
-            star.className = 'header-star twinkle';
-            const size = 2 + Math.random() * 4;
-            star.style.width = `${size}px`;
-            star.style.height = `${size}px`;
-            star.style.left = `${Math.random() * 100}%`;
-            star.style.top = `${Math.random() * 88}%`;
-            headerSky.appendChild(star);
-        }
-
-        function addHeaderStars(count) {
-            const safeCount = Math.max(0, Number(count) || 0);
-            if (!safeCount) {
-                return;
-            }
-
-            const maxStars = 180;
-            const canAdd = Math.max(0, Math.min(maxStars - headerStarCount, safeCount));
-            for (let i = 0; i < canAdd; i += 1) {
-                createHeaderStar();
-            }
-
-            if (canAdd > 0) {
-                headerStarCount += canAdd;
-                localStorage.setItem(HEADER_STAR_COUNT_KEY, String(headerStarCount));
-            }
-        }
-
-        function initHeaderSky() {
-            const savedCount = Number(localStorage.getItem(HEADER_STAR_COUNT_KEY) || 0);
-            headerStarCount = Number.isFinite(savedCount) ? Math.max(0, Math.min(savedCount, 180)) : 0;
-            const savedViewed = JSON.parse(localStorage.getItem(HEADER_VIEWED_PHOTOS_KEY) || '[]');
-            viewedMemorySet = new Set(Array.isArray(savedViewed) ? savedViewed : []);
-
-            if (!headerStarCount) {
-                headerStarCount = 10;
-                localStorage.setItem(HEADER_STAR_COUNT_KEY, String(headerStarCount));
-            }
-
-            for (let i = 0; i < headerStarCount; i += 1) {
-                createHeaderStar();
-            }
         }
 
         function rememberUserMessageId(msgId) {
@@ -1436,25 +1334,9 @@
             galleryImages.forEach(card => {
                 card.style.display = 'none';
             });
-            const visibleIndices = [];
             for (let offset = 0; offset < visibleCount; offset++) {
                 const visibleIndex = (currentMemory + offset) % galleryImages.length;
                 galleryImages[visibleIndex].style.display = 'block';
-                visibleIndices.push(visibleIndex);
-            }
-
-            let newViewed = 0;
-            visibleIndices.forEach(i => {
-                const key = String(i);
-                if (!viewedMemorySet.has(key)) {
-                    viewedMemorySet.add(key);
-                    newViewed += 1;
-                }
-            });
-
-            if (newViewed > 0) {
-                saveViewedMemorySet();
-                addHeaderStars(newViewed);
             }
         }
 
@@ -1483,7 +1365,6 @@
         }
 
         renderGallery();
-        initHeaderSky();
         updateGalleryLayout();
         refreshMailboxBadge();
         startMailboxBadgePolling();
@@ -1509,7 +1390,6 @@
             galleryGlow.classList.add('active');
             setTimeout(() => galleryGlow.classList.remove('active'), 1500);
             createStars(count, 40);
-            addHeaderStars(2);
             setTimeout(() => {
                 const response = memoryResponses[Math.floor(Math.random() * memoryResponses.length)];
                 memoryMessage.innerText = response;
