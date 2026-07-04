@@ -47,19 +47,60 @@
 
         /* 頂部標題 */
         .header {
+            position: relative;
+            width: 100%;
+            max-width: 760px;
             text-align: center;
             margin-top: 20px;
             margin-bottom: 30px;
+            padding: 28px 16px;
+            border-radius: 28px;
+            overflow: hidden;
+            background: linear-gradient(180deg, #14203f 0%, #242b4e 48%, #3a3d6a 100%);
+            box-shadow: 0 18px 34px rgba(18, 23, 54, 0.32);
+            color: #fdf7ff;
+        }
+        .header-sky {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        .header-content {
+            position: relative;
+            z-index: 2;
+        }
+        .header-star {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, #fffadf 0%, #ffd88a 55%, rgba(255, 216, 138, 0.15) 100%);
+            box-shadow: 0 0 10px rgba(255, 225, 158, 0.62);
+            opacity: 0;
+            transform: scale(0.2);
+            animation: headerStarAppear 1.2s ease forwards;
+        }
+        .header-star.twinkle {
+            animation: headerStarAppear 1.2s ease forwards, headerTwinkle 2.8s ease-in-out infinite 1.2s;
+        }
+        @keyframes headerStarAppear {
+            0% { opacity: 0; transform: scale(0.2); }
+            100% { opacity: 0.94; transform: scale(1); }
+        }
+        @keyframes headerTwinkle {
+            0%, 100% { opacity: 0.62; }
+            50% { opacity: 1; }
         }
         .header h1 {
             font-size: 1.5rem;
             margin-bottom: 5px;
-            color: #4A3E3E;
+            color: #fff7ff;
+            text-shadow: 0 2px 14px rgba(0, 0, 0, 0.35);
         }
         .header p {
             font-size: 0.9rem;
-            opacity: 0.8;
+            opacity: 0.92;
             margin: 0;
+            color: #f8eefe;
         }
 
         /* 音樂播放按鈕 */
@@ -373,6 +414,36 @@
             color: #8A4A21;
             font-weight: 700;
         }
+        .bunny-mood {
+            margin-top: 10px;
+            text-align: center;
+            color: #5f5252;
+            font-size: 0.92rem;
+            min-height: 24px;
+        }
+        .bunny-burst {
+            position: fixed;
+            z-index: 36;
+            pointer-events: none;
+            transform: translate(-50%, -50%) scale(0.45);
+            opacity: 0;
+            filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.15));
+            animation: bunnyBurstFloat 1.2s ease-out forwards;
+        }
+        @keyframes bunnyBurstFloat {
+            0% {
+                transform: translate(-50%, -50%) scale(0.45);
+                opacity: 0;
+            }
+            30% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            100% {
+                transform: translate(-50%, calc(-50% - 68px)) scale(0.82);
+                opacity: 0;
+            }
+        }
 
         .gallery-section {
             position: relative;
@@ -530,58 +601,61 @@
             display: grid;
             gap: 18px;
         }
-        .letter-display {
-            min-height: 140px;
+        .letter-card-scene {
+            perspective: 1100px;
+        }
+        .letter-card {
+            position: relative;
+            min-height: 182px;
+            transform-style: preserve-3d;
+            transition: transform 0.9s cubic-bezier(0.22, 0.61, 0.36, 1);
             border-radius: 20px;
-            background: linear-gradient(180deg, #fffdfb 0%, #f6ece8 100%);
+        }
+        .letter-card.is-open {
+            transform: rotateY(180deg);
+        }
+        .letter-face {
+            position: absolute;
+            inset: 0;
+            border-radius: 20px;
+            backface-visibility: hidden;
+            overflow: hidden;
+            box-shadow: 0 16px 30px rgba(129, 87, 74, 0.12);
             border: 1px solid rgba(230, 182, 169, 0.75);
-            padding: 30px 22px 20px;
-            color: #5B4A4A;
-            font-size: 1rem;
-            line-height: 1.8;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 16px 30px rgba(129, 87, 74, 0.08);
+            line-height: 1.8;
+            padding: 28px 22px;
+            color: #5B4A4A;
         }
-        .letter-display::before {
+        .letter-front {
+            background: linear-gradient(180deg, #fffdfb 0%, #f6ece8 100%);
+        }
+        .letter-front::before {
             content: '';
             position: absolute;
-            top: -18px;
+            top: -20px;
             left: 50%;
             transform: translateX(-50%);
             width: 100%;
-            height: 72px;
+            height: 74px;
             background: #fff7f1;
             clip-path: polygon(0 0, 100% 0, 50% 100%);
             border-bottom: 1px solid rgba(230,182,169,0.75);
-            box-shadow: inset 0 4px 12px rgba(0,0,0,0.04);
             z-index: 1;
         }
-        .letter-display::after {
-            content: '❤';
-            position: absolute;
-            top: 36px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: #ffe3e1;
-            color: #d76a76;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-            z-index: 2;
-        }
-        .letter-display {
+        .letter-front-text {
             position: relative;
-            z-index: 1;
+            z-index: 2;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        .letter-back {
+            background: linear-gradient(180deg, #fffdfb 0%, #f8f1ea 100%);
+            transform: rotateY(180deg);
+            font-size: 1rem;
         }
         .letter-btn {
             background-color: #B5E2FA;
@@ -693,8 +767,11 @@
 <body>
 
     <div class="header">
-        <h1>🐰 兔兔的彩虹星球</h1>
-        <p>「牠沒有離開，只是先去美麗的星空奔跑了」</p>
+        <div class="header-sky" id="headerSky"></div>
+        <div class="header-content">
+            <h1>🐰 兔兔的彩虹星球</h1>
+            <p>「牠沒有離開，只是先去美麗的星空奔跑了」</p>
+        </div>
     </div>
 
     <section class="section-card home-section">
@@ -726,7 +803,7 @@
 
     <section class="section-card feed-section">
         <div class="section-title">肚子好餓快餵我</div>
-        <p class="section-subtitle">點一下下面的餵食按鈕，讓兔兔開心吃草、吃高麗菜，還有溫柔的摸摸互動。</p>
+        <p class="section-subtitle">點一下下面的餵食按鈕，讓兔兔開心吃草、吃高麗菜，還有溫柔的摸摸。</p>
         <div class="feed-row">
             <div class="feed-row-inner">
                 <div class="feed-panel">
@@ -738,6 +815,7 @@
                         <button class="feed-btn" onclick="petBunny(this)">摸摸小腦袋</button>
                     </div>
                     <div class="feed-counter" id="feedCounter">今天已被姐姐寵愛了 0 次</div>
+                    <div class="bunny-mood" id="bunnyMood">兔兔正躺著等妳，快來跟牠說話吧！</div>
                 </div>
                 <div class="feed-panel bunny-scene">
                     <div class="feed-message" id="feedMessage">兔兔正躺著等妳，快來跟牠說話吧！</div>
@@ -767,7 +845,14 @@
         <div class="section-title">暖心守護：兔兔的每日一句</div>
         <p class="section-subtitle">每天開一次兔兔的小天使留言。</p>
         <div class="letter-area">
-            <div class="letter-display" id="letterDisplay">點一下「拆信」，兔兔的小天使就會送出一句暖心話給妳。</div>
+            <div class="letter-card-scene">
+                <div class="letter-card" id="letterCard">
+                    <div class="letter-face letter-front">
+                        <div class="letter-front-text">Bunny 給妳的今日信封<br>點一下拆信</div>
+                    </div>
+                    <div class="letter-face letter-back" id="letterBackText">點一下「拆信」，兔兔的小天使就會送出一句暖心話給妳。</div>
+                </div>
+            </div>
             <button class="letter-btn" onclick="openLetter()">拆信</button>
         </div>
     </section>
@@ -777,9 +862,12 @@
         let feedCount = 0;
         const feedMessage = document.getElementById('feedMessage');
         const feedCounter = document.getElementById('feedCounter');
+        const bunnyMood = document.getElementById('bunnyMood');
         const rabbit = document.getElementById('rabbit');
-        const letterDisplay = document.getElementById('letterDisplay');
+        const letterCard = document.getElementById('letterCard');
+        const letterBackText = document.getElementById('letterBackText');
         const starOverlay = document.getElementById('starOverlay');
+        const headerSky = document.getElementById('headerSky');
         const memoryToast = document.getElementById('memoryToast');
         const galleryGlow = document.getElementById('galleryGlow');
         const memoryMessage = document.getElementById('memoryMessage');
@@ -790,6 +878,10 @@
         const BUNNY_LOCAL_MESSAGES_KEY = 'tutu_local_messages_backup';
         const BUNNY_USER_MSG_IDS_KEY = 'tutu_user_message_ids';
         const BUNNY_USER_MSG_NUMBERS_KEY = 'tutu_user_message_numbers';
+        const HEADER_STAR_COUNT_KEY = 'tutu_header_star_count';
+        const HEADER_VIEWED_PHOTOS_KEY = 'tutu_header_viewed_memory';
+        const DAILY_LETTER_DATE_KEY = 'tutu_daily_letter_date';
+        const DAILY_LETTER_TEXT_KEY = 'tutu_daily_letter_text';
         const memoryResponses = [
             '兔兔聞到妳的回憶了，牠偷偷在心裡跳了好幾下。',
             '妳的話變成星星送到我身邊了，我好暖好幸福。',
@@ -797,6 +889,15 @@
             '妳每一句話都像一顆小星星，悄悄綻放在我心裡。',
             '謝謝妳，兔兔會把妳的回憶放在最柔軟的地方。'
         ];
+        const bunnyMoodMessages = [
+            '兔兔高興地抖了抖耳朵！',
+            '兔兔一邊嚼草一邊看著妳～',
+            '兔兔舒服地瞇起眼睛了。',
+            '兔兔湊近妳的手掌，輕輕蹭了一下。',
+            '兔兔在原地跳了一小下，心情超好！'
+        ];
+        let headerStarCount = 0;
+        let viewedMemorySet = new Set();
 
         function saveMessageToLocalBackup(payload) {
             const history = JSON.parse(localStorage.getItem(BUNNY_LOCAL_MESSAGES_KEY) || '[]');
@@ -806,6 +907,63 @@
 
         function hasBackendConfigured() {
             return BUNNY_MESSAGE_API.startsWith('http');
+        }
+
+        function getRandomMoodMessage() {
+            return bunnyMoodMessages[Math.floor(Math.random() * bunnyMoodMessages.length)];
+        }
+
+        function saveViewedMemorySet() {
+            localStorage.setItem(HEADER_VIEWED_PHOTOS_KEY, JSON.stringify(Array.from(viewedMemorySet).slice(-800)));
+        }
+
+        function createHeaderStar() {
+            if (!headerSky) {
+                return;
+            }
+
+            const star = document.createElement('div');
+            star.className = 'header-star twinkle';
+            const size = 2 + Math.random() * 4;
+            star.style.width = `${size}px`;
+            star.style.height = `${size}px`;
+            star.style.left = `${Math.random() * 100}%`;
+            star.style.top = `${Math.random() * 88}%`;
+            headerSky.appendChild(star);
+        }
+
+        function addHeaderStars(count) {
+            const safeCount = Math.max(0, Number(count) || 0);
+            if (!safeCount) {
+                return;
+            }
+
+            const maxStars = 180;
+            const canAdd = Math.max(0, Math.min(maxStars - headerStarCount, safeCount));
+            for (let i = 0; i < canAdd; i += 1) {
+                createHeaderStar();
+            }
+
+            if (canAdd > 0) {
+                headerStarCount += canAdd;
+                localStorage.setItem(HEADER_STAR_COUNT_KEY, String(headerStarCount));
+            }
+        }
+
+        function initHeaderSky() {
+            const savedCount = Number(localStorage.getItem(HEADER_STAR_COUNT_KEY) || 0);
+            headerStarCount = Number.isFinite(savedCount) ? Math.max(0, Math.min(savedCount, 180)) : 0;
+            const savedViewed = JSON.parse(localStorage.getItem(HEADER_VIEWED_PHOTOS_KEY) || '[]');
+            viewedMemorySet = new Set(Array.isArray(savedViewed) ? savedViewed : []);
+
+            if (!headerStarCount) {
+                headerStarCount = 10;
+                localStorage.setItem(HEADER_STAR_COUNT_KEY, String(headerStarCount));
+            }
+
+            for (let i = 0; i < headerStarCount; i += 1) {
+                createHeaderStar();
+            }
         }
 
         function rememberUserMessageId(msgId) {
@@ -873,7 +1031,7 @@
                 }
 
                 bunnyMessageInput.value = '';
-                bunnySendStatus.innerText = '送出後兔兔會收到。';
+                bunnySendStatus.innerText = '信件正在寄往彩虹星球中，兔兔收到後會認真讀。';
 
                 rememberUserMessageId(data.msgId);
                 rememberUserMessageNumber(data.msgNumber);
@@ -935,6 +1093,9 @@
         function updateFeed(text, type, sourceElement) {
             feedCount += 1;
             feedMessage.innerText = text;
+            if (bunnyMood) {
+                bunnyMood.innerText = getRandomMoodMessage();
+            }
             feedCounter.innerText = `今天已被姐姐寵愛了 ${feedCount} 次`;
             rabbit.classList.remove('kicked');
             void rabbit.offsetWidth;
@@ -946,6 +1107,38 @@
             }, 3000);
             if (sourceElement && type !== 'pet') {
                 animateFoodToBunny(type, sourceElement);
+            }
+            emitBunnyBurst(type);
+        }
+
+        function emitBunnyBurst(type) {
+            const rabbitRect = rabbit.getBoundingClientRect();
+            const iconMap = {
+                hay: ['🌾', '🌾', '✨'],
+                cabbage: ['🥬', '🥬', '✨'],
+                apple: ['🍎', '❤️', '✨'],
+                banana: ['🍌', '❤️', '✨'],
+                pet: ['❤️', '💖', '✨']
+            };
+            const icons = iconMap[type] || ['✨'];
+            const burstCount = 8;
+
+            for (let i = 0; i < burstCount; i += 1) {
+                const particle = document.createElement('div');
+                particle.className = 'bunny-burst';
+                particle.innerText = icons[i % icons.length];
+                const startX = rabbitRect.left + rabbitRect.width * (0.32 + Math.random() * 0.36);
+                const startY = rabbitRect.top + rabbitRect.height * (0.18 + Math.random() * 0.14);
+                const driftX = (Math.random() - 0.5) * 120;
+
+                particle.style.left = `${startX}px`;
+                particle.style.top = `${startY}px`;
+                particle.style.fontSize = `${18 + Math.random() * 12}px`;
+                particle.style.animationDelay = `${i * 0.05}s`;
+                particle.style.transform = `translate(calc(-50% + ${driftX}px), -50%) scale(0.45)`;
+
+                document.body.appendChild(particle);
+                setTimeout(() => particle.remove(), 1400);
             }
         }
 
@@ -1131,9 +1324,25 @@
             galleryImages.forEach(card => {
                 card.style.display = 'none';
             });
+            const visibleIndices = [];
             for (let offset = 0; offset < visibleCount; offset++) {
                 const visibleIndex = (currentMemory + offset) % galleryImages.length;
                 galleryImages[visibleIndex].style.display = 'block';
+                visibleIndices.push(visibleIndex);
+            }
+
+            let newViewed = 0;
+            visibleIndices.forEach(i => {
+                const key = String(i);
+                if (!viewedMemorySet.has(key)) {
+                    viewedMemorySet.add(key);
+                    newViewed += 1;
+                }
+            });
+
+            if (newViewed > 0) {
+                saveViewedMemorySet();
+                addHeaderStars(newViewed);
             }
         }
 
@@ -1162,6 +1371,7 @@
         }
 
         renderGallery();
+        initHeaderSky();
         updateGalleryLayout();
         window.addEventListener('resize', updateGalleryLayout);
 
@@ -1173,6 +1383,7 @@
             galleryGlow.classList.add('active');
             setTimeout(() => galleryGlow.classList.remove('active'), 1500);
             createStars(count, 40);
+            addHeaderStars(2);
             setTimeout(() => {
                 const response = memoryResponses[Math.floor(Math.random() * memoryResponses.length)];
                 memoryMessage.innerText = response;
@@ -1261,8 +1472,32 @@
         ];
 
         function openLetter() {
-            const index = Math.floor(Math.random() * letterMessages.length);
-            letterDisplay.innerText = letterMessages[index];
+            const todayKey = new Date().toISOString().slice(0, 10);
+            let message = '';
+            const savedDate = localStorage.getItem(DAILY_LETTER_DATE_KEY);
+            const savedText = localStorage.getItem(DAILY_LETTER_TEXT_KEY);
+
+            if (savedDate === todayKey && savedText) {
+                message = savedText;
+            } else {
+                const index = Math.floor(Math.random() * letterMessages.length);
+                message = letterMessages[index];
+                localStorage.setItem(DAILY_LETTER_DATE_KEY, todayKey);
+                localStorage.setItem(DAILY_LETTER_TEXT_KEY, message);
+            }
+
+            letterBackText.innerText = message;
+
+            if (letterCard.classList.contains('is-open')) {
+                letterCard.classList.remove('is-open');
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        letterCard.classList.add('is-open');
+                    });
+                });
+            } else {
+                letterCard.classList.add('is-open');
+            }
         }
     </script>
     

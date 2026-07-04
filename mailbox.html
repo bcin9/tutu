@@ -25,10 +25,75 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", sans-serif;
             background: linear-gradient(135deg, #FFF5F5 0%, #FFF9F7 100%);
             padding: 20px;
             min-height: 100vh;
+        }
+
+        .mailbox-intro {
+            position: fixed;
+            inset: 0;
+            z-index: 99;
+            background: radial-gradient(circle at 50% 30%, #fffaf4 0%, #fcece5 45%, #f8ddd1 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 1;
+            transition: opacity 0.45s ease;
+        }
+
+        .mailbox-intro.hide {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .mailbox-envelope {
+            width: min(320px, 80vw);
+            height: 210px;
+            position: relative;
+            border-radius: 14px;
+            background: #fff7f0;
+            border: 1px solid rgba(226, 170, 148, 0.65);
+            box-shadow: 0 22px 40px rgba(129, 87, 74, 0.2);
+            overflow: hidden;
+            animation: envelopeFloat 1.2s ease-in-out infinite alternate;
+        }
+
+        .mailbox-envelope::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, #fff9f5 0%, #f8e9df 100%);
+            clip-path: polygon(0 0, 100% 0, 50% 58%);
+            transform-origin: top;
+            animation: envelopeOpen 1.3s ease forwards;
+            z-index: 2;
+        }
+
+        .mailbox-envelope::after {
+            content: '給姐姐的回信';
+            position: absolute;
+            left: 50%;
+            top: 62%;
+            transform: translate(-50%, -50%);
+            color: #8f6458;
+            font-weight: 700;
+            letter-spacing: 2px;
+            z-index: 1;
+        }
+
+        @keyframes envelopeOpen {
+            0% { transform: rotateX(0deg); }
+            100% { transform: rotateX(-168deg); }
+        }
+
+        @keyframes envelopeFloat {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-6px); }
         }
 
         .container {
@@ -232,6 +297,10 @@
     </style>
 </head>
 <body>
+    <div id="mailboxIntro" class="mailbox-intro">
+        <div class="mailbox-envelope"></div>
+    </div>
+
     <div class="container">
         <div class="header">
             <h1>📬 兔兔的信箱</h1>
@@ -462,12 +531,19 @@
         }
 
         window.addEventListener('load', () => {
+            const intro = document.getElementById('mailboxIntro');
             const cachedReplies = getCachedReplies();
             if (cachedReplies.length) {
                 renderInbox(cachedReplies);
             }
-            loadInbox(false);
-            startInboxPolling();
+
+            setTimeout(() => {
+                if (intro) {
+                    intro.classList.add('hide');
+                }
+                loadInbox(false);
+                startInboxPolling();
+            }, 1350);
         });
 
         document.addEventListener('visibilitychange', () => {

@@ -630,7 +630,7 @@
             messagesList.innerHTML = allMessages.map(msg => `
                 <div class="message-item" onclick="selectMessage(${msg.msgNumber}, this)">
                     <div class="message-header">
-                        <span class="msg-number">第 ${msg.msgNumber} 則留言</span>
+                        <span class="msg-number">留言</span>
                         <span class="msg-time">${new Date(msg.timestamp).toLocaleString('zh-TW')}</span>
                         ${msg.hasReply ? '<span class="reply-badge">已回覆</span>' : ''}
                     </div>
