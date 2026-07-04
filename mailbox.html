@@ -345,13 +345,11 @@
             listEl.innerHTML = replies.map(item => {
                 const readKey = item.replyReadKey || item.replyId;
                 const isUnread = readKey && !readSet[readKey];
-                const messageTag = item.msgNumber ? `第 ${item.msgNumber} 則留言` : '一則留言';
                 return `
                     <article class="mail-item ${isUnread ? 'unread' : ''}">
                         <div class="reply-header">
                             <h3>✉️ 兔兔回信了</h3>
                             <div>
-                                <span class="msg-number-badge">${messageTag}</span>
                                 ${isUnread ? '<span class="badge-unread">未讀</span>' : ''}
                             </div>
                         </div>
