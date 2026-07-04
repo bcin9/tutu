@@ -335,6 +335,7 @@
         const BUNNY_PUBLIC_REPLIES_CACHE_KEY = 'tutu_public_replies_cache';
         const INBOX_POLL_INTERVAL_MS = 10000;
         let inboxPollTimer = null;
+        let hasLoadedInboxOnce = false;
 
         function showNotification(message, type) {
             const notif = document.getElementById('notification');
@@ -383,6 +384,78 @@
 
         function saveReadReplyIds(ids) {
             localStorage.setItem(BUNNY_READ_REPLY_IDS_KEY, JSON.stringify(ids.slice(-500)));
+        }
+
+        async function requestNotificationPermissionIfNeeded() {
+            if (!('Notification' in window)) {
+                return 'unsupported';
+            }
+
+            if (Notification.permission === 'granted') {
+                return 'granted';
+            }
+
+            if (Notification.permission === 'denied') {
+                return 'denied';
+            }
+
+            try {
+                return await Notification.requestPermission();
+            } catch (_) {
+                return 'default';
+            }
+        }
+
+        function getNewRepliesByReadSet(replies, readIds) {
+            const readSet = {};
+            (readIds || []).forEach(id => {
+                readSet[id] = true;
+            });
+
+            return (replies || []).filter(item => {
+                const key = String((item && item.replyId) || '');
+                return key && !readSet[key];
+            });
+        }
+
+        async function showSystemNewReplyNotification(newReplies) {
+            if (!Array.isArray(newReplies) || !newReplies.length) {
+                return;
+            }
+
+            if (!('Notification' in window) || Notification.permission !== 'granted') {
+                return;
+            }
+
+            const count = newReplies.length;
+            const title = count === 1 ? '兔兔回信了 💌' : `兔兔有 ${count} 封新回信 💌`;
+            const body = count === 1
+                ? '打開信箱看看兔兔寫了什麼。'
+                : '打開信箱看看最新回信。';
+
+            try {
+                if ('serviceWorker' in navigator) {
+                    const reg = await navigator.serviceWorker.ready;
+                    await reg.showNotification(title, {
+                        body,
+                        icon: 'images/IMG_2596-icon-192.png',
+                        badge: 'images/IMG_2596-icon-192.png',
+                        tag: 'tutu-mailbox-new-reply'
+                    });
+                    return;
+                }
+            } catch (_) {
+                // fallback to Notification constructor below
+            }
+
+            try {
+                new Notification(title, {
+                    body,
+                    icon: 'images/IMG_2596-icon-192.png'
+                });
+            } catch (_) {
+                // ignore notification failure
+            }
         }
 
         function formatDateTime(value) {
@@ -482,6 +555,7 @@
 
         async function loadPublicInbox(showToastWhenDone) {
             try {
+                const readIdsBefore = getReadReplyIds();
                 const query = new URLSearchParams({
                     action: 'get_public_replies',
                     t: String(Date.now())
@@ -496,8 +570,20 @@
                 }
 
                 const replies = Array.isArray(data.replies) ? data.replies : [];
+                const newReplies = getNewRepliesByReadSet(replies, readIdsBefore);
                 renderInbox(replies);
                 saveCachedReplies(replies);
+
+                if (showToastWhenDone) {
+                    await requestNotificationPermissionIfNeeded();
+                }
+
+                if (hasLoadedInboxOnce && newReplies.length > 0) {
+                    showNotification(`兔兔有 ${newReplies.length} 封新回信`, 'success');
+                    await showSystemNewReplyNotification(newReplies);
+                }
+
+                hasLoadedInboxOnce = true;
                 if (showToastWhenDone) {
                     showNotification('信箱已更新', 'success');
                 }

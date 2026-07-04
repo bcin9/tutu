@@ -222,9 +222,30 @@
             font-weight: 600;
             font-size: 0.9rem;
             white-space: nowrap;
+            position: relative;
         }
         .mailbox-link:hover {
             background: #a7d8f3;
+        }
+        .mailbox-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            min-width: 20px;
+            height: 20px;
+            padding: 0 6px;
+            border-radius: 999px;
+            background: #d4382a;
+            color: #fff;
+            font-size: 0.74rem;
+            font-weight: 700;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 12px rgba(212, 56, 42, 0.35);
+        }
+        .mailbox-badge.show {
+            display: inline-flex;
         }
         @keyframes slideDown {
             from {
@@ -795,7 +816,7 @@
     <section class="section-card message-section">
         <div class="message-title-row">
             <div class="section-title">對兔兔說說話</div>
-            <a href="mailbox.html" class="mailbox-link">📬 進入信箱查看回信</a>
+            <a href="mailbox.html" class="mailbox-link">📬 進入信箱查看回信<span id="mailboxBadge" class="mailbox-badge">0</span></a>
         </div>
         <p class="section-subtitle">留言兔兔會看之外，還會回信給你喔。</p>
         <div class="message-layout">
@@ -882,10 +903,13 @@
         const bunnyMessageInput = document.getElementById('bunnyMessageInput');
         const bunnySendBtn = document.getElementById('bunnySendBtn');
         const bunnySendStatus = document.getElementById('bunnySendStatus');
+        const mailboxBadge = document.getElementById('mailboxBadge');
         const BUNNY_MESSAGE_API = localStorage.getItem('tutu_message_api_url') || 'https://script.google.com/macros/s/AKfycbz6EjuzhjP06-f30c2rkZpLY5JWGf0A4c7ma05EHcntdhvnJ5YaI0I5XTe-aGT2gkDB/exec';
         const BUNNY_LOCAL_MESSAGES_KEY = 'tutu_local_messages_backup';
         const BUNNY_USER_MSG_IDS_KEY = 'tutu_user_message_ids';
         const BUNNY_USER_MSG_NUMBERS_KEY = 'tutu_user_message_numbers';
+        const BUNNY_READ_REPLY_IDS_KEY = 'tutu_read_reply_ids';
+        const BUNNY_BADGE_POLL_MS = 20000;
         const HEADER_STAR_COUNT_KEY = 'tutu_header_star_count';
         const HEADER_VIEWED_PHOTOS_KEY = 'tutu_header_viewed_memory';
         const DAILY_LETTER_DATE_KEY = 'tutu_daily_letter_date';
@@ -906,6 +930,7 @@
         ];
         let headerStarCount = 0;
         let viewedMemorySet = new Set();
+        let mailboxBadgeTimer = null;
 
         function saveMessageToLocalBackup(payload) {
             const history = JSON.parse(localStorage.getItem(BUNNY_LOCAL_MESSAGES_KEY) || '[]');
@@ -923,6 +948,85 @@
 
         function saveViewedMemorySet() {
             localStorage.setItem(HEADER_VIEWED_PHOTOS_KEY, JSON.stringify(Array.from(viewedMemorySet).slice(-800)));
+        }
+
+        function getReadReplyIdsFromLocal() {
+            try {
+                const ids = JSON.parse(localStorage.getItem(BUNNY_READ_REPLY_IDS_KEY) || '[]');
+                if (!Array.isArray(ids)) {
+                    return [];
+                }
+                return ids.filter(id => typeof id === 'string');
+            } catch (_) {
+                return [];
+            }
+        }
+
+        function updateMailboxBadge(count) {
+            if (!mailboxBadge) {
+                return;
+            }
+
+            const safeCount = Math.max(0, Number(count) || 0);
+            if (safeCount <= 0) {
+                mailboxBadge.classList.remove('show');
+                mailboxBadge.textContent = '0';
+                return;
+            }
+
+            mailboxBadge.classList.add('show');
+            mailboxBadge.textContent = safeCount > 99 ? '99+' : String(safeCount);
+        }
+
+        async function refreshMailboxBadge() {
+            if (!hasBackendConfigured()) {
+                return;
+            }
+
+            try {
+                const query = new URLSearchParams({
+                    action: 'get_public_replies',
+                    limit: '120',
+                    t: String(Date.now())
+                });
+
+                const response = await fetch(`${BUNNY_MESSAGE_API}?${query.toString()}`, {
+                    cache: 'no-store'
+                });
+                const data = await response.json();
+                if (!response.ok || !data.ok) {
+                    return;
+                }
+
+                const replies = Array.isArray(data.replies) ? data.replies : [];
+                const readSet = {};
+                getReadReplyIdsFromLocal().forEach(id => {
+                    readSet[id] = true;
+                });
+
+                const unreadCount = replies.reduce((total, item) => {
+                    const key = String(item.replyId || '');
+                    if (!key) {
+                        return total;
+                    }
+                    return readSet[key] ? total : total + 1;
+                }, 0);
+
+                updateMailboxBadge(unreadCount);
+            } catch (_) {
+                // badge fetch failure is non-blocking
+            }
+        }
+
+        function startMailboxBadgePolling() {
+            if (mailboxBadgeTimer) {
+                clearInterval(mailboxBadgeTimer);
+            }
+            mailboxBadgeTimer = setInterval(() => {
+                if (document.visibilityState === 'visible') {
+                    refreshMailboxBadge();
+                }
+            }, BUNNY_BADGE_POLL_MS);
         }
 
         function createHeaderStar() {
@@ -1381,7 +1485,21 @@
         renderGallery();
         initHeaderSky();
         updateGalleryLayout();
+        refreshMailboxBadge();
+        startMailboxBadgePolling();
         window.addEventListener('resize', updateGalleryLayout);
+
+        window.addEventListener('storage', event => {
+            if (event.key === BUNNY_READ_REPLY_IDS_KEY) {
+                refreshMailboxBadge();
+            }
+        });
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                refreshMailboxBadge();
+            }
+        });
 
         function submitMemory() {
             const count = 16;
