@@ -1,10 +1,10 @@
-const CACHE_NAME = 'tutu-pwa-v2';
+const CACHE_NAME = 'tutu-pwa-v4';
 const urlsToCache = [
   '/tutu/',
   '/tutu/index.html',
   '/tutu/manifest.json',
   '/tutu/service-worker.js',
-  '/tutu/images/IMG_2596.jpg'
+  '/tutu/images/IMG_3978.JPG'
 ];
 
 // 安裝 Service Worker
