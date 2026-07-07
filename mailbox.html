@@ -9,9 +9,9 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="兔兔信箱">
     
-    <link rel="apple-touch-icon" href="images/IMG_3978-icon-1024.png">
-    <link rel="icon" href="images/IMG_3978-icon-1024.png" sizes="1024x1024" type="image/png">
-    <link rel="shortcut icon" href="images/IMG_3978-icon-1024.png">
+    <link rel="apple-touch-icon" href="images/IMG_4011-icon-1024.png">
+    <link rel="icon" href="images/IMG_4011-icon-1024.png" sizes="1024x1024" type="image/png">
+    <link rel="shortcut icon" href="images/IMG_4011-icon-1024.png">
     
     <link rel="manifest" href="manifest-mailbox.json">
     <meta name="theme-color" content="#FFB7B2">
@@ -438,8 +438,8 @@
                     const reg = await navigator.serviceWorker.ready;
                     await reg.showNotification(title, {
                         body,
-                        icon: 'images/IMG_3978-icon-192.png',
-                        badge: 'images/IMG_3978-icon-192.png',
+                        icon: 'images/IMG_4011-icon-192.png',
+                        badge: 'images/IMG_4011-icon-192.png',
                         tag: 'tutu-mailbox-new-reply'
                     });
                     return;
@@ -451,7 +451,7 @@
             try {
                 new Notification(title, {
                     body,
-                    icon: 'images/IMG_3978-icon-192.png'
+                    icon: 'images/IMG_4011-icon-192.png'
                 });
             } catch (_) {
                 // ignore notification failure
