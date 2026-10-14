@@ -64,9 +64,9 @@
                 <button class="card secret-card" type="button" data-go="secret">
                     <div class="card-head">
                         <span class="tag pink">今日秘密</span>
-                        <span class="card-meta" id="homeSecretStatus">兔兔正在準備題目…</span>
+                        <span class="card-meta" id="homeSecretStatus">今日秘密</span>
                     </div>
-                    <p class="secret-q" id="homeSecretQ">載入中...</p>
+                    <p class="secret-q" id="homeSecretQ">點此查看今日秘密</p>
                 </button>
 
                 <div class="entry-grid">
@@ -99,12 +99,12 @@
                     </div>
                 </div>
                 
-                <div id="secretLoading" class="soon">
+                <div id="secretLoading" class="soon" hidden>
                     <img class="art" src="images/art/bunny-messenger.jpg" alt="">
                     <h2 style="font-size: 1.1rem; color: var(--ink-soft)">載入今日秘密中...</h2>
                 </div>
 
-                <div id="secretContent" class="secret-container" hidden>
+                <div id="secretContent" class="secret-container">
                     <div class="secret-header">
                         <div class="secret-date" id="secretDate"></div>
                         <h2 class="secret-question" id="secretQ"></h2>
@@ -208,12 +208,12 @@
         </nav>
     </div>
 
-    <script src="js/config.js?v=2"></script>
-    <script src="js/api.js?v=2"></script>
-    <script src="js/ideas.js?v=2"></script>
-    <script src="js/app.js?v=2"></script>
-    <script src="js/secret.js?v=2"></script>
-    <script src="js/lists.js?v=2"></script>
+    <script src="js/config.js?v=3"></script>
+    <script src="js/api.js?v=3"></script>
+    <script src="js/ideas.js?v=3"></script>
+    <script src="js/app.js?v=3"></script>
+    <script src="js/secret.js?v=3"></script>
+    <script src="js/lists.js?v=3"></script>
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('service-worker.js').then(reg => {

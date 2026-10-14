@@ -233,6 +233,11 @@
       const person = CONFIG.people[API.getAuth().user];
       bunnySay(`歡迎回到基地，${person.name}！`);
     }, 700);
+
+    // 進入基地時背景預載秘密與清單
+    if (window.SecretApp && window.SecretApp.init) {
+      window.SecretApp.init();
+    }
   }
 
   // 記住登入：手機打開就直接進來

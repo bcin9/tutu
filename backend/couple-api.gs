@@ -176,10 +176,20 @@ function questionForDate(dateKey) {
 }
 
 // ===== 交換秘密 =====
+const CACHE_KEY_ANSWERS = 'couple_answers_cache';
+
 function readAllAnswers() {
+  try {
+    const cache = CacheService.getScriptCache();
+    const cached = cache.get(CACHE_KEY_ANSWERS);
+    if (cached) {
+      return JSON.parse(cached);
+    }
+  } catch (_) {}
+
   const sheet = getOrCreateSheet(SECRET_ANSWERS_SHEET, SECRET_ANSWERS_HEADER);
   const rows = sheet.getDataRange().getValues().slice(1);
-  return rows.map(function (row) {
+  const answers = rows.map(function (row) {
     return {
       date: normalizeDateCell(row[0]),
       user: String(row[1] || ''),
@@ -187,6 +197,12 @@ function readAllAnswers() {
       answeredAt: String(row[3] || '')
     };
   });
+
+  try {
+    CacheService.getScriptCache().put(CACHE_KEY_ANSWERS, JSON.stringify(answers), 21600);
+  } catch (_) {}
+
+  return answers;
 }
 
 function normalizeDateCell(value) {
@@ -258,6 +274,9 @@ function coupleSecretAnswer(params, user) {
     // 日期前面加 ' 讓試算表當成文字，不會被自動轉成日期格式
     sheet.appendRow(["'" + dateKey, user, answer, now]);
     answers.push({ date: dateKey, user: user, answer: answer, answeredAt: now });
+    try {
+      CacheService.getScriptCache().put(CACHE_KEY_ANSWERS, JSON.stringify(answers), 21600);
+    } catch (_) {}
     return jsonResponse(Object.assign({ ok: true }, buildSecretView(dateKey, user, answers)));
   } finally {
     lock.releaseLock();
