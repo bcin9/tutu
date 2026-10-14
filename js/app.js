@@ -238,6 +238,9 @@
     if (window.SecretApp && window.SecretApp.init) {
       window.SecretApp.init();
     }
+    if (window.GachaApp && window.GachaApp.sync) {
+      window.GachaApp.sync(true);
+    }
   }
 
   // 記住登入：手機打開就直接進來

@@ -153,6 +153,52 @@
         demoStore.write('list_' + params.type, items);
         return { ok: true, id: params.id };
       }
+      case 'couple_gacha_state': {
+        const likes = demoStore.read('gacha_likes', []);
+        const matches = demoStore.read('gacha_matches', []);
+        const partner = user === 'a' ? 'b' : 'a';
+        return {
+          ok: true,
+          user,
+          myLikes: likes.filter(l => l.user === user).map(l => l.ideaId),
+          partnerLikes: likes.filter(l => l.user === partner).map(l => l.ideaId),
+          matches
+        };
+      }
+      case 'couple_gacha_like': {
+        let likes = demoStore.read('gacha_likes', []);
+        let matches = demoStore.read('gacha_matches', []);
+        const partner = user === 'a' ? 'b' : 'a';
+        const ideaId = params.ideaId;
+        const now = new Date().toISOString();
+
+        if (!likes.some(l => l.ideaId === ideaId && l.user === user)) {
+          likes.push({ ideaId, user, likedAt: now });
+          demoStore.write('gacha_likes', likes);
+        }
+
+        const partnerLiked = likes.some(l => l.ideaId === ideaId && l.user === partner);
+        let match = null;
+        if (partnerLiked) {
+          match = matches.find(m => m.ideaId === ideaId);
+          if (!match) {
+            match = { ideaId, matchedAt: now, status: 'pending', target: '' };
+            matches.push(match);
+            demoStore.write('gacha_matches', matches);
+          }
+        }
+        return { ok: true, ideaId, matched: !!partnerLiked, match };
+      }
+      case 'couple_gacha_update_match': {
+        let matches = demoStore.read('gacha_matches', []);
+        const fields = JSON.parse(params.fields || '{}');
+        const match = matches.find(m => m.ideaId === params.ideaId);
+        if (match) {
+          Object.assign(match, fields);
+          demoStore.write('gacha_matches', matches);
+        }
+        return { ok: true };
+      }
       default:
         throw new Error('unknown-action');
     }
@@ -190,6 +236,10 @@
     listGet: type => call('couple_list_get', { type }),
     listAdd: (type, fields) => call('couple_list_add', { type, fields: JSON.stringify(fields) }),
     listUpdate: (type, id, fields) => call('couple_list_update', { type, id, fields: JSON.stringify(fields) }),
-    listDelete: (type, id) => call('couple_list_delete', { type, id })
+    listDelete: (type, id) => call('couple_list_delete', { type, id }),
+
+    gachaState: () => call('couple_gacha_state'),
+    gachaLike: ideaId => call('couple_gacha_like', { ideaId }),
+    gachaUpdateMatch: (ideaId, fields) => call('couple_gacha_update_match', { ideaId, fields: JSON.stringify(fields) })
   };
 })();

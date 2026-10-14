@@ -21,6 +21,12 @@ const COUPLE_TZ = 'Asia/Taipei';
 const SECRET_ANSWERS_SHEET = 'secret_answers';
 const SECRET_ANSWERS_HEADER = ['date', 'user', 'answer', 'answeredAt'];
 
+const GACHA_LIKES_SHEET = 'gacha_likes';
+const GACHA_LIKES_HEADER = ['ideaId', 'user', 'likedAt'];
+
+const GACHA_MATCHES_SHEET = 'gacha_matches';
+const GACHA_MATCHES_HEADER = ['ideaId', 'matchedAt', 'status', 'target'];
+
 const COUPLE_LISTS = {
   places: {
     sheet: 'places',
@@ -138,6 +144,12 @@ function handleCoupleAction(action, params) {
       return coupleListUpdate(params);
     case 'couple_list_delete':
       return coupleListDelete(params);
+    case 'couple_gacha_state':
+      return coupleGachaState(user);
+    case 'couple_gacha_like':
+      return coupleGachaLike(params, user);
+    case 'couple_gacha_update_match':
+      return coupleGachaUpdateMatch(params);
     default:
       return jsonResponse({ ok: false, error: 'unknown-action' }, 400);
   }
@@ -421,4 +433,159 @@ function coupleListDelete(params) {
   if (rowIndex < 0) return jsonResponse({ ok: false, error: 'not-found' }, 404);
   sheet.deleteRow(rowIndex);
   return jsonResponse({ ok: true, id: id });
+}
+
+// ===== 心動抽卡與約會清單 (Gacha & Matches) =====
+const CACHE_KEY_GACHA_LIKES = 'couple_gacha_likes_cache';
+const CACHE_KEY_GACHA_MATCHES = 'couple_gacha_matches_cache';
+
+function readGachaLikes() {
+  try {
+    const cached = CacheService.getScriptCache().get(CACHE_KEY_GACHA_LIKES);
+    if (cached) return JSON.parse(cached);
+  } catch (_) {}
+
+  const sheet = getOrCreateSheet(GACHA_LIKES_SHEET, GACHA_LIKES_HEADER);
+  const rows = sheet.getDataRange().getValues().slice(1);
+  const likes = rows.filter(function(r) { return r[0]; }).map(function(r) {
+    return {
+      ideaId: String(r[0] || ''),
+      user: String(r[1] || ''),
+      likedAt: String(r[2] || '')
+    };
+  });
+
+  try {
+    CacheService.getScriptCache().put(CACHE_KEY_GACHA_LIKES, JSON.stringify(likes), 21600);
+  } catch (_) {}
+  return likes;
+}
+
+function readGachaMatches() {
+  try {
+    const cached = CacheService.getScriptCache().get(CACHE_KEY_GACHA_MATCHES);
+    if (cached) return JSON.parse(cached);
+  } catch (_) {}
+
+  const sheet = getOrCreateSheet(GACHA_MATCHES_SHEET, GACHA_MATCHES_HEADER);
+  const rows = sheet.getDataRange().getValues().slice(1);
+  const matches = rows.filter(function(r) { return r[0]; }).map(function(r) {
+    return {
+      ideaId: String(r[0] || ''),
+      matchedAt: String(r[1] || ''),
+      status: String(r[2] || 'pending'),
+      target: String(r[3] || '')
+    };
+  });
+
+  try {
+    CacheService.getScriptCache().put(CACHE_KEY_GACHA_MATCHES, JSON.stringify(matches), 21600);
+  } catch (_) {}
+  return matches;
+}
+
+function coupleGachaState(user) {
+  const partner = partnerOf(user);
+  const likes = readGachaLikes();
+  const matches = readGachaMatches();
+
+  const myLikes = likes.filter(function(l) { return l.user === user; }).map(function(l) { return l.ideaId; });
+  const partnerLikes = likes.filter(function(l) { return l.user === partner; }).map(function(l) { return l.ideaId; });
+
+  return jsonResponse({
+    ok: true,
+    user: user,
+    myLikes: myLikes,
+    partnerLikes: partnerLikes,
+    matches: matches
+  });
+}
+
+function coupleGachaLike(params, user) {
+  const ideaId = sanitizeText(params.ideaId || '', 20);
+  if (!ideaId) return jsonResponse({ ok: false, error: 'missing-ideaId' }, 400);
+
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    const likes = readGachaLikes();
+    const partner = partnerOf(user);
+    const now = new Date().toISOString();
+
+    const alreadyLiked = likes.some(function(l) { return l.ideaId === ideaId && l.user === user; });
+    if (!alreadyLiked) {
+      const sheet = getOrCreateSheet(GACHA_LIKES_SHEET, GACHA_LIKES_HEADER);
+      sheet.appendRow([ideaId, user, now]);
+      likes.push({ ideaId: ideaId, user: user, likedAt: now });
+      try {
+        CacheService.getScriptCache().put(CACHE_KEY_GACHA_LIKES, JSON.stringify(likes), 21600);
+      } catch (_) {}
+    }
+
+    const partnerLiked = likes.some(function(l) { return l.ideaId === ideaId && l.user === partner; });
+    let matchedItem = null;
+
+    if (partnerLiked) {
+      const matches = readGachaMatches();
+      const existingMatch = matches.filter(function(m) { return m.ideaId === ideaId; })[0];
+      if (!existingMatch) {
+        const matchSheet = getOrCreateSheet(GACHA_MATCHES_SHEET, GACHA_MATCHES_HEADER);
+        matchSheet.appendRow([ideaId, now, 'pending', '']);
+        matchedItem = { ideaId: ideaId, matchedAt: now, status: 'pending', target: '' };
+        matches.push(matchedItem);
+        try {
+          CacheService.getScriptCache().put(CACHE_KEY_GACHA_MATCHES, JSON.stringify(matches), 21600);
+        } catch (_) {}
+      } else {
+        matchedItem = existingMatch;
+      }
+    }
+
+    return jsonResponse({
+      ok: true,
+      ideaId: ideaId,
+      matched: !!partnerLiked,
+      match: matchedItem
+    });
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function coupleGachaUpdateMatch(params) {
+  const ideaId = sanitizeText(params.ideaId || '', 20);
+  const fields = parseFields(params);
+  if (!ideaId) return jsonResponse({ ok: false, error: 'missing-ideaId' }, 400);
+
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    const sheet = getOrCreateSheet(GACHA_MATCHES_SHEET, GACHA_MATCHES_HEADER);
+    const data = sheet.getDataRange().getValues();
+    let rowIndex = -1;
+    for (let i = 1; i < data.length; i++) {
+      if (String(data[i][0]) === ideaId) {
+        rowIndex = i + 1;
+        break;
+      }
+    }
+    if (rowIndex === -1) {
+      return jsonResponse({ ok: false, error: 'match-not-found' }, 404);
+    }
+
+    if (fields.target !== undefined) {
+      sheet.getRange(rowIndex, 4).setValue(sanitizeText(fields.target, 20));
+    }
+    if (fields.status !== undefined) {
+      sheet.getRange(rowIndex, 3).setValue(sanitizeText(fields.status, 20));
+    }
+
+    try {
+      CacheService.getScriptCache().remove(CACHE_KEY_GACHA_MATCHES);
+    } catch (_) {}
+
+    return jsonResponse({ ok: true });
+  } finally {
+    lock.releaseLock();
+  }
 }

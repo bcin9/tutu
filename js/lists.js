@@ -1,5 +1,5 @@
 /**
- * 約會計畫：盲盒抽卡與約會清單邏輯
+ * 約會計畫：盲盒抽卡與約會清單邏輯 (雙端即時同步版)
  */
 (function() {
   const API = window.BaseAPI;
@@ -11,8 +11,72 @@
   let currentCategory = null;
   let currentCards = [];
   let currentCardIndex = 0;
+  let isSyncing = false;
+
+  // 雙人同步狀態
+  let gachaState = {
+    myLikes: [],
+    partnerLikes: [],
+    matches: []
+  };
+
+  const GACHA_CACHE_KEY = 'tutu_gacha_synced_state';
+
+  function getCacheKey() {
+    const auth = API.getAuth();
+    return `${GACHA_CACHE_KEY}_${auth ? auth.user : 'guest'}`;
+  }
+
+  function loadLocalGacha() {
+    try {
+      const saved = localStorage.getItem(getCacheKey());
+      if (saved) {
+        gachaState = Object.assign(gachaState, JSON.parse(saved));
+      }
+    } catch (_) {}
+  }
+
+  function saveLocalGacha() {
+    try {
+      localStorage.setItem(getCacheKey(), JSON.stringify(gachaState));
+    } catch (_) {}
+  }
+
+  /**
+   * 與 Google Apps Script 雙向同步抽卡與配對資料
+   */
+  async function syncGachaState(silent = true) {
+    const auth = API.getAuth();
+    if (!auth) return;
+    if (isSyncing) return;
+    isSyncing = true;
+
+    try {
+      const data = await API.gachaState();
+      if (data && data.ok) {
+        const prevMatchCount = gachaState.matches.length;
+        gachaState.myLikes = data.myLikes || [];
+        gachaState.partnerLikes = data.partnerLikes || [];
+        gachaState.matches = data.matches || [];
+        saveLocalGacha();
+
+        if (currentTab === 'matches') {
+          renderMatches();
+        }
+
+        // 若偵測到另一端配對成功產生了新項目
+        if (gachaState.matches.length > prevMatchCount && !silent && window.BaseApp) {
+          window.BaseApp.bunnySay('🎉 兔兔發現你們有新的約會配對成功囉！快去清單看看～');
+        }
+      }
+    } catch (e) {
+      console.warn('同步抽卡資料失敗，使用本地快取:', e);
+    } finally {
+      isSyncing = false;
+    }
+  }
   
-  // Tab switching
+  // Tab 切換
   document.querySelectorAll('.list-tab').forEach(tab => {
     tab.addEventListener('click', () => {
       document.querySelectorAll('.list-tab').forEach(t => t.classList.remove('active'));
@@ -20,11 +84,14 @@
       currentTab = tab.dataset.listType;
       $('gachaView').hidden = (currentTab !== 'gacha');
       $('matchesView').hidden = (currentTab !== 'matches');
-      if (currentTab === 'matches') renderMatches();
+      if (currentTab === 'matches') {
+        renderMatches();
+        syncGachaState(true);
+      }
     });
   });
 
-  // Start Gacha
+  // 選擇類別開始抽卡
   document.querySelectorAll('[data-cat]').forEach(btn => {
     btn.addEventListener('click', async () => {
       currentCategory = btn.dataset.cat;
@@ -43,43 +110,39 @@
     if (!auth) return;
     const user = auth.user;
     
-    // Get all likes from db
-    const likes = JSON.parse(localStorage.getItem('base_demo_list_likes') || '[]');
-    
-    // Filter ideas by category
+    // 背景同步最新狀態（確認對方是否剛按了愛心）
+    syncGachaState(true);
+
+    // 依類別篩選題目
     const catIdeas = IDEAS.filter(i => i.category === category);
     
-    // Find what I haven't liked yet
-    const myLikes = likes.filter(l => l.user === user).map(l => l.ideaId);
-    let available = catIdeas.filter(i => !myLikes.includes(i.id));
+    // 找出我還沒按過喜歡的任務卡
+    let available = catIdeas.filter(i => !gachaState.myLikes.includes(i.id));
     
     if (available.length === 0) {
       alert('這個類別的任務卡已經被你抽完囉！換一個類別吧！');
       return;
     }
 
-    // Smart Algorithm: find partner's likes that I haven't liked
-    const partner = user === 'a' ? 'b' : 'a';
-    const partnerLikes = likes.filter(l => l.user === partner).map(l => l.ideaId);
-    const hiddenMatches = available.filter(i => partnerLikes.includes(i.id));
+    // 智能配對演算法：優先找出「對方已經按過喜歡，但我還沒抽過」的心動隱藏卡
+    const hiddenMatches = available.filter(i => gachaState.partnerLikes.includes(i.id));
     
     currentCards = [];
     
-    // 1. If there's a hidden match, 50% chance to guarantee it appears in the 3 cards
-    if (hiddenMatches.length > 0 && Math.random() > 0.5) {
+    // 1. 如果有對方喜歡的卡，70% 高機率抽進卡堆，製造兩人不謀而合的浪漫驚喜！
+    if (hiddenMatches.length > 0 && Math.random() < 0.7) {
       const match = hiddenMatches[Math.floor(Math.random() * hiddenMatches.length)];
       currentCards.push(match);
       available = available.filter(i => i.id !== match.id);
     }
     
-    // 2. Fill the rest randomly up to 3
-    // Shuffle available
+    // 2. 隨機填滿 3 張
     available.sort(() => Math.random() - 0.5);
     while (currentCards.length < 3 && available.length > 0) {
       currentCards.push(available.pop());
     }
     
-    // Shuffle final deck
+    // 洗牌
     currentCards.sort(() => Math.random() - 0.5);
     currentCardIndex = 0;
     
@@ -108,43 +171,63 @@
   $('btnLike').addEventListener('click', async () => {
     const card = currentCards[currentCardIndex];
     const auth = API.getAuth();
+    if (!card || !auth) return;
     
-    // Save like
-    let likes = JSON.parse(localStorage.getItem('base_demo_list_likes') || '[]');
-    likes.push({ ideaId: card.id, user: auth.user, likedAt: new Date().toISOString() });
-    localStorage.setItem('base_demo_list_likes', JSON.stringify(likes));
-    
-    // Check match
-    const partner = auth.user === 'a' ? 'b' : 'a';
-    const partnerLiked = likes.some(l => l.user === partner && l.ideaId === card.id);
+    // 1. 本地立即記錄 myLikes
+    if (!gachaState.myLikes.includes(card.id)) {
+      gachaState.myLikes.push(card.id);
+    }
+
+    // 2. 檢查對方是否已經喜歡過這張卡片 -> 即時觸發配對！
+    const partnerLiked = gachaState.partnerLikes.includes(card.id);
     
     if (partnerLiked) {
-      // Create match
-      let matches = JSON.parse(localStorage.getItem('base_demo_list_matches') || '[]');
-      if (!matches.some(m => m.ideaId === card.id)) {
-        matches.push({
+      if (!gachaState.matches.some(m => m.ideaId === card.id)) {
+        gachaState.matches.unshift({
           ideaId: card.id,
           matchedAt: new Date().toISOString(),
           status: 'pending',
-          target: null // week, month, year
+          target: ''
         });
-        localStorage.setItem('base_demo_list_matches', JSON.stringify(matches));
       }
+      saveLocalGacha();
       
-      // Fire confetti and alert
-      window.BaseApp.bunnySay('🎉 配對成功！你們都想做這件事！');
-      alert(`🎉 配對成功！\n\n你們都想：${card.text}\n已經加入約會清單囉！`);
+      // 觸發兔兔慶祝與配對彈窗
+      if (window.BaseApp) window.BaseApp.bunnySay('🎉 配對成功！你們都想做這件事！');
+      setTimeout(() => {
+        alert(`🎉 配對成功！\n\n你們都想：${card.text}\n\n已經自動收進「約會清單」囉！❤️`);
+      }, 100);
+    } else {
+      saveLocalGacha();
     }
+    
+    // 3. 同步傳送給後台（並檢查伺服器端是否剛好也配對上了）
+    API.gachaLike(card.id).then(res => {
+      if (res && res.matched) {
+        if (!partnerLiked) {
+          if (res.match && !gachaState.matches.some(m => m.ideaId === card.id)) {
+            gachaState.matches.unshift(res.match);
+          }
+          saveLocalGacha();
+          if (window.BaseApp) window.BaseApp.bunnySay('🎉 配對成功！你們都想做這件事！');
+          setTimeout(() => {
+            alert(`🎉 配對成功！\n\n你們都想：${card.text}\n\n已經自動收進「約會清單」囉！❤️`);
+          }, 100);
+        }
+      }
+    }).catch(err => {
+      console.warn('API.gachaLike 同步失敗:', err);
+    });
     
     currentCardIndex++;
     showCard();
   });
 
   // ==========================================
-  // Matches List Logic
+  // 約會清單 (Matches List)
   // ==========================================
   function renderMatches() {
-    const matches = JSON.parse(localStorage.getItem('base_demo_list_matches') || '[]');
+    const matches = gachaState.matches || [];
     if (matches.length === 0) {
       $('matchesList').innerHTML = '';
       $('matchesEmpty').style.display = 'block';
@@ -152,21 +235,21 @@
     }
     
     $('matchesEmpty').style.display = 'none';
-    matches.sort((a,b) => new Date(b.matchedAt) - new Date(a.matchedAt));
+    const sorted = [...matches].sort((a,b) => new Date(b.matchedAt || 0) - new Date(a.matchedAt || 0));
     
-    $('matchesList').innerHTML = matches.map(m => {
+    $('matchesList').innerHTML = sorted.map(m => {
       const idea = IDEAS.find(i => i.id === m.ideaId);
-      if(!idea) return '';
+      if (!idea) return '';
       
-      let statusBadge = '<span style="background:var(--pink); color:#fff; padding:2px 8px; border-radius:10px; font-size:0.8rem;">剛配對</span>';
-      if (m.target === 'week') statusBadge = '<span style="background:var(--sage); color:#fff; padding:2px 8px; border-radius:10px; font-size:0.8rem;">這週出發</span>';
-      if (m.target === 'month') statusBadge = '<span style="background:var(--sage-soft); color:var(--ink); padding:2px 8px; border-radius:10px; font-size:0.8rem;">這個月計畫</span>';
-      if (m.status === 'done') statusBadge = '<span style="background:#ccc; color:#fff; padding:2px 8px; border-radius:10px; font-size:0.8rem;">已完成</span>';
+      let statusBadge = '<span style="background:var(--pink); color:#fff; padding:2px 8px; border-radius:10px; font-size:0.8rem;">剛配對 ❤️</span>';
+      if (m.target === 'week') statusBadge = '<span style="background:var(--sage); color:#fff; padding:2px 8px; border-radius:10px; font-size:0.8rem;">這週出發 🚗</span>';
+      if (m.target === 'month') statusBadge = '<span style="background:var(--accent); color:#fff; padding:2px 8px; border-radius:10px; font-size:0.8rem;">這個月計畫 📅</span>';
+      if (m.status === 'done') statusBadge = '<span style="background:#ccc; color:#fff; padding:2px 8px; border-radius:10px; font-size:0.8rem;">已完成 ✔</span>';
       
       return `
         <div class="card" style="margin-bottom:0; padding:16px;">
           <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-            <div style="font-size:0.85rem; color:var(--ink-soft);">${new Date(m.matchedAt).toLocaleDateString()}</div>
+            <div style="font-size:0.85rem; color:var(--ink-soft);">${new Date(m.matchedAt || Date.now()).toLocaleDateString()}</div>
             ${statusBadge}
           </div>
           <div style="font-size:1.05rem; font-weight:bold; margin-bottom:16px;">${idea.text}</div>
@@ -183,24 +266,40 @@
   }
 
   window.setTarget = function(ideaId, target) {
-    let matches = JSON.parse(localStorage.getItem('base_demo_list_matches') || '[]');
-    let m = matches.find(x => x.ideaId === ideaId);
-    if(m) m.target = target;
-    localStorage.setItem('base_demo_list_matches', JSON.stringify(matches));
-    renderMatches();
-    window.BaseApp.bunnySay(target === 'week' ? '太棒了！這週就出發！' : '約好了這個月喔！');
+    let m = gachaState.matches.find(x => x.ideaId === ideaId);
+    if (m) {
+      m.target = target;
+      saveLocalGacha();
+      renderMatches();
+      API.gachaUpdateMatch(ideaId, { target }).catch(() => {});
+      if (window.BaseApp) {
+        window.BaseApp.bunnySay(target === 'week' ? '太棒了！這週就出發！' : '約好了這個月喔！');
+      }
+    }
   };
   
   window.completeMatch = function(ideaId) {
-    let matches = JSON.parse(localStorage.getItem('base_demo_list_matches') || '[]');
-    let m = matches.find(x => x.ideaId === ideaId);
-    if(m) {
+    let m = gachaState.matches.find(x => x.ideaId === ideaId);
+    if (m) {
       m.status = 'done';
-      m.target = null;
+      m.target = '';
+      saveLocalGacha();
+      renderMatches();
+      API.gachaUpdateMatch(ideaId, { status: 'done', target: '' }).catch(() => {});
+      if (window.BaseApp) {
+        window.BaseApp.bunnySay('恭喜你們又創造了一個美好回憶！');
+      }
     }
-    localStorage.setItem('base_demo_list_matches', JSON.stringify(matches));
-    renderMatches();
-    window.BaseApp.bunnySay('恭喜你們又創造了一個回憶！');
+  };
+
+  // 初始化
+  loadLocalGacha();
+  document.addEventListener('DOMContentLoaded', () => {
+    syncGachaState(true);
+  });
+
+  window.GachaApp = {
+    sync: syncGachaState
   };
 
 })();
