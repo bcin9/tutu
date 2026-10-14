@@ -77,6 +77,11 @@ function doGet(e) {
     const params = (typeof e !== 'undefined' && e && e.parameter) ? e.parameter : {};
     const action = sanitizeText(params.action || '', 30);
 
+    // 秘密基地（兩人專用）的功能都在 couple-api.gs
+    if (action.indexOf('couple_') === 0) {
+      return handleCoupleAction(action, params);
+    }
+
     if (action === 'admin_change_password') {
       const adminPassword = sanitizeText(params.adminPassword || '', 100);
       const newPassword = sanitizeText(params.newPassword || '', 100);

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="images/IMG_4011-icon-1024.png">
+  <link rel="icon" href="images/IMG_4011-icon-1024.png">
+  <title>兔兔的彩虹星球</title>
+  <link rel="stylesheet" href="css/app.css?v=2">
+  <style>
+    /* 這裡只保留一點點 layout padding，其餘都在 app.css */
+    body {
+      padding: 20px;
+      padding-top: max(20px, env(safe-area-inset-top));
+    }
+    .back-nav {
+      margin-bottom: 20px;
+      display: inline-block;
+      text-decoration: none;
+      color: var(--ink-soft);
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+
+  <a href="index.html" class="back-nav">← 回到秘密基地</a>
+
+  <div class="content">
+    <div class="hero-banner" style="margin-bottom:20px;">
+      <h1>🌈 兔兔的彩虹星球</h1>
+      <p style="color:var(--ink-soft);">牠沒有離開，只是先去美麗的星空奔跑了</p>
+    </div>
+
+    <!-- 寫信區 -->
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <h2 style="margin:0;">對兔兔說說話</h2>
+        <a href="mailbox.html" class="btn secondary" style="font-size:0.85rem; padding:6px 12px;">📬 進入信箱 <span id="mailboxBadge" style="display:none; background:var(--error); color:#fff; border-radius:10px; padding:2px 6px; font-size:0.7rem; margin-left:4px;">0</span></a>
+      </div>
+      <p style="color:var(--ink-soft); font-size:0.9rem; margin-bottom:12px;">留言兔兔會看之外，還會回信給你喔。</p>
+      <textarea id="bunnyMessageInput" class="input-field" placeholder="兔兔，我今天有乖乖吃飯，也有很想你。" rows="3" style="margin-bottom:12px;"></textarea>
+      <button id="bunnySendBtn" class="btn primary">送給兔兔</button>
+      <p id="bunnySendStatus" style="font-size:0.85rem; color:var(--ink-soft); margin-top:8px;"></p>
+    </div>
+
+    <!-- 餵食互動區 -->
+    <div class="card">
+      <h2>肚子好餓快餵我</h2>
+      <p style="color:var(--ink-soft); font-size:0.9rem;">點一下下面的按鈕，讓兔兔開心吃草吃點心。</p>
+      
+      <div class="bunny-scene">
+        <div id="feedMessage" class="soon" style="position:absolute; top:-20px; left:50%; transform:translateX(-50%); background:#fff; padding:8px 12px; border-radius:12px; box-shadow:var(--shadow); z-index:10; font-size:0.9rem; transition:opacity 0.3s;" hidden>兔兔正躺著等你！</div>
+        <img src="images/art/feed-bunny.jpg" alt="兔兔" id="rabbit" style="border-radius:20px;">
+      </div>
+      
+      <div style="display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-bottom:12px;">
+        <button class="btn secondary" data-feed="hay">餵草 🌾</button>
+        <button class="btn secondary" data-feed="cabbage">餵高麗菜 🥬</button>
+        <button class="btn secondary" data-feed="apple">餵蘋果 🍎</button>
+        <button class="btn secondary" data-feed="banana">餵香蕉 🍌</button>
+        <button class="btn primary" data-feed="pet">摸摸小腦袋 🤚</button>
+      </div>
+      
+      <div id="feedCounter" style="text-align:center; font-weight:bold; color:var(--ink); font-size:0.9rem;">今天已被寵愛了 0 次</div>
+      <div id="bunnyMood" style="text-align:center; color:var(--ink-soft); font-size:0.85rem; margin-top:4px;">兔兔正看著你</div>
+    </div>
+
+    <!-- 相簿區 -->
+    <div class="card" style="position:relative; overflow:hidden;">
+      <h2>時光長廊</h2>
+      <p style="color:var(--ink-soft); font-size:0.9rem;">滑動回憶相簿，讓這些回憶化作小星星。</p>
+      
+      <div id="galleryTrack" style="display:flex; justify-content:center; gap:16px; margin:20px 0; min-height:260px;">
+        <!-- JS rendered -->
+      </div>
+      
+      <div id="starOverlay" class="star-overlay"></div>
+      
+      <div class="gallery-controls">
+        <button id="btnPrevMemory" class="btn secondary">上一張</button>
+        <button id="btnNextMemory" class="btn secondary">下一張</button>
+        <button id="btnSubmitMemory" class="btn primary">送出小星星</button>
+      </div>
+      <div id="memoryMessage" style="text-align:center; margin-top:12px; color:var(--ink-soft); font-size:0.9rem;"></div>
+    </div>
+
+    <!-- 每日信封 -->
+    <div class="card">
+      <h2>兔兔的每日一句</h2>
+      <p style="color:var(--ink-soft); font-size:0.9rem;">每天開一次兔兔的小天使留言。</p>
+      
+      <div class="letter-card-scene">
+        <div id="letterCard" class="letter-card">
+          <div class="letter-face letter-front">點一下「拆信」領取今日信封 ✉️</div>
+          <div class="letter-face letter-back" id="letterBackText"></div>
+        </div>
+      </div>
+      <div style="text-align:center;">
+        <button id="btnOpenLetter" class="btn primary">拆信</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="memoryToast" class="memory-toast"></div>
+
+  <!-- Scripts -->
+  <script src="js/config.js?v=2"></script>
+  <script src="js/api.js?v=2"></script>
+  <script src="js/bunny.js?v=2"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js').then(reg => {
+        reg.update().catch(() => {});
+      }).catch(() => {});
+
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+          refreshing = true;
+          window.location.reload();
+        }
+      });
+    }
+  </script>
+</body>
+</html>

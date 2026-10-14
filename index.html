@@ -2,1518 +2,230 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <!-- 關鍵設定：讓網頁自適應手機螢幕 -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    
-    <!-- 關鍵設定：開啟 iOS 全螢幕 App 模式 (隱藏 Safari 網址列) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+
+    <!-- iOS 加到主畫面後以全螢幕 App 開啟 -->
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="兔兔的彩虹星球">
-    
-    <!-- 關鍵設定：App 的桌面圖標 -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="秘密基地">
+
     <link rel="apple-touch-icon" href="images/IMG_4011-icon-1024.png">
     <link rel="icon" href="images/IMG_4011-icon-1024.png" sizes="1024x1024" type="image/png">
-    <link rel="shortcut icon" href="images/IMG_4011-icon-1024.png">
-    
-    <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#FFB7B2">
+    <meta name="theme-color" content="#FAF5EC">
 
-    <title>兔兔的彩虹星球</title>
-    
-    <style>
-        /* 療癒系淡粉色與溫暖粉藍 */
-        :root {
-            --bg-color: #FFF5F5;
-            --card-color: #FFFFFF;
-            --primary-color: #FFB7B2;
-            --text-color: #6D5959;
-            --accent-color: #B5E2FA;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 20px;
-            padding-bottom: 60px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            user-select: none;
-            -webkit-user-select: none;
-        }
-
-        /* 頂部標題 */
-        .header {
-            text-align: center;
-            margin-top: 20px;
-            margin-bottom: 30px;
-        }
-        .header h1 {
-            font-size: 1.5rem;
-            margin-bottom: 5px;
-            color: #4A3E3E;
-        }
-        .header p {
-            font-size: 0.9rem;
-            opacity: 0.8;
-            margin: 0;
-        }
-
-        /* 音樂播放按鈕 */
-        .music-btn {
-            background-color: var(--accent-color);
-            border: none;
-            padding: 10px 20px;
-            border-radius: 20px;
-            color: #4A3E3E;
-            font-weight: bold;
-            font-size: 0.9rem;
-            margin-bottom: 25px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            cursor: pointer;
-        }
-
-        /* 照片輪播牆 */
-        .section-card {
-            width: 100%;
-            max-width: 760px;
-            background-color: var(--card-color);
-            border-radius: 28px;
-            padding: 24px;
-            box-shadow: 0 16px 32px rgba(0,0,0,0.06);
-            margin: 20px auto;
-        }
-        .section-title {
-            font-size: 1.3rem;
-            margin-bottom: 12px;
-            color: #4A3E3E;
-        }
-        .message-title-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            margin-bottom: 12px;
-        }
-        .message-title-row .section-title {
-            margin-bottom: 0;
-        }
-        .section-subtitle {
-            font-size: 0.95rem;
-            color: #6D5959;
-            opacity: 0.85;
-            margin-bottom: 18px;
-            line-height: 1.6;
-        }
-        .home-welcome {
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-        }
-        .home-welcome p {
-            margin: 0;
-        }
-        .home-banner {
-            width: 100%;
-            height: 170px;
-            border-radius: 22px;
-            background: linear-gradient(135deg, #F8F0FF 0%, #FFF5F2 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            color: #5B4A4A;
-            padding: 20px;
-            box-sizing: border-box;
-            border: 1px solid rgba(138, 74, 33, 0.12);
-        }
-        .home-banner span {
-            font-size: 1.05rem;
-            line-height: 1.8;
-        }
-        .message-section {
-            background: linear-gradient(135deg, #fff6f1 0%, #fefcf8 100%);
-            border: 1px solid rgba(255, 183, 178, 0.45);
-        }
-        .message-layout {
-            display: grid;
-            gap: 14px;
-        }
-        .message-note {
-            border-radius: 18px;
-            background: #ffffff;
-            border: 1px solid rgba(181, 226, 250, 0.45);
-            padding: 14px 16px;
-            line-height: 1.7;
-            color: #4a3e3e;
-            box-shadow: 0 10px 18px rgba(0,0,0,0.04);
-        }
-        .message-field {
-            display: grid;
-            gap: 8px;
-        }
-        .message-field label {
-            font-size: 0.9rem;
-            color: #6d5959;
-            font-weight: 600;
-        }
-        .message-actions {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 12px;
-        }
-        .message-status {
-            font-size: 0.9rem;
-            color: #6d5959;
-            opacity: 0.9;
-        }
-        .mailbox-link {
-            display: inline-block;
-            padding: 8px 16px;
-            background: #B5E2FA;
-            color: #4A3E3E;
-            text-decoration: none;
-            border-radius: 16px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            white-space: nowrap;
-            position: relative;
-        }
-        .mailbox-link:hover {
-            background: #a7d8f3;
-        }
-        .mailbox-badge {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            min-width: 20px;
-            height: 20px;
-            padding: 0 6px;
-            border-radius: 999px;
-            background: #d4382a;
-            color: #fff;
-            font-size: 0.74rem;
-            font-weight: 700;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 6px 12px rgba(212, 56, 42, 0.35);
-        }
-        .mailbox-badge.show {
-            display: inline-flex;
-        }
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .feed-section {
-            display: grid;
-            gap: 18px;
-        }
-        .feed-row {
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-        }
-        .feed-row-inner {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 18px;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .feed-panel {
-            flex: 1 1 260px;
-            min-width: 240px;
-        }
-        .feed-panel.bunny-scene {
-            flex: 2 1 360px;
-        }
-        .bunny-scene {
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            position: relative;
-            padding-top: 32px;
-        }
-        .bunny-scene .feed-message {
-            position: absolute;
-            top: -8px;
-            left: 50%;
-            transform: translateX(-50%) translateY(-8px);
-            width: min(240px, calc(100% - 26px));
-            background: #FFF6F2;
-            border: 1px solid rgba(255, 183, 178, 0.64);
-            border-radius: 26px;
-            padding: 14px 18px;
-            box-shadow: 0 16px 28px rgba(0,0,0,0.1);
-            color: #4A3E3E;
-            font-size: 0.98rem;
-            line-height: 1.6;
-            text-align: center;
-            min-height: auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease, transform 0.3s ease;
-        }
-        .bunny-scene .feed-message.show {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
-        .bunny-scene .feed-message::after {
-            content: '';
-            position: absolute;
-            left: 50%;
-            bottom: -12px;
-            transform: translateX(-50%) rotate(45deg);
-            width: 22px;
-            height: 22px;
-            background: #FFF6F2;
-            border-left: 1px solid rgba(255, 183, 178, 0.64);
-            border-bottom: 1px solid rgba(255, 183, 178, 0.64);
-            border-radius: 4px;
-            box-shadow: 0 8px 18px rgba(0,0,0,0.08);
-        }
-        .bunny-svg {
-            width: 100%;
-            max-width: none;
-            height: auto;
-        }
-        .flying-food {
-            position: fixed;
-            z-index: 30;
-            width: 46px;
-            height: 46px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.96);
-            border: 1px solid rgba(0,0,0,0.08);
-            box-shadow: 0 20px 32px rgba(0,0,0,0.16);
-            font-size: 1.6rem;
-            transform: translate(-50%, -50%) scale(1);
-            opacity: 1;
-            transition: transform 2.4s ease-out, opacity 0.35s ease-out;
-            pointer-events: none;
-        }
-        .pet-hand {
-            position: fixed;
-            z-index: 35;
-            width: 60px;
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.8rem;
-            border-radius: 50%;
-            background: transparent;
-            border: none;
-            box-shadow: none;
-            transform: translate(-50%, -50%) scale(1);
-            opacity: 1;
-            transition: transform 1s ease-out, opacity 0.4s ease-out;
-            pointer-events: none;
-        }
-        .lucky-burst {
-            position: fixed;
-            z-index: 34;
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.45rem;
-            color: #FFD34D;
-            text-shadow: 0 0 12px rgba(255, 211, 77, 0.65), 0 0 24px rgba(255, 211, 77, 0.35);
-            pointer-events: none;
-            opacity: 0;
-            transform: translate(-50%, -50%) scale(0.4);
-            transition: transform 0.9s ease-out, opacity 0.9s ease-out;
-        }
-        .bunny-svg.kicked {
-            animation: bunnyKick 0.35s ease;
-        }
-        @keyframes bunnyKick {
-            0% { transform: scale(1) translateY(0); }
-            50% { transform: scale(1.04) translateY(-6px); }
-            100% { transform: scale(1) translateY(0); }
-        }
-        .feed-buttons {
-            display: grid;
-            gap: 12px;
-        }
-        .feed-btn {
-            background-color: #FFB7B2;
-            color: #4A3E3E;
-            border: none;
-            border-radius: 18px;
-            padding: 14px 16px;
-            font-size: 0.98rem;
-            font-weight: 700;
-            cursor: pointer;
-            box-shadow: 0 8px 18px rgba(255, 183, 178, 0.25);
-            transition: transform 0.15s ease, background-color 0.15s ease;
-        }
-        .feed-btn:hover {
-            transform: translateY(-2px);
-            background-color: #ffc7c1;
-        }
-        .feed-message {
-            background: #FFF0EA;
-            border-radius: 20px;
-            padding: 18px;
-            border: 1px solid rgba(255,183,178,0.45);
-            color: #5B4A4A;
-            min-height: 110px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            font-size: 1rem;
-            line-height: 1.7;
-        }
-        .feed-counter {
-            margin-top: 6px;
-            text-align: center;
-            color: #8A4A21;
-            font-weight: 700;
-        }
-        .bunny-mood {
-            margin-top: 10px;
-            text-align: center;
-            color: #5f5252;
-            font-size: 0.92rem;
-            min-height: 24px;
-        }
-        .bunny-burst {
-            position: fixed;
-            z-index: 36;
-            pointer-events: none;
-            transform: translate(-50%, -50%) scale(0.45);
-            opacity: 0;
-            filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.15));
-            animation: bunnyBurstFloat 1.2s ease-out forwards;
-        }
-        @keyframes bunnyBurstFloat {
-            0% {
-                transform: translate(-50%, -50%) scale(0.45);
-                opacity: 0;
-            }
-            30% {
-                opacity: 1;
-                transform: translate(-50%, -50%) scale(1);
-            }
-            100% {
-                transform: translate(-50%, calc(-50% - 68px)) scale(0.82);
-                opacity: 0;
-            }
-        }
-
-        .gallery-section {
-            position: relative;
-        }
-        .gallery-section {
-            position: relative;
-            overflow: hidden;
-        }
-        .gallery-track {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(200px, 1fr));
-            gap: 14px;
-            position: relative;
-        }
-        .gallery-track.mobile-view {
-            display: flex;
-            overflow-x: auto;
-            scroll-snap-type: x mandatory;
-            -webkit-overflow-scrolling: touch;
-        }
-        .gallery-track.mobile-view .gallery-card {
-            min-width: 85%;
-            flex: 0 0 85%;
-            scroll-snap-align: center;
-        }
-        .gallery-card {
-            position: relative;
-            overflow: hidden;
-            border-radius: 22px;
-            height: 190px;
-            background: #EEE3D8;
-            border: 1px solid rgba(138,74,33,0.12);
-        }
-        .gallery-card img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-        .gallery-caption {
-            display: none;
-        }
-        .gallery-controls {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-top: 16px;
-            justify-content: center;
-        }
-        .gallery-btn {
-            background-color: #B5E2FA;
-            color: #4A3E3E;
-            border: none;
-            border-radius: 18px;
-            padding: 12px 18px;
-            cursor: pointer;
-            font-weight: 700;
-            box-shadow: 0 7px 16px rgba(181,226,250,0.25);
-        }
-        .feed-btn:active,
-        .gallery-btn:active,
-        .letter-btn:active,
-        .send-btn:active {
-            transform: scale(0.98);
-            box-shadow: 0 4px 10px rgba(181,226,250,0.2);
-            background-color: #a7d8f3;
-        }
-        .memory-message {
-            width: 100%;
-            border-radius: 20px;
-            background: #EFF7FF;
-            border: 1px solid rgba(118,162,226,0.38);
-            padding: 16px 18px;
-            color: #3A4A5C;
-            margin-top: 18px;
-            box-sizing: border-box;
-            font-size: 0.98rem;
-            line-height: 1.6;
-            text-align: center;
-            box-shadow: 0 12px 24px rgba(110,152,209,0.08);
-        }
-        .memory-toast {
-            position: absolute;
-            top: 14px;
-            left: 50%;
-            transform: translateX(-50%) translateY(-12px);
-            background: rgba(255,255,255,0.92);
-            border: 1px solid rgba(255,183,178,0.5);
-            color: #4A3E3E;
-            padding: 12px 18px;
-            border-radius: 18px;
-            box-shadow: 0 16px 32px rgba(0,0,0,0.08);
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.28s ease, transform 0.28s ease;
-            z-index: 3;
-        }
-        .memory-toast.show {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
-        .gallery-glow {
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.35s ease;
-            z-index: 0;
-            background: radial-gradient(circle at 20% 20%, rgba(255, 246, 210, 0.45), transparent 24%),
-                        radial-gradient(circle at 80% 70%, rgba(255, 214, 214, 0.32), transparent 22%),
-                        radial-gradient(circle at 50% 45%, rgba(255, 255, 255, 0.22), transparent 28%);
-            filter: blur(14px);
-        }
-        .gallery-glow.active {
-            opacity: 1;
-        }
-        .star-overlay {
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            z-index: 2;
-        }
-        .star {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            background: radial-gradient(circle, #FFF9D5 0%, #F9D47F 50%, #FFC26A 100%);
-            transform: translate(-50%, -50%) scale(0);
-            border-radius: 50%;
-            box-shadow: 0 0 10px rgba(255, 227, 135, 0.55);
-            animation: twinkle 1.2s ease forwards;
-        }
-        .star.small {
-            width: 8px;
-            height: 8px;
-            animation-duration: 0.95s;
-        }
-        .star.medium {
-            width: 12px;
-            height: 12px;
-            animation-duration: 1.15s;
-        }
-        .star.large {
-            width: 16px;
-            height: 16px;
-            animation-duration: 1.35s;
-        }
-        @keyframes twinkle {
-            0% { opacity: 0; transform: translate(-50%, -50%) scale(0); }
-            40% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
-            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
-        }
-
-        .letter-area {
-            display: grid;
-            gap: 18px;
-        }
-        .letter-card-scene {
-            perspective: 1100px;
-            -webkit-perspective: 1100px;
-        }
-        .letter-card {
-            position: relative;
-            min-height: 182px;
-            transform-style: preserve-3d;
-            -webkit-transform-style: preserve-3d;
-            transition: transform 0.9s cubic-bezier(0.22, 0.61, 0.36, 1);
-            border-radius: 20px;
-            will-change: transform;
-        }
-        .letter-card.is-open {
-            transform: rotateY(180deg);
-            -webkit-transform: rotateY(180deg);
-        }
-        .letter-face {
-            position: absolute;
-            inset: 0;
-            border-radius: 20px;
-            backface-visibility: hidden;
-            -webkit-backface-visibility: hidden;
-            overflow: hidden;
-            box-shadow: 0 16px 30px rgba(129, 87, 74, 0.12);
-            border: 1px solid rgba(230, 182, 169, 0.75);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            line-height: 1.8;
-            padding: 28px 22px;
-            color: #5B4A4A;
-            transform: translateZ(0);
-            -webkit-transform: translateZ(0);
-        }
-        .letter-front {
-            background: linear-gradient(180deg, #fffdfb 0%, #f6ece8 100%);
-        }
-        .letter-front::before {
-            content: '';
-            position: absolute;
-            top: -20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            height: 74px;
-            background: #fff7f1;
-            clip-path: polygon(0 0, 100% 0, 50% 100%);
-            border-bottom: 1px solid rgba(230,182,169,0.75);
-            z-index: 1;
-        }
-        .letter-front-text {
-            position: relative;
-            z-index: 2;
-            font-weight: 700;
-            letter-spacing: 1px;
-        }
-        .letter-back {
-            background: linear-gradient(180deg, #fffdfb 0%, #f8f1ea 100%);
-            transform: rotateY(180deg) translateZ(1px);
-            -webkit-transform: rotateY(180deg) translateZ(1px);
-            font-size: 1rem;
-        }
-        .letter-btn {
-            background-color: #B5E2FA;
-            color: #4A3E3E;
-            border: none;
-            border-radius: 20px;
-            padding: 14px 20px;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            box-shadow: 0 10px 20px rgba(181,226,250,0.3);
-        }
-        .letter-sign {
-            margin-top: 12px;
-            font-size: 0.9rem;
-            color: #8A4A21;
-            opacity: 0.9;
-            text-align: center;
-        }
-
-        @media (max-width: 720px) {
-            .gallery-track {
-                gap: 14px;
-                padding-bottom: 8px;
-            }
-            .gallery-track::-webkit-scrollbar {
-                display: none;
-            }
-            .gallery-track {
-                -ms-overflow-style: none;
-                scrollbar-width: none;
-            }
-            .gallery-card {
-                min-width: 85%;
-                flex: 0 0 85%;
-                height: 220px;
-                scroll-snap-align: center;
-            }
-            .feed-row-inner {
-                flex-direction: column;
-            }
-        }
-        .mailbox-card {
-            width: 90%;
-            max-width: 350px;
-            background-color: var(--card-color);
-            border-radius: 20px;
-            padding: 20px;
-            box-sizing: border-box;
-            margin-top: 30px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.05);
-            text-align: center;
-        }
-        .mailbox-card h3 {
-            margin-top: 0;
-            font-size: 1.1rem;
-        }
-        textarea,
-        input[type="text"] {
-            width: 100%;
-            border: 1px solid #FFE3E3;
-            border-radius: 12px;
-            padding: 10px;
-            box-sizing: border-box;
-            font-size: 0.95rem;
-            color: var(--text-color);
-            background-color: #FFFDFD;
-        }
-        textarea {
-            height: 100px;
-            resize: none;
-        }
-        textarea:focus,
-        input[type="text"]:focus {
-            outline: none;
-            border-color: var(--primary-color);
-        }
-        .send-btn {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 25px;
-            font-size: 1rem;
-            margin-top: 15px;
-            font-weight: bold;
-            box-shadow: 0 4px 10px rgba(255, 183, 178, 0.4);
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        .send-btn:active {
-            transform: scale(0.95);
-        }
-
-        /* 動畫效果 */
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        @keyframes flyAway {
-            0% { transform: scale(1) translateY(0); opacity: 1; }
-            100% { transform: scale(0.1) translateY(-200px); opacity: 0; }
-        }
-        .fly-animation {
-            animation: flyAway 1.2s forwards;
-        }
-    </style>
+    <title>我們的秘密基地</title>
+    <link rel="stylesheet" href="css/app.css?v=2">
 </head>
 <body>
 
-    <div class="header">
-        <h1>🐰 兔兔的彩虹星球</h1>
-        <p>「牠沒有離開，只是先去美麗的星空奔跑了」</p>
+    <!-- ===================== 解鎖畫面 ===================== -->
+    <section id="lockScreen" class="lock" hidden>
+        <img class="art lock-art" src="images/art/lock-door.jpg" alt="">
+        <h1 data-bind="baseName">我們的秘密基地</h1>
+        <p class="lock-sub">這裡只屬於我們兩個</p>
+
+        <!-- 第一步：選你是誰 -->
+        <div id="whoStep" class="who-list"></div>
+
+        <!-- 第二步：輸入密碼 -->
+        <div id="pinStep" class="pin-step" hidden>
+            <p class="pin-who">嗨 <b id="pinWhoName"></b>，輸入你的密碼</p>
+            <div class="pin-dots" id="pinDots"></div>
+            <p class="pin-msg" id="pinMsg"></p>
+            <div class="keypad" id="keypad"></div>
+        </div>
+    </section>
+
+    <!-- ===================== 主畫面 ===================== -->
+    <div id="app" hidden>
+        <main class="app-main">
+
+            <!-- 首頁 -->
+            <section class="view" data-view="home">
+                <div class="topbar">
+                    <div>
+                        <p class="greet" id="greet">嗨</p>
+                        <h1 class="title" data-bind="baseName">我們的秘密基地</h1>
+                    </div>
+                    <button class="chip-btn" id="switchUserBtn" type="button">換人登入</button>
+                </div>
+
+                <div class="hero">
+                    <img class="art hero-art" src="images/art/hero-island.jpg" alt="兔兔守護的小屋">
+                </div>
+                <div class="days">
+                    <div class="days-label">我們在一起的第</div>
+                    <div class="days-num"><span id="daysNum">0</span> <small style="font-size:1rem">天</small></div>
+                    <div class="days-since" id="daysSince"></div>
+                </div>
+
+                <button class="card secret-card" type="button" data-go="secret">
+                    <div class="card-head">
+                        <span class="tag pink">今日秘密</span>
+                        <span class="card-meta" id="homeSecretStatus">兔兔正在準備題目…</span>
+                    </div>
+                    <p class="secret-q" id="homeSecretQ">載入中...</p>
+                </button>
+
+                <div class="entry-grid">
+                    <button class="entry" type="button" data-go="lists" data-list="todo">
+                        <span class="entry-icon">💡</span>
+                        <span class="entry-name">想一起做的事</span>
+                        <span class="entry-desc">專屬願望清單</span>
+                    </button>
+                    <button class="entry" type="button" data-go="lists" data-list="places">
+                        <span class="entry-icon">✈️</span>
+                        <span class="entry-name">想一起去的地方</span>
+                        <span class="entry-desc">國內外旅遊計畫</span>
+                    </button>
+                    <a class="entry wide" href="bunny.html">
+                        <span class="entry-icon">🌈</span>
+                        <span>
+                            <span class="entry-name" style="display:block"><span data-bind="bunnyName">兔兔</span>的彩虹小房間</span>
+                            <span class="entry-desc">照片、音樂和信箱都在這裡，想牠的時候就來坐坐</span>
+                        </span>
+                    </a>
+                </div>
+            </section>
+
+            <!-- 交換秘密（第二階段） -->
+            <section class="view" data-view="secret" hidden>
+                <div class="topbar">
+                    <div>
+                        <p class="greet">每天一題，回答後才能看到對方的答案</p>
+                        <h1 class="title">交換秘密</h1>
+                    </div>
+                </div>
+                
+                <div id="secretLoading" class="soon">
+                    <img class="art" src="images/art/bunny-messenger.jpg" alt="">
+                    <h2 style="font-size: 1.1rem; color: var(--ink-soft)">載入今日秘密中...</h2>
+                </div>
+
+                <div id="secretContent" class="secret-container" hidden>
+                    <div class="secret-header">
+                        <div class="secret-date" id="secretDate"></div>
+                        <h2 class="secret-question" id="secretQ"></h2>
+                    </div>
+                    
+                    <div class="answers-area">
+                        <div id="myAnswerSection"></div>
+                        <div id="partnerAnswerSection"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 清單（第三階段）：盲盒抽卡與約會清單 -->
+            <section class="view" data-view="lists" hidden>
+                <div class="topbar">
+                    <div>
+                        <p class="greet">專屬情侶的心動抽卡機</p>
+                        <h1 class="title">約會計畫</h1>
+                    </div>
+                </div>
+                
+                <div class="list-tabs">
+                    <button class="list-tab active" data-list-type="gacha">🃏 心動抽卡</button>
+                    <button class="list-tab" data-list-type="matches">📅 約會清單</button>
+                </div>
+                
+                <div id="listLoading" class="soon" hidden>
+                    <p style="color: var(--ink-soft); margin-top: 2rem;">載入中...</p>
+                </div>
+
+                <div id="listContent" class="list-container">
+                    <!-- Gacha View -->
+                    <div id="gachaView">
+                        <div id="categorySelector">
+                            <h2 style="font-size:1.1rem; margin-bottom:8px;">今天想翻哪一種牌子？</h2>
+                            <p style="font-size:0.9rem; color:var(--ink-soft); margin-bottom:20px;">選一個類別，看看會抽出什麼任務</p>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                                <button class="btn secondary" data-cat="daily" style="padding:20px;">🛋️ 日常</button>
+                                <button class="btn secondary" data-cat="travel" style="padding:20px;">✈️ 旅行</button>
+                                <button class="btn secondary" data-cat="food" style="padding:20px;">🥩 美食</button>
+                                <button class="btn secondary" data-cat="crazy" style="padding:20px;">🎢 瘋狂</button>
+                            </div>
+                        </div>
+
+                        <div id="swipeArea" style="display:none; text-align:center;">
+                            <div id="cardDeck" style="background:#FFF; border:1px solid var(--border); border-radius:16px; padding:40px 20px; box-shadow:var(--shadow); margin:20px 0; min-height:180px; display:flex; align-items:center; justify-content:center; font-size:1.1rem; line-height:1.6; font-weight:bold; color:var(--ink);">
+                                <!-- Card content -->
+                            </div>
+                            <div style="display:flex; justify-content:center; gap:20px;">
+                                <button id="btnPass" class="btn secondary" style="flex:1;">❌ 先不要</button>
+                                <button id="btnLike" class="btn primary" style="flex:1;">❤️ 想一起</button>
+                            </div>
+                        </div>
+
+                        <div id="swipeDone" style="display:none; text-align:center; padding:40px 0;">
+                            <h3 style="margin-bottom:8px;">今天的牌子翻完囉！</h3>
+                            <p style="color:var(--ink-soft); font-size:0.9rem; margin-bottom:20px;">換個類別繼續抽，或是去約會清單看看</p>
+                            <button class="btn secondary" id="btnResetGacha">再抽一次</button>
+                        </div>
+                    </div>
+
+                    <!-- Matches View -->
+                    <div id="matchesView" hidden>
+                        <div id="matchesList" style="display:flex; flex-direction:column; gap:12px;"></div>
+                        <div id="matchesEmpty" style="display:none; text-align:center; padding:40px 0; color:var(--ink-soft);">
+                            還沒有配對成功的事情喔！<br>快去抽卡看看吧～
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- 兔兔信差 -->
+        <button class="messenger" id="messenger" type="button" aria-label="兔兔信差">
+            <img class="art" src="images/art/bunny-messenger.jpg" alt="">
+            <span class="messenger-badge" id="messengerBadge" hidden></span>
+        </button>
+        <div class="bubble" id="bubble"></div>
+
+        <!-- 底部分頁 -->
+        <nav class="tabbar">
+            <div class="tabbar-inner">
+                <button class="tab" type="button" data-tab="home">
+                    <svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/><path d="M10 19.5v-5h4v5"/></svg>
+                    首頁
+                </button>
+                <button class="tab" type="button" data-tab="secret">
+                    <svg viewBox="0 0 24 24"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="m3.5 7 8.5 6 8.5-6"/></svg>
+                    交換秘密
+                    <span class="tab-dot" id="secretTabDot" hidden></span>
+                </button>
+                <button class="tab" type="button" data-tab="lists">
+                    <svg viewBox="0 0 24 24"><path d="M9 6.5h11M9 12h11M9 17.5h11"/><circle cx="4.5" cy="6.5" r="1.2"/><circle cx="4.5" cy="12" r="1.2"/><circle cx="4.5" cy="17.5" r="1.2"/></svg>
+                    清單
+                </button>
+                <a class="tab" href="bunny.html">
+                    <svg viewBox="0 0 24 24"><path d="M9 10.5C8 7 7.5 3.5 9 3.5s2 3.5 2 7"/><path d="M15 10.5c1-3.5 1.5-7 0-7s-2 3.5-2 7"/><ellipse cx="12" cy="15" rx="6" ry="5.5"/><circle cx="10" cy="14.5" r=".6" fill="currentColor"/><circle cx="14" cy="14.5" r=".6" fill="currentColor"/></svg>
+                    兔兔小屋
+                </a>
+            </div>
+        </nav>
     </div>
 
-    <section class="section-card home-section">
-        <div class="section-title">歡迎回到兔兔的祕密花園</div>
-        <div class="home-welcome">
-            <div class="home-banner">
-                <span>歡迎來到兔兔的專屬花園，牠一直都在這裡陪著妳。</span>
-            </div>
-            <p class="section-subtitle">這裡是屬於你和兔兔的秘密角落。</p>
-        </div>
-    </section>
-
-    <section class="section-card message-section">
-        <div class="message-title-row">
-            <div class="section-title">對兔兔說說話</div>
-            <a href="mailbox.html" class="mailbox-link">📬 進入信箱查看回信<span id="mailboxBadge" class="mailbox-badge">0</span></a>
-        </div>
-        <p class="section-subtitle">留言兔兔會看之外，還會回信給你喔。</p>
-        <div class="message-layout">
-            <div class="message-field">
-                <textarea id="bunnyMessageInput" placeholder="兔兔，我今天有乖乖吃飯，也有很想你。" maxlength="500"></textarea>
-            </div>
-            <div class="message-actions">
-                <button class="send-btn" id="bunnySendBtn">送給兔兔</button>
-                <div class="message-status" id="bunnySendStatus">送出後兔兔會收到。</div>
-            </div>
-        </div>
-    </section>
-
-    <section class="section-card feed-section">
-        <div class="section-title">肚子好餓快餵我</div>
-        <p class="section-subtitle">點一下下面的餵食按鈕，讓兔兔開心吃草、吃高麗菜，還有溫柔的摸摸。</p>
-        <div class="feed-row">
-            <div class="feed-row-inner">
-                <div class="feed-panel">
-                    <div class="feed-buttons">
-                        <button class="feed-btn" onclick="feedHay(this)">餵草</button>
-                        <button class="feed-btn" onclick="feedCabbage(this)">餵高麗菜</button>
-                        <button class="feed-btn" onclick="feedApple(this)">餵蘋果</button>
-                        <button class="feed-btn" onclick="feedBanana(this)">餵香蕉</button>
-                        <button class="feed-btn" onclick="petBunny(this)">摸摸小腦袋</button>
-                    </div>
-                    <div class="feed-counter" id="feedCounter">今天已被姐姐寵愛了 0 次</div>
-                    <div class="bunny-mood" id="bunnyMood">兔兔正躺著等妳，快來跟牠說話吧！</div>
-                </div>
-                <div class="feed-panel bunny-scene">
-                    <div class="feed-message" id="feedMessage">兔兔正躺著等妳，快來跟牠說話吧！</div>
-                    <img src="images/feed-bunny.jpeg" alt="兔兔" class="bunny-svg rabbit" id="rabbit">
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="section-card gallery-section">
-        <div class="section-title">時光長廊：我們的專屬回憶</div>
-        <p class="section-subtitle">滑動回憶相簿，讓這些回憶化作小星星陪在牠身邊。</p>
-        <div class="gallery-track" id="galleryTrack">
-            <div class="gallery-glow" id="galleryGlow"></div>
-            <div class="star-overlay" id="starOverlay"></div>
-        </div>
-        <div class="memory-toast" id="memoryToast">回憶已送出，兔兔收到妳的小星星了</div>
-        <div class="memory-message" id="memoryMessage">兔兔正在感受這些星星的溫度。</div>
-        <div class="gallery-controls">
-            <button class="gallery-btn" onclick="prevMemory()">上一張</button>
-            <button class="gallery-btn" onclick="nextMemory()">下一張</button>
-            <button class="gallery-btn" onclick="submitMemory()">把回憶送成星星</button>
-        </div>
-    </section>
-
-    <section class="section-card letter-section">
-        <div class="section-title">暖心守護：兔兔的每日一句</div>
-        <p class="section-subtitle">每天開一次兔兔的小天使留言。</p>
-        <div class="letter-area">
-            <div class="letter-card-scene">
-                <div class="letter-card" id="letterCard">
-                    <div class="letter-face letter-front">
-                        <div class="letter-front-text">Bunny 給妳的今日信封<br>點一下拆信</div>
-                    </div>
-                    <div class="letter-face letter-back" id="letterBackText">點一下「拆信」，兔兔的小天使就會送出一句暖心話給妳。</div>
-                </div>
-            </div>
-            <button class="letter-btn" onclick="openLetter()">拆信</button>
-        </div>
-    </section>
-
-    <script>
-        // 1. 互動餵食邏輯
-        let feedCount = 0;
-        const feedMessage = document.getElementById('feedMessage');
-        const feedCounter = document.getElementById('feedCounter');
-        const bunnyMood = document.getElementById('bunnyMood');
-        const rabbit = document.getElementById('rabbit');
-        const letterCard = document.getElementById('letterCard');
-        const letterBackText = document.getElementById('letterBackText');
-        const starOverlay = document.getElementById('starOverlay');
-        const memoryToast = document.getElementById('memoryToast');
-        const galleryGlow = document.getElementById('galleryGlow');
-        const memoryMessage = document.getElementById('memoryMessage');
-        const bunnyMessageInput = document.getElementById('bunnyMessageInput');
-        const bunnySendBtn = document.getElementById('bunnySendBtn');
-        const bunnySendStatus = document.getElementById('bunnySendStatus');
-        const mailboxBadge = document.getElementById('mailboxBadge');
-        const BUNNY_MESSAGE_API = localStorage.getItem('tutu_message_api_url') || 'https://script.google.com/macros/s/AKfycbz6EjuzhjP06-f30c2rkZpLY5JWGf0A4c7ma05EHcntdhvnJ5YaI0I5XTe-aGT2gkDB/exec';
-        const BUNNY_LOCAL_MESSAGES_KEY = 'tutu_local_messages_backup';
-        const BUNNY_USER_MSG_IDS_KEY = 'tutu_user_message_ids';
-        const BUNNY_USER_MSG_NUMBERS_KEY = 'tutu_user_message_numbers';
-        const BUNNY_READ_REPLY_IDS_KEY = 'tutu_read_reply_ids';
-        const BUNNY_BADGE_POLL_MS = 20000;
-        const DAILY_LETTER_DATE_KEY = 'tutu_daily_letter_date';
-        const DAILY_LETTER_TEXT_KEY = 'tutu_daily_letter_text';
-        const memoryResponses = [
-            '兔兔聞到妳的回憶了，牠偷偷在心裡跳了好幾下。',
-            '妳的話變成星星送到我身邊了，我好暖好幸福。',
-            '兔兔感覺得到妳的溫柔，牠抬頭看著妳微笑。',
-            '妳每一句話都像一顆小星星，悄悄綻放在我心裡。',
-            '謝謝妳，兔兔會把妳的回憶放在最柔軟的地方。'
-        ];
-        const bunnyMoodMessages = [
-            '兔兔高興地抖了抖耳朵！',
-            '兔兔一邊嚼草一邊看著妳～',
-            '兔兔舒服地瞇起眼睛了。',
-            '兔兔湊近妳的手掌，輕輕蹭了一下。',
-            '兔兔在原地跳了一小下，心情超好！'
-        ];
-        let mailboxBadgeTimer = null;
-
-        function saveMessageToLocalBackup(payload) {
-            const history = JSON.parse(localStorage.getItem(BUNNY_LOCAL_MESSAGES_KEY) || '[]');
-            history.unshift(payload);
-            localStorage.setItem(BUNNY_LOCAL_MESSAGES_KEY, JSON.stringify(history.slice(0, 100)));
-        }
-
-        function hasBackendConfigured() {
-            return BUNNY_MESSAGE_API.startsWith('http');
-        }
-
-        function getRandomMoodMessage() {
-            return bunnyMoodMessages[Math.floor(Math.random() * bunnyMoodMessages.length)];
-        }
-
-        function getReadReplyIdsFromLocal() {
-            try {
-                const ids = JSON.parse(localStorage.getItem(BUNNY_READ_REPLY_IDS_KEY) || '[]');
-                if (!Array.isArray(ids)) {
-                    return [];
-                }
-                return ids.filter(id => typeof id === 'string');
-            } catch (_) {
-                return [];
-            }
-        }
-
-        function updateMailboxBadge(count) {
-            if (!mailboxBadge) {
-                return;
-            }
-
-            const safeCount = Math.max(0, Number(count) || 0);
-            if (safeCount <= 0) {
-                mailboxBadge.classList.remove('show');
-                mailboxBadge.textContent = '0';
-                return;
-            }
-
-            mailboxBadge.classList.add('show');
-            mailboxBadge.textContent = safeCount > 99 ? '99+' : String(safeCount);
-        }
-
-        async function refreshMailboxBadge() {
-            if (!hasBackendConfigured()) {
-                return;
-            }
-
-            try {
-                const query = new URLSearchParams({
-                    action: 'get_public_replies',
-                    limit: '120',
-                    t: String(Date.now())
-                });
-
-                const response = await fetch(`${BUNNY_MESSAGE_API}?${query.toString()}`, {
-                    cache: 'no-store'
-                });
-                const data = await response.json();
-                if (!response.ok || !data.ok) {
-                    return;
-                }
-
-                const replies = Array.isArray(data.replies) ? data.replies : [];
-                const readSet = {};
-                getReadReplyIdsFromLocal().forEach(id => {
-                    readSet[id] = true;
-                });
-
-                const unreadCount = replies.reduce((total, item) => {
-                    const key = String(item.replyId || '');
-                    if (!key) {
-                        return total;
-                    }
-                    return readSet[key] ? total : total + 1;
-                }, 0);
-
-                updateMailboxBadge(unreadCount);
-            } catch (_) {
-                // badge fetch failure is non-blocking
-            }
-        }
-
-        function startMailboxBadgePolling() {
-            if (mailboxBadgeTimer) {
-                clearInterval(mailboxBadgeTimer);
-            }
-            mailboxBadgeTimer = setInterval(() => {
-                if (document.visibilityState === 'visible') {
-                    refreshMailboxBadge();
-                }
-            }, BUNNY_BADGE_POLL_MS);
-        }
-
-        function rememberUserMessageId(msgId) {
-            if (!msgId) {
-                return;
-            }
-
-            const history = JSON.parse(localStorage.getItem(BUNNY_USER_MSG_IDS_KEY) || '[]');
-            if (history.indexOf(msgId) === -1) {
-                history.push(msgId);
-            }
-            localStorage.setItem(BUNNY_USER_MSG_IDS_KEY, JSON.stringify(history.slice(-200)));
-        }
-
-        function rememberUserMessageNumber(msgNumber) {
-            const number = Number(msgNumber);
-            if (!Number.isInteger(number) || number <= 0) {
-                return;
-            }
-
-            const history = JSON.parse(localStorage.getItem(BUNNY_USER_MSG_NUMBERS_KEY) || '[]');
-            if (history.indexOf(number) === -1) {
-                history.push(number);
-            }
-            localStorage.setItem(BUNNY_USER_MSG_NUMBERS_KEY, JSON.stringify(history.slice(-200)));
-        }
-
-        async function submitBunnyMessage() {
-            if (!bunnyMessageInput || !bunnySendBtn || !bunnySendStatus) {
-                return;
-            }
-            const message = bunnyMessageInput.value.trim();
-
-            if (!message) {
-                bunnySendStatus.innerText = '請先寫下想對兔兔說的話。';
-                return;
-            }
-
-            const payload = {
-                message,
-                createdAt: new Date().toISOString(),
-                userAgent: navigator.userAgent
-            };
-
-            bunnySendBtn.disabled = true;
-            bunnySendStatus.innerText = '兔兔正在收信中...';
-
-            try {
-                if (!hasBackendConfigured()) {
-                    throw new Error('backend-not-configured');
-                }
-
-                const query = new URLSearchParams({
-                    action: 'submit',
-                    message: payload.message,
-                    createdAt: payload.createdAt,
-                    userAgent: payload.userAgent
-                });
-
-                const response = await fetch(`${BUNNY_MESSAGE_API}?${query.toString()}`);
-                const data = await response.json();
-
-                if (!response.ok || !data.ok) {
-                    throw new Error('request-failed');
-                }
-
-                bunnyMessageInput.value = '';
-                bunnySendStatus.innerText = '信件正在寄往彩虹星球中，兔兔收到後會認真讀。';
-
-                rememberUserMessageId(data.msgId);
-                rememberUserMessageNumber(data.msgNumber);
-                
-                showToast('留言已送達兔兔信箱');
-            } catch (error) {
-                saveMessageToLocalBackup(payload);
-                bunnySendStatus.innerText = '此程式有點秀抖，請叫人來修理。';
-            } finally {
-                bunnySendBtn.disabled = false;
-            }
-        }
-
-        const feedResponses = {
-            hay: [
-                '謝謝姐姐！好香，兔兔忍不住咬了一大口，肚子好溫暖～',
-                '這一口草讓兔兔覺得今天特別幸福，牠開心地抖了抖耳朵。',
-                '兔兔吃著吃著，閉上眼睛像在做一個甜甜的夢。',
-                '真好吃，兔兔想一直這樣被妳寵愛著。',
-                '真是貼心的安慰，兔兔覺得身體暖暖的。'
-            ],
-            cabbage: [
-                '高麗菜超級好吃！兔兔的最愛就是妳的溫柔味道。',
-                '這片高麗菜讓兔兔覺得自己好幸福，還想要再一口。',
-                '兔兔咬了一口高麗菜，眼睛亮晶晶的。',
-                '姐姐你知道嗎？高麗菜是兔兔心裡最甜的禮物。',
-                '兔兔一邊吃高麗菜一邊想著妳，感覺到了滿滿的愛。'
-            ],
-            apple: [
-                '蘋果甜甜的，兔兔吃了一口就把尾巴甩給妳看，好開心喔！',
-                '這顆蘋果太香了，兔兔覺得今天真的很幸福。',
-                '兔兔咬下蘋果時，心裡也像陽光一樣甜。',
-                '蘋果讓兔兔的胃也像心一樣暖暖的，謝謝姐姐。',
-                '兔兔吃完蘋果後，悄悄把它當成了跟妳的秘密禮物。'
-            ],
-            banana: [
-                '香蕉香香的，兔兔覺得這是今天最幸福的點心。',
-                '兔兔喜歡這個香甜的香蕉，吃完後眼睛都亮了起來。',
-                '這根香蕉讓兔兔心裡有種小小的慶祝感。',
-                '香蕉的香氣像妳的溫柔，讓兔兔覺得好安心。',
-                '兔兔吃香蕉吃得好開心，還想對妳說謝謝。'
-            ],
-            pet: [
-                '摸摸小腦袋好舒服，兔兔覺得姐姐會變得特別幸運❤️',
-                '我頭有幸運的氣息，今天一定會很順。',
-                '被摸頭的時候，兔兔想著姐姐也會變得幸福又幸運。',
-                '妳要考試了？',
-                '摸摸頭會讓姐姐變得特別幸運。'
-            ]
-        };
-
-        function getRandomFeedResponse(type) {
-            const responses = feedResponses[type] || [];
-            return responses[Math.floor(Math.random() * responses.length)];
-        }
-
-        let feedMessageTimeout;
-
-        function updateFeed(text, type, sourceElement) {
-            feedCount += 1;
-            feedMessage.innerText = text;
-            if (bunnyMood) {
-                bunnyMood.innerText = getRandomMoodMessage();
-            }
-            feedCounter.innerText = `今天已被姐姐寵愛了 ${feedCount} 次`;
-            rabbit.classList.remove('kicked');
-            void rabbit.offsetWidth;
-            rabbit.classList.add('kicked');
-            feedMessage.classList.add('show');
-            clearTimeout(feedMessageTimeout);
-            feedMessageTimeout = setTimeout(() => {
-                feedMessage.classList.remove('show');
-            }, 3000);
-            if (sourceElement && type !== 'pet') {
-                animateFoodToBunny(type, sourceElement);
-            }
-            emitBunnyBurst(type);
-        }
-
-        function emitBunnyBurst(type) {
-            const rabbitRect = rabbit.getBoundingClientRect();
-            const iconMap = {
-                hay: ['🌾', '🌾', '✨'],
-                cabbage: ['🥬', '🥬', '✨'],
-                apple: ['🍎', '❤️', '✨'],
-                banana: ['🍌', '❤️', '✨'],
-                pet: ['❤️', '💖', '✨']
-            };
-            const icons = iconMap[type] || ['✨'];
-            const burstCount = 8;
-
-            for (let i = 0; i < burstCount; i += 1) {
-                const particle = document.createElement('div');
-                particle.className = 'bunny-burst';
-                particle.innerText = icons[i % icons.length];
-                const startX = rabbitRect.left + rabbitRect.width * (0.32 + Math.random() * 0.36);
-                const startY = rabbitRect.top + rabbitRect.height * (0.18 + Math.random() * 0.14);
-                const driftX = (Math.random() - 0.5) * 120;
-
-                particle.style.left = `${startX}px`;
-                particle.style.top = `${startY}px`;
-                particle.style.fontSize = `${18 + Math.random() * 12}px`;
-                particle.style.animationDelay = `${i * 0.05}s`;
-                particle.style.transform = `translate(calc(-50% + ${driftX}px), -50%) scale(0.45)`;
-
-                document.body.appendChild(particle);
-                setTimeout(() => particle.remove(), 1400);
-            }
-        }
-
-        function animateFoodToBunny(type, sourceElement) {
-            const foodIcons = {
-                hay: '🌾',
-                cabbage: '🥬',
-                apple: '🍎',
-                banana: '🍌'
-            };
-            const icon = foodIcons[type];
-            if (!icon) return;
-            const sourceRect = sourceElement.getBoundingClientRect();
-            const targetRect = rabbit.getBoundingClientRect();
-            const fly = document.createElement('div');
-            fly.className = 'flying-food';
-            fly.innerText = icon;
-            fly.style.left = `${sourceRect.left + sourceRect.width / 2}px`;
-            fly.style.top = `${sourceRect.top + sourceRect.height / 2}px`;
-            document.body.appendChild(fly);
-            requestAnimationFrame(() => {
-                const targetX = targetRect.left + targetRect.width * 0.54;
-                const targetY = targetRect.top + targetRect.height * 0.42;
-                const deltaX = targetX - (sourceRect.left + sourceRect.width / 2);
-                const deltaY = targetY - (sourceRect.top + sourceRect.height / 2);
-                fly.style.transform = `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px)) scale(0.92)`;
-                fly.style.opacity = '1';
-            });
-            setTimeout(() => {
-                fly.style.opacity = '0.28';
-            }, 1800);
-            setTimeout(() => fly.remove(), 2400);
-        }
-
-        function animatePetHand(sourceElement) {
-            const sourceRect = sourceElement.getBoundingClientRect();
-            const targetRect = rabbit.getBoundingClientRect();
-            const hand = document.createElement('div');
-            hand.className = 'pet-hand';
-            hand.innerText = '🤚';
-            hand.style.left = `${sourceRect.left + sourceRect.width / 2}px`;
-            hand.style.top = `${sourceRect.top + sourceRect.height / 2}px`;
-            document.body.appendChild(hand);
-            const targetX = targetRect.left + targetRect.width * 0.5;
-            const targetY = targetRect.top + targetRect.height * 0.22;
-            const deltaX = targetX - (sourceRect.left + sourceRect.width / 2);
-            const deltaY = targetY - (sourceRect.top + sourceRect.height / 2);
-            requestAnimationFrame(() => {
-                hand.style.transform = `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px)) scale(1)`;
-            });
-            const rubOffsets = [ -30, 30, -24, 24, -16, 16, 0 ];
-            rubOffsets.forEach((offset, index) => {
-                setTimeout(() => {
-                    hand.style.transform = `translate(calc(-50% + ${deltaX + offset}px), calc(-50% + ${deltaY}px)) scale(1)`;
-                }, 1040 + index * 180);
-            });
-            setTimeout(() => {
-                hand.style.opacity = '0';
-            }, 2400);
-            setTimeout(() => {
-                hand.remove();
-                spawnLuckyBurst(targetRect);
-            }, 2800);
-        }
-
-        function spawnLuckyBurst(rabbitRect) {
-            const count = 12;
-            for (let i = 0; i < count; i += 1) {
-                createLuckyBurstParticle(rabbitRect, i);
-            }
-        }
-
-        function createLuckyBurstParticle(rabbitRect, index) {
-            const particle = document.createElement('div');
-            particle.className = 'lucky-burst';
-            const isClover = index % 2 === 0;
-            particle.innerText = isClover ? '🍀' : '✨';
-            particle.style.color = isClover ? '#4c934c' : '#FFD34D';
-            particle.style.textShadow = isClover ? '0 0 10px rgba(76,147,76,0.55)' : '0 0 12px rgba(255, 211, 77, 0.65)';
-            const centerX = rabbitRect.left + rabbitRect.width / 2;
-            const centerY = rabbitRect.top + rabbitRect.height / 2;
-            const angle = (Math.PI * 2 / 12) * index;
-            const baseRadius = rabbitRect.width * 0.55;
-            const startX = centerX + Math.cos(angle) * baseRadius;
-            const startY = centerY - Math.sin(angle) * baseRadius;
-            const targetRadius = baseRadius + 24 + Math.random() * 16;
-            const targetX = centerX + Math.cos(angle) * targetRadius + (Math.random() - 0.5) * 10;
-            const targetY = centerY - Math.sin(angle) * targetRadius + (Math.random() - 0.5) * 10;
-            particle.style.left = `${startX}px`;
-            particle.style.top = `${startY}px`;
-            document.body.appendChild(particle);
-            const appearDelay = 140 + index * 110;
-            setTimeout(() => {
-                particle.style.opacity = '1';
-                particle.style.transform = `translate(calc(-50% + ${targetX - startX}px), calc(-50% + ${targetY - startY}px)) scale(1.3)`;
-            }, appearDelay);
-            setTimeout(() => {
-                particle.style.opacity = '0';
-                particle.style.transform = `translate(calc(-50% + ${targetX - startX}px), calc(-50% + ${targetY - startY}px)) scale(1.8)`;
-            }, appearDelay + 620);
-            setTimeout(() => particle.remove(), appearDelay + 1080);
-        }
-
-
-        function feedHay(button) {
-            updateFeed(getRandomFeedResponse('hay'), 'hay', button);
-        }
-
-        function feedCabbage(button) {
-            updateFeed(getRandomFeedResponse('cabbage'), 'cabbage', button);
-        }
-
-        function feedApple(button) {
-            updateFeed(getRandomFeedResponse('apple'), 'apple', button);
-        }
-
-        function feedBanana(button) {
-            updateFeed(getRandomFeedResponse('banana'), 'banana', button);
-        }
-
-        function petBunny(button) {
-            updateFeed(getRandomFeedResponse('pet'), 'pet');
-            animatePetHand(button || document.getElementById('rabbit'));
-        }
-
-        // 2. 相簿與記憶星星
-        let currentMemory = 0;
-        const galleryPhotos = [
-            { src: 'images/IMG_0452.jpg', caption: '回憶照片 1' },
-            { src: 'images/IMG_20200816_124504.jpg', caption: '回憶照片 2' },
-            { src: 'images/IMG_20200816_191124.jpg', caption: '回憶照片 3' },
-            { src: 'images/IMG_20200831_183158.jpg', caption: '回憶照片 4' },
-            { src: 'images/IMG_20200902_185430.jpg', caption: '回憶照片 5' },
-            { src: 'images/IMG_20200906_133521.jpg', caption: '回憶照片 6' },
-            { src: 'images/IMG_20200917_205452.jpg', caption: '回憶照片 7' },
-            { src: 'images/IMG_20201004_124348.jpg', caption: '回憶照片 8' },
-            { src: 'images/IMG_20201102_195246.jpg', caption: '回憶照片 9' },
-            { src: 'images/IMG_20201213_122429.jpg', caption: '回憶照片 10' },
-            { src: 'images/IMG_20210707_104111.jpg', caption: '回憶照片 11' },
-            { src: 'images/IMG_20211031_222442.jpg', caption: '回憶照片 12' },
-            { src: 'images/IMG_2596.jpg', caption: '回憶照片 13' },
-            { src: 'images/IMG_3951.JPG', caption: '回憶照片 14' },
-            { src: 'images/IMG_4834.JPG', caption: '回憶照片 15' },
-            { src: 'images/IMG_5415.JPG', caption: '回憶照片 16' },
-            { src: 'images/1643638731182.jpg', caption: '回憶照片 17' },
-            { src: 'images/31938.jpeg', caption: '回憶照片 18' },
-            { src: 'images/32071.jpeg', caption: '回憶照片 19' },
-            { src: 'images/32153.jpeg', caption: '回憶照片 20' },
-            { src: 'images/32206.jpeg', caption: '回憶照片 21' },
-            { src: 'images/32340.jpeg', caption: '回憶照片 22' },
-            { src: 'images/32378.jpeg', caption: '回憶照片 23' }
-        ];
-        const galleryTrack = document.getElementById('galleryTrack');
-        let galleryImages = [];
-
-        function renderGallery() {
-            galleryPhotos.forEach(photo => {
-                const card = document.createElement('div');
-                card.className = 'gallery-card';
-                const img = document.createElement('img');
-                img.src = photo.src;
-                img.alt = photo.caption;
-                img.loading = 'lazy';
-                img.decoding = 'async';
-                const caption = document.createElement('div');
-                caption.className = 'gallery-caption';
-                caption.innerText = photo.caption;
-                card.appendChild(img);
-                card.appendChild(caption);
-                galleryTrack.appendChild(card);
-            });
-            galleryImages = Array.from(document.querySelectorAll('.gallery-card'));
-        }
-
-        function isMobileView() {
-            return window.matchMedia('(max-width: 720px)').matches;
-        }
-
-        function showMemory(index) {
-            if (!galleryImages.length) return;
-            const visibleCount = isMobileView() ? 1 : 3;
-            currentMemory = ((index % galleryImages.length) + galleryImages.length) % galleryImages.length;
-            galleryImages.forEach(card => {
-                card.style.display = 'none';
-            });
-            for (let offset = 0; offset < visibleCount; offset++) {
-                const visibleIndex = (currentMemory + offset) % galleryImages.length;
-                galleryImages[visibleIndex].style.display = 'block';
-            }
-        }
-
-        function updateGalleryLayout() {
-            const mobile = isMobileView();
-            galleryTrack.classList.toggle('mobile-view', mobile);
-            showMemory(currentMemory);
-        }
-
-        function nextMemory() {
-            currentMemory = (currentMemory + (isMobileView() ? 1 : 3)) % galleryImages.length;
-            showMemory(currentMemory);
-        }
-
-        function prevMemory() {
-            const step = isMobileView() ? 1 : 3;
-            currentMemory = (currentMemory - step + galleryImages.length) % galleryImages.length;
-            showMemory(currentMemory);
-        }
-
-        if (bunnySendBtn) {
-            bunnySendBtn.addEventListener('click', submitBunnyMessage);
-            if (!hasBackendConfigured()) {
-                bunnySendStatus.innerText = '尚未連接後台，請先在 index.html 設定 BUNNY_MESSAGE_API。';
-            }
-        }
-
-        renderGallery();
-        updateGalleryLayout();
-        refreshMailboxBadge();
-        startMailboxBadgePolling();
-        window.addEventListener('resize', updateGalleryLayout);
-
-        window.addEventListener('storage', event => {
-            if (event.key === BUNNY_READ_REPLY_IDS_KEY) {
-                refreshMailboxBadge();
-            }
-        });
-
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'visible') {
-                refreshMailboxBadge();
-            }
-        });
-
-        function submitMemory() {
-            const count = 16;
-            const message = '兔兔已經收到妳送出的回憶星星。';
-            memoryMessage.innerText = message;
-            showToast('回憶已送出，兔兔收到妳的小星星了');
-            galleryGlow.classList.add('active');
-            setTimeout(() => galleryGlow.classList.remove('active'), 1500);
-            createStars(count, 40);
-            setTimeout(() => {
-                const response = memoryResponses[Math.floor(Math.random() * memoryResponses.length)];
-                memoryMessage.innerText = response;
-            }, 800);
-        }
-
-        function showToast(text) {
-            memoryToast.innerText = text;
-            memoryToast.classList.add('show');
-            clearTimeout(showToast.timeoutId);
-            showToast.timeoutId = setTimeout(() => {
-                memoryToast.classList.remove('show');
-            }, 2000);
-        }
-
-        function createStars(count, length) {
-            const brightnessFactor = Math.min(1.2, 0.7 + length / 50);
-            for (let i = 0; i < count; i++) {
-                const star = document.createElement('div');
-                const chance = Math.random();
-                if (chance < Math.min(0.18, 0.08 + length / 80)) {
-                    star.className = 'star large';
-                } else if (chance < Math.min(0.55, 0.3 + length / 60)) {
-                    star.className = 'star medium';
-                } else {
-                    star.className = 'star small';
-                }
-                const x = Math.random() * 100;
-                const y = Math.random() * 100;
-                star.style.left = `${x}%`;
-                star.style.top = `${y}%`;
-                star.style.opacity = 0.7 + Math.random() * 0.25;
-                star.style.animationDuration = `${0.9 + Math.random() * 0.7}s`;
-                star.style.boxShadow = `0 0 ${8 + Math.random() * 14}px rgba(255, 226, 145, ${0.35 + brightnessFactor * 0.12})`;
-                starOverlay.appendChild(star);
-                setTimeout(() => star.remove(), 1500);
-            }
-        }
-
-        // 3. 兔兔信箱
-        const letterMessages = [
-            '姐姐，今天台北有沒有下雨？出門記得帶傘喔！',
-            '我在大草原吃得超飽，太陽剛剛好，妳也要乖乖吃飯喔！',
-            '來這裡摸摸我的幸運兔頭吧！',
-            '姐姐，我也很想你喔。',
-            '我在雲朵上蹦蹦跳跳，覺得妳一定也要好好休息，。',
-            '今天的風好柔，兔兔想妳了，記得吃一點甜甜的東西。',
-            '姐姐，當妳想念我時，摸摸自己的心，這裡有我陪妳。',
-            '我在草原看到一朵小花，覺得它就是妳。',
-            '如果感到累，記得在心裡對自己說：「我做得很好」。',
-            '兔兔提醒妳，今天也要多喝水，身體健康才有力氣做夢。',
-            '雖然我現在在天上，心裡還是最想念妳溫暖的擁抱。',
-            '如果妳覺得有點害怕，我就在妳心裡，陪妳一起勇敢。',
-            '妳今天的每一個小決定，都讓我覺得妳很勇敢。',
-            '好想吃香蕉。',
-            '妳值得被溫柔對待，要好好愛自己喔。',
-            '如果今天有點難過，就閉上眼睛想像我在妳身邊跳跳。',
-            '妳的每一個努力，我在天上都看見了。',
-            '好好睡一覺，明天我會在月亮下等妳一起做漂亮的夢。',
-            '臭狗狗到底對你好不好呀？',
-            '妳怎麼跟一隻臭狗狗在一起啦？',
-            '妳的開心是我最想守護的事情，願妳今天有被好好疼愛。',
-            '別忘了吃一點自己喜歡的小點心，給心情補一點甜。',
-            '不管發生什麼事，兔兔都希望妳能記得妳真的很重要。',
-            '如果有煩惱，試試把它畫下來，讓它慢慢變成彩色的雲。',
-            '希望妳每天都能多笑一點。',
-            '今天也要試著放慢腳步，讓自己的心先休息一下。',
-            '你在努力的樣子，溫柔又堅強，兔兔好為妳驕傲。',
-            '如果覺得壓力大，深呼吸三次，想像我在草地上輕輕跳。',
-            '妳是兔兔心中最溫暖的家',
-            '今晚抬頭看星星時，記得我也在同一片天空對妳微笑。',
-            '妳值得一個寧靜的夜晚，放下眼前的疲憊，好好休息。',
-            '明天如果遇到困難，記得問候自己：「我今天做得如何？」',
-            '即使世界變化很快，兔兔的思念一直留在妳身邊。',
-            '姐姐，今天外面有沒有下雨啊？出門記得帶傘，不要被淋成落湯雞喔！',
-            '我在大草原吃得超級飽，肚子圓滾滾的。妳呢？也要乖乖去吃飯喔！',
-            '今天的風吹起來好舒服喔，兔兔有點想妳了，妳今天有吃甜點嗎？',
-            '兔兔來提醒妳：今天也要記得多喝水！身體健康才有力氣陪我玩啊。',
-            '累了就要去睡覺！明天我會在月亮下面等妳，一起做個超厲害的夢。',
-            '今天有沒有好好放慢腳步？沒事啦，先讓自己的大腦登出休息一下。',
-            '如果今天過得很煩，試著把它畫下來，或者乾脆把它揉成紙團丟掉！',
-            '聽說台北的天氣陰陰的？不管怎樣，心情要記得保持大晴天喔。',
-            '姐姐，今天下班/放學回家路上，順便去買個妳最愛吃的小點心吧！',
-            '妳今天過得怎麼樣？不管是好是壞，洗個熱水澡、躺在床上就先忘光光吧。',
-            '記得準時吃飯啦！不要每次忙起來就忘記，我會隔空監督妳喔。'
-        ];
-
-        function openLetter() {
-            const todayKey = new Date().toISOString().slice(0, 10);
-            let message = '';
-            const savedDate = localStorage.getItem(DAILY_LETTER_DATE_KEY);
-            const savedText = localStorage.getItem(DAILY_LETTER_TEXT_KEY);
-
-            if (savedDate === todayKey && savedText) {
-                message = savedText;
-            } else {
-                const index = Math.floor(Math.random() * letterMessages.length);
-                message = letterMessages[index];
-                localStorage.setItem(DAILY_LETTER_DATE_KEY, todayKey);
-                localStorage.setItem(DAILY_LETTER_TEXT_KEY, message);
-            }
-
-            letterBackText.innerText = message;
-
-            if (letterCard.classList.contains('is-open')) {
-                letterCard.classList.remove('is-open');
-                requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        letterCard.classList.add('is-open');
-                    });
-                });
-            } else {
-                letterCard.classList.add('is-open');
-            }
-        }
-    </script>
-    
-    <!-- Service Worker 註冊 -->
+    <script src="js/config.js?v=2"></script>
+    <script src="js/api.js?v=2"></script>
+    <script src="js/ideas.js?v=2"></script>
+    <script src="js/app.js?v=2"></script>
+    <script src="js/secret.js?v=2"></script>
+    <script src="js/lists.js?v=2"></script>
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('service-worker.js').then(reg => {
-                console.log('Service Worker 已註冊', reg);
-            }).catch(err => {
-                console.log('Service Worker 註冊失敗:', err);
+                reg.update().catch(() => {});
+            }).catch(() => {});
+
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (!refreshing) {
+                    refreshing = true;
+                    window.location.reload();
+                }
             });
         }
     </script>

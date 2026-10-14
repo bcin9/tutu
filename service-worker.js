@@ -1,33 +1,55 @@
-const CACHE_NAME = 'tutu-pwa-v5';
+const CACHE_NAME = 'tutu-pwa-v6';
 const urlsToCache = [
-  '/tutu/',
-  '/tutu/index.html',
-  '/tutu/manifest.json',
-  '/tutu/service-worker.js',
-  '/tutu/images/IMG_4011.JPG'
+  './',
+  './index.html',
+  './bunny.html',
+  './mailbox.html',
+  './admin.html',
+  './manifest.json',
+  './css/app.css',
+  './js/config.js',
+  './js/api.js',
+  './js/app.js',
+  './js/secret.js',
+  './js/lists.js',
+  './js/ideas.js',
+  './js/bunny.js',
+  './images/art/lock-door.jpg',
+  './images/art/hero-island.jpg',
+  './images/art/bunny-messenger.jpg',
+  './images/art/feed-bunny.jpg',
+  './images/IMG_4011-icon-1024.png',
+  './images/IMG_4011-icon-512.png',
+  './images/IMG_4011-icon-192.png'
 ];
 
-// 安裝 Service Worker
+// 安裝 Service Worker：安全快取核心資源
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      console.log('快取已開啟');
-      return cache.addAll(urlsToCache);
-    }).catch(err => {
-      console.log('快取失敗:', err);
+    caches.open(CACHE_NAME).then(async cache => {
+      console.log('[SW] 正在快取核心靜態資源...');
+      await Promise.allSettled(
+        urlsToCache.map(async url => {
+          try {
+            await cache.add(url);
+          } catch (err) {
+            console.warn('[SW] 快取略過:', url, err);
+          }
+        })
+      );
     })
   );
   self.skipWaiting();
 });
 
-// 啟用 Service Worker
+// 啟用 Service Worker：刪除所有舊版本快取並立即接管控制權
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cacheName => {
           if (cacheName !== CACHE_NAME) {
-            console.log('刪除舊快取:', cacheName);
+            console.log('[SW] 刪除舊快取:', cacheName);
             return caches.delete(cacheName);
           }
         })
@@ -37,64 +59,73 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// 攔截網路請求 (Cache First 策略)
+// 攔截請求
 self.addEventListener('fetch', event => {
-  // 只處理 GET 請求
   if (event.request.method !== 'GET') {
     return;
   }
 
-  event.respondWith(
-    caches.match(event.request).then(response => {
-      // 如果快取中有，直接返回
-      if (response) {
-        return response;
-      }
+  const url = new URL(event.request.url);
 
-      // 否則嘗試從網路獲取
-      return fetch(event.request).then(response => {
-        // 檢查是否有效的響應
-        if (!response || response.status !== 200 || response.type !== 'basic') {
+  // 1. 不攔截外部 API（例如 Google Apps Script 後台），確保即時性
+  if (url.origin !== self.location.origin) {
+    return;
+  }
+
+  // 2. 忽略非 http/https
+  if (!url.protocol.startsWith('http')) {
+    return;
+  }
+
+  const isNavigation = event.request.mode === 'navigate' ||
+    (event.request.headers.get('accept') && event.request.headers.get('accept').includes('text/html'));
+
+  // 3. HTML 頁面：網路優先 (Network First)
+  // 只要有網路就向伺服器拿最新版，並自動更新快取；沒網路時才回退離線快取
+  if (isNavigation) {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          if (response && response.status === 200) {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
+          }
           return response;
-        }
+        })
+        .catch(async () => {
+          const cached = await caches.match(event.request);
+          if (cached) return cached;
+          return caches.match('./index.html');
+        })
+    );
+    return;
+  }
 
-        // 複製響應到快取
-        const responseToCache = response.clone();
-        caches.open(CACHE_NAME).then(cache => {
-          cache.put(event.request, responseToCache);
-        });
+  // 4. 靜態資源 (CSS, JS, 圖片)：Stale-While-Revalidate
+  // 先快速回傳快取提升速度，同時在背景抓最新版本覆蓋快取
+  event.respondWith(
+    caches.match(event.request).then(cachedResponse => {
+      const fetchPromise = fetch(event.request)
+        .then(networkResponse => {
+          if (networkResponse && networkResponse.status === 200) {
+            const copy = networkResponse.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
+          }
+          return networkResponse;
+        })
+        .catch(() => null);
 
-        return response;
-      }).catch(() => {
-        // 網路失敗時的備用方案
-        console.log('無法從網路獲取資源');
-        // 可以返回一個離線頁面或默認響應
-        return caches.match(event.request);
-      });
+      return cachedResponse || fetchPromise;
     })
   );
 });
 
-// 背景同步 (當網路恢復時重試失敗的請求)
-self.addEventListener('sync', event => {
-  if (event.tag === 'sync-pages') {
-    event.waitUntil(
-      fetch('/tutu/').then(response => {
-        console.log('背景同步成功');
-        return response;
-      }).catch(err => {
-        console.log('背景同步失敗:', err);
-      })
-    );
-  }
-});
-
-// 推播通知 (可選)
+// 推播通知
 self.addEventListener('push', event => {
   const options = {
     body: '兔兔想念妳了，快來看看是否有新信息！',
-    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect fill="%23FFB7B2" width="192" height="192"/><text x="50%" y="50%" font-size="120" dy=".3em" text-anchor="middle" dominant-baseline="middle" font-family="system-ui">🐰</text></svg>',
-    badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><rect fill="%23FFB7B2" width="96" height="96" rx="22"/><text x="50%" y="50%" font-size="60" dy=".3em" text-anchor="middle" dominant-baseline="middle" font-family="system-ui">🐰</text></svg>',
+    icon: 'images/IMG_4011-icon-192.png',
+    badge: 'images/IMG_4011-icon-192.png',
     tag: 'tutu-notification',
     requireInteraction: false
   };
@@ -109,7 +140,7 @@ self.addEventListener('push', event => {
   }
 
   event.waitUntil(
-    self.registration.showNotification('兔兔的彩虹星球', options)
+    self.registration.showNotification('秘密基地', options)
   );
 });
 
@@ -118,15 +149,13 @@ self.addEventListener('notificationclick', event => {
   event.notification.close();
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
-      // 檢查是否有已開啟的視窗
       for (let client of clientList) {
-        if (client.url === 'https://bcin9.github.io/tutu/' && 'focus' in client) {
+        if (client.url.includes('/tutu/') && 'focus' in client) {
           return client.focus();
         }
       }
-      // 如果沒有，開啟新視窗
       if (clients.openWindow) {
-        return clients.openWindow('/tutu/');
+        return clients.openWindow('./');
       }
     })
   );

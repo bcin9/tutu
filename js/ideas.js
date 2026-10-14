@@ -1,0 +1,72 @@
+/**
+ * 情侶 300 件小事 (心動抽卡題庫)
+ */
+window.COUPLE_IDEAS = [
+  // === 日常 (Daily) ===
+  { id: 'D1', category: 'daily', text: '一起去逛好市多，買一隻大烤雞回家吃' },
+  { id: 'D2', category: 'daily', text: '找個下雨的週末，兩個人窩在沙發上追完一整季影集' },
+  { id: 'D3', category: 'daily', text: '一起穿情侶居家服，拍一張對鏡自拍' },
+  { id: 'D4', category: 'daily', text: '挑一天彼此互換手機桌布，並設定為對方的醜照' },
+  { id: 'D5', category: 'daily', text: '一起去 IKEA 逛逛，假裝我們正在佈置未來的新家' },
+  { id: 'D6', category: 'daily', text: '兩個人一起下廚做一頓晚餐（就算很難吃也要吃完）' },
+  { id: 'D7', category: 'daily', text: '互相幫對方吹頭髮' },
+  { id: 'D8', category: 'daily', text: '在睡前互相分享今天遇到的一件好笑的事' },
+  { id: 'D9', category: 'daily', text: '去大賣場推推車，把對方放在推車裡推來推去（如果塞得下的話）' },
+  { id: 'D10', category: 'daily', text: '一起去河濱公園散步，隨便聊聊未來的夢想' },
+  { id: 'D11', category: 'daily', text: '幫對方挑選一整套隔天要穿的衣服' },
+  { id: 'D12', category: 'daily', text: '一起玩一款雙人合作的電動（例如：雙人成行）' },
+  { id: 'D13', category: 'daily', text: '在對方洗澡的時候，偷偷在鏡子上留一句情話' },
+  { id: 'D14', category: 'daily', text: '互相幫對方按摩十分鐘，不能喊累' },
+  { id: 'D15', category: 'daily', text: '找一個沒有光害的地方，一起看滿天星空' },
+
+  // === 旅行 (Travel) ===
+  { id: 'T1', category: 'travel', text: '來一場完全沒有行程計畫的「說走就走」兩天一夜' },
+  { id: 'T2', category: 'travel', text: '一起去清境農場看羊，並拍一張被羊包圍的合照' },
+  { id: 'T3', category: 'travel', text: '一起飛去日本，穿和服在京都的街道上散步' },
+  { id: 'T4', category: 'travel', text: '去海邊看日出，雖然爬不起來但還是要努力達成' },
+  { id: 'T5', category: 'travel', text: '去高山上露營，睡在帳篷裡聽蟲鳴鳥叫' },
+  { id: 'T6', category: 'travel', text: '一起去迪士尼樂園，戴上超蠢的卡通頭飾' },
+  { id: 'T7', category: 'travel', text: '租一台車，放著我們最愛的歌，來一場公路旅行' },
+  { id: 'T8', category: 'travel', text: '去一個彼此都沒去過的陌生城市探險' },
+  { id: 'T9', category: 'travel', text: '一起去滑雪，看對方摔得四腳朝天' },
+  { id: 'T10', category: 'travel', text: '在旅行中，找一間當地的郵局寄明信片給未來的我們' },
+  { id: 'T11', category: 'travel', text: '去海島國家浮潛，看海底的彩色魚群' },
+  { id: 'T12', category: 'travel', text: '一起去遊樂園，挑戰最可怕的雲霄飛車' },
+  { id: 'T13', category: 'travel', text: '搭火車環島，在每一個想停下來的小站下車' },
+  { id: 'T14', category: 'travel', text: '去北海道看雪，一起堆一個雪人' },
+  { id: 'T15', category: 'travel', text: '在異國的街道上，牽著手隨便找一家小酒館微醺' },
+
+  // === 美食 (Food) ===
+  { id: 'F1', category: 'food', text: '一起去吃爆一家評分超高的燒肉店，吃到撐為止' },
+  { id: 'F2', category: 'food', text: '挑戰一整天只能吃「便利商店」裡的食物，看誰搭配得最好' },
+  { id: 'F3', category: 'food', text: '在半夜一點，穿著睡衣衝出門去吃宵夜（例如：涼麵或滷肉飯）' },
+  { id: 'F4', category: 'food', text: '找一家高級餐廳，盛裝打扮去吃一頓浪漫的燭光晚餐' },
+  { id: 'F5', category: 'food', text: '去夜市從頭吃到尾，不看價錢' },
+  { id: 'F6', category: 'food', text: '一起報名一堂手作烘焙課，做一個專屬的蛋糕' },
+  { id: 'F7', category: 'food', text: '互相為對方調一杯專屬的特調飲料' },
+  { id: 'F8', category: 'food', text: '去吃一次超級辣的麻辣鍋，看誰先喝水' },
+  { id: 'F9', category: 'food', text: '買一堆零食和啤酒，在家辦一場兩人專屬的小型試吃大會' },
+  { id: 'F10', category: 'food', text: '一起去排一間傳說中要排隊很久的網美甜點店' },
+  { id: 'F11', category: 'food', text: '週末早起，去吃一頓超級豐盛的早午餐' },
+  { id: 'F12', category: 'food', text: '挑戰自己包水餃，看看誰包的形狀最奇怪' },
+  { id: 'F13', category: 'food', text: '找一家可以看夜景的景觀餐廳約會' },
+  { id: 'F14', category: 'food', text: '去漁港吃最新鮮的海鮮，買一堆生魚片' },
+  { id: 'F15', category: 'food', text: '互相買對方最喜歡的食物給對方一個驚喜' },
+
+  // === 瘋狂 (Crazy) ===
+  { id: 'C1', category: 'crazy', text: '一起去跳傘或高空彈跳，感受腎上腺素飆升' },
+  { id: 'C2', category: 'crazy', text: '半夜睡不著，直接騎車去山上夜遊看風景' },
+  { id: 'C3', category: 'crazy', text: '買兩張盲盒機票，去機場才知道目的地是哪裡' },
+  { id: 'C4', category: 'crazy', text: '在朋友的婚禮上，一起搶到新娘的捧花' },
+  { id: 'C5', category: 'crazy', text: '互相幫對方化妝，然後一定要頂著這個妝出門買東西' },
+  { id: 'C6', category: 'crazy', text: '去拍一組超級搞笑或復古的沙龍照' },
+  { id: 'C7', category: 'crazy', text: '挑戰一整天不滑手機，只專心陪伴彼此' },
+  { id: 'C8', category: 'crazy', text: '去 KTV 開包廂，兩個人狂點超嗨的歌跳舞' },
+  { id: 'C9', category: 'crazy', text: '買刮刮樂，說好中獎的話獎金全部拿去吃大餐' },
+  { id: 'C10', category: 'crazy', text: '在暴雨天不撐傘，一起在雨中奔跑一次' },
+  { id: 'C11', category: 'crazy', text: '玩一次「Yes Day」，一整天不管對方提出什麼要求都要說 Yes' },
+  { id: 'C12', category: 'crazy', text: '在街頭找一台拍貼機，拍下最崩壞的表情' },
+  { id: 'C13', category: 'crazy', text: '用最奇怪的口音，跟對方講十分鐘的話' },
+  { id: 'C14', category: 'crazy', text: '偷偷買一束超浮誇的花，直接送到對方公司' },
+  { id: 'C15', category: 'crazy', text: '把對方當成陌生人，在酒吧或咖啡廳假裝搭訕彼此' }
+];
