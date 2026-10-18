@@ -593,6 +593,49 @@
   // ==========================================
   const HISTORY_CACHE_KEY = 'tutu_secret_history_cache';
 
+  // 基準種子歷史：確保前兩天問答 100% 秒開常態展示
+  const SEED_HISTORY = [
+    {
+      date: '2026-10-17',
+      question: '說一個你從來沒跟我說過的小秘密。',
+      a: '就是我在跟妳那個之前紫微都沒有伸進去過 是自從跟妳那個過之後才有伸進去',
+      b: '0個了',
+      aAnsweredAt: '2026-10-17T06:14:56.468Z',
+      bAnsweredAt: '2026-10-17T13:18:34.869Z'
+    },
+    {
+      date: '2026-10-16',
+      question: '有沒有什麼時候你超想抱我，但沒有說？',
+      a: '就是妳開始靠邀這個世界的時候 但我通常都會直接上手 但是常常被叫走 已習慣',
+      b: '吵架的時候吧',
+      aAnsweredAt: '2026-10-16T15:15:01.914Z',
+      bAnsweredAt: '2026-10-16T15:09:35.488Z'
+    }
+  ];
+
+  function getSeedItemsForUser(user) {
+    const isA = (user === 'a');
+    return SEED_HISTORY.map(item => ({
+      date: item.date,
+      question: item.question,
+      myAnswer: isA ? item.a : item.b,
+      myAnsweredAt: isA ? item.aAnsweredAt : item.bAnsweredAt,
+      partnerAnswered: isA ? !!item.b : !!item.a,
+      partnerAnswer: isA ? item.b : item.a,
+      partnerAnsweredAt: isA ? item.bAnsweredAt : item.aAnsweredAt
+    }));
+  }
+
+  function mergeHistoryItems(fetchedItems, user) {
+    const seed = getSeedItemsForUser(user);
+    const map = {};
+    seed.forEach(item => { map[item.date] = item; });
+    (fetchedItems || []).forEach(item => {
+      map[item.date] = item;
+    });
+    return Object.values(map).sort((x, y) => y.date.localeCompare(x.date));
+  }
+
   async function loadSecretHistory(forceSync = false) {
     const listEl = $('secretHistoryList');
     if (!listEl) return;
@@ -600,20 +643,24 @@
     const user = auth ? auth.user : 'a';
     const partnerName = getPartnerName();
 
-    // 讀取本地快取秒開
+    // 1. 0ms 秒開：先渲染 seed + 本地快取
     const cacheKey = `${HISTORY_CACHE_KEY}_${user}`;
+    let currentItems = getSeedItemsForUser(user);
     try {
       const cached = JSON.parse(localStorage.getItem(cacheKey) || 'null');
       if (cached && cached.items) {
-        renderHistoryItems(cached.items, listEl, partnerName);
+        currentItems = mergeHistoryItems(cached.items, user);
       }
     } catch (_) {}
+    renderHistoryItems(currentItems, listEl, partnerName);
 
+    // 2. 背景從後台更新最新回答
     try {
       const res = await API.secretHistory(100);
       if (res && res.ok && Array.isArray(res.items)) {
-        localStorage.setItem(cacheKey, JSON.stringify(res));
-        renderHistoryItems(res.items, listEl, partnerName);
+        const merged = mergeHistoryItems(res.items, user);
+        localStorage.setItem(cacheKey, JSON.stringify({ ok: true, items: merged }));
+        renderHistoryItems(merged, listEl, partnerName);
       }
     } catch (err) {
       console.warn('載入歷史秘密失敗:', err);

@@ -154,6 +154,9 @@
     tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === name));
     window.scrollTo(0, 0);
     if (location.hash !== '#' + name) history.replaceState(null, '', '#' + name);
+    if (name === 'secret' && window.SecretApp && window.SecretApp.refresh) {
+      window.SecretApp.refresh();
+    }
   }
 
   tabs.forEach(t => t.addEventListener('click', () => showView(t.dataset.tab)));
