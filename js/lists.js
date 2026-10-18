@@ -76,6 +76,75 @@
     }
   }
   
+  const CATEGORY_INFO = {
+    daily: { name: '日常', icon: '🛋️' },
+    travel: { name: '旅行', icon: '✈️' },
+    food: { name: '美食', icon: '🥩' },
+    crazy: { name: '瘋狂', icon: '🎢' }
+  };
+
+  function getTodayKey() {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
+  function getDailyGachaRecord() {
+    const auth = API.getAuth();
+    const user = auth ? auth.user : 'a';
+    const todayKey = getTodayKey();
+    try {
+      const raw = localStorage.getItem(`tutu_gacha_daily_${todayKey}_${user}`);
+      return raw ? JSON.parse(raw) : {};
+    } catch (_) {
+      return {};
+    }
+  }
+
+  function markCategoryDone(cat) {
+    const auth = API.getAuth();
+    const user = auth ? auth.user : 'a';
+    const todayKey = getTodayKey();
+    const record = getDailyGachaRecord();
+    record[cat] = true;
+    try {
+      localStorage.setItem(`tutu_gacha_daily_${todayKey}_${user}`, JSON.stringify(record));
+    } catch (_) {}
+    renderCategoryButtons();
+  }
+
+  function renderCategoryButtons() {
+    const record = getDailyGachaRecord();
+    const buttons = document.querySelectorAll('[data-cat]');
+    let allDone = true;
+
+    buttons.forEach(btn => {
+      const cat = btn.dataset.cat;
+      const info = CATEGORY_INFO[cat];
+      if (!info) return;
+
+      const isDone = !!record[cat];
+      if (!isDone) allDone = false;
+
+      if (isDone) {
+        btn.classList.add('is-done');
+        btn.disabled = true;
+        btn.innerHTML = `${info.icon} ${info.name}<span class="gacha-done-badge">✓ 今日已翻</span>`;
+      } else {
+        btn.classList.remove('is-done');
+        btn.disabled = false;
+        btn.innerHTML = `${info.icon} ${info.name}`;
+      }
+    });
+
+    const banner = $('gachaAllDoneBanner');
+    if (banner) {
+      banner.hidden = !allDone;
+    }
+  }
+
   // Tab 切換
   document.querySelectorAll('.list-tab').forEach(tab => {
     tab.addEventListener('click', () => {
@@ -84,6 +153,10 @@
       currentTab = tab.dataset.listType;
       $('gachaView').hidden = (currentTab !== 'gacha');
       $('matchesView').hidden = (currentTab !== 'matches');
+      if (currentTab === 'gacha') {
+        renderCategoryButtons();
+        syncGachaState(true);
+      }
       if (currentTab === 'matches') {
         renderMatches();
         syncGachaState(true);
@@ -94,12 +167,19 @@
   // 選擇類別開始抽卡
   document.querySelectorAll('[data-cat]').forEach(btn => {
     btn.addEventListener('click', async () => {
-      currentCategory = btn.dataset.cat;
+      const cat = btn.dataset.cat;
+      const record = getDailyGachaRecord();
+      if (record[cat]) {
+        alert('今天已經翻過這個主題的牌子囉！明天再來抽吧～');
+        return;
+      }
+      currentCategory = cat;
       await prepareGachaCards(currentCategory);
     });
   });
 
   $('btnResetGacha').addEventListener('click', () => {
+    renderCategoryButtons();
     $('categorySelector').style.display = 'block';
     $('swipeArea').style.display = 'none';
     $('swipeDone').style.display = 'none';
@@ -110,6 +190,13 @@
     if (!auth) return;
     const user = auth.user;
     
+    // 再次檢查今天是否已經翻過這個主題（防止點擊連按）
+    const record = getDailyGachaRecord();
+    if (record[category]) {
+      alert('今天已經翻過這個主題的牌子囉！明天再來抽吧～');
+      return;
+    }
+
     // 背景同步最新狀態（確認對方是否剛按了愛心）
     syncGachaState(true);
 
@@ -142,10 +229,17 @@
       currentCards.push(available.pop());
     }
     
+    // 抽卡成功後立即鎖定該類別，防止重新整理刷牌
+    markCategoryDone(category);
+
     // 洗牌
     currentCards.sort(() => Math.random() - 0.5);
     currentCardIndex = 0;
     
+    const info = CATEGORY_INFO[category];
+    if ($('swipeDoneTitle')) $('swipeDoneTitle').textContent = `今天的【${info ? info.name : ''}】牌子翻完囉！`;
+    if ($('swipeDoneDesc')) $('swipeDoneDesc').textContent = '換個類別繼續抽，或是去約會清單看看～';
+
     $('categorySelector').style.display = 'none';
     $('swipeArea').style.display = 'block';
     $('swipeDone').style.display = 'none';
@@ -295,11 +389,13 @@
   // 初始化
   loadLocalGacha();
   document.addEventListener('DOMContentLoaded', () => {
+    renderCategoryButtons();
     syncGachaState(true);
   });
 
   window.GachaApp = {
-    sync: syncGachaState
+    sync: syncGachaState,
+    render: renderCategoryButtons
   };
 
 })();

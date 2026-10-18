@@ -157,6 +157,9 @@
     if (name === 'secret' && window.SecretApp && window.SecretApp.refresh) {
       window.SecretApp.refresh();
     }
+    if (name === 'lists' && window.GachaApp && window.GachaApp.render) {
+      window.GachaApp.render();
+    }
   }
 
   tabs.forEach(t => t.addEventListener('click', () => showView(t.dataset.tab)));

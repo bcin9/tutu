@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tutu-pwa-v12';
+const CACHE_NAME = 'tutu-pwa-v13';
 const urlsToCache = [
   './',
   './index.html',

@@ -151,6 +151,9 @@
                 <div id="listContent" class="list-container">
                     <!-- Gacha View -->
                     <div id="gachaView">
+                        <div id="gachaAllDoneBanner" class="gacha-all-done-banner" hidden>
+                            🎉 今天的 4 個主題都翻完囉！明天再來抽新驚喜～
+                        </div>
                         <div id="categorySelector">
                             <h2 style="font-size:1.1rem; margin-bottom:8px;">今天想翻哪一種牌子？</h2>
                             <p style="font-size:0.9rem; color:var(--ink-soft); margin-bottom:20px;">選一個類別，看看會抽出什麼任務</p>
@@ -173,9 +176,9 @@
                         </div>
 
                         <div id="swipeDone" style="display:none; text-align:center; padding:40px 0;">
-                            <h3 style="margin-bottom:8px;">今天的牌子翻完囉！</h3>
-                            <p style="color:var(--ink-soft); font-size:0.9rem; margin-bottom:20px;">換個類別繼續抽，或是去約會清單看看</p>
-                            <button class="btn secondary" id="btnResetGacha">再抽一次</button>
+                            <h3 style="margin-bottom:8px;" id="swipeDoneTitle">今天的牌子翻完囉！</h3>
+                            <p style="color:var(--ink-soft); font-size:0.9rem; margin-bottom:20px;" id="swipeDoneDesc">換個類別繼續抽，或是去約會清單看看</p>
+                            <button class="btn primary" id="btnResetGacha">返回主題選單</button>
                         </div>
                     </div>
 
@@ -221,12 +224,12 @@
         </nav>
     </div>
 
-    <script src="js/config.js?v=8"></script>
-    <script src="js/api.js?v=8"></script>
-    <script src="js/ideas.js?v=8"></script>
-    <script src="js/app.js?v=8"></script>
-    <script src="js/secret.js?v=8"></script>
-    <script src="js/lists.js?v=8"></script>
+    <script src="js/config.js?v=9"></script>
+    <script src="js/api.js?v=9"></script>
+    <script src="js/ideas.js?v=9"></script>
+    <script src="js/app.js?v=9"></script>
+    <script src="js/secret.js?v=9"></script>
+    <script src="js/lists.js?v=9"></script>
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('service-worker.js').then(reg => {
