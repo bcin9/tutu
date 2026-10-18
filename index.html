@@ -16,7 +16,7 @@
     <meta name="theme-color" content="#FAF5EC">
 
     <title>我們的秘密基地</title>
-    <link rel="stylesheet" href="css/app.css?v=2">
+    <link rel="stylesheet" href="css/app.css?v=3">
 </head>
 <body>
 
@@ -99,20 +99,37 @@
                     </div>
                 </div>
                 
+                <!-- 近 3 天快速切換列 -->
+                <div class="secret-days-nav" id="secretDaysNav"></div>
+
                 <div id="secretLoading" class="soon" hidden>
                     <img class="art" src="images/art/bunny-messenger.jpg" alt="">
-                    <h2 style="font-size: 1.1rem; color: var(--ink-soft)">載入今日秘密中...</h2>
+                    <h2 style="font-size: 1.1rem; color: var(--ink-soft)">載入中...</h2>
                 </div>
 
                 <div id="secretContent" class="secret-container">
                     <div class="secret-header">
-                        <div class="secret-date" id="secretDate"></div>
+                        <div class="secret-date-row">
+                            <span class="secret-date" id="secretDate"></span>
+                            <span class="secret-badge" id="secretBadge">🌟 今日</span>
+                        </div>
                         <h2 class="secret-question" id="secretQ"></h2>
                     </div>
                     
                     <div class="answers-area">
                         <div id="myAnswerSection"></div>
                         <div id="partnerAnswerSection"></div>
+                    </div>
+                </div>
+
+                <!-- 秘密時光回憶錄 -->
+                <div class="history-section">
+                    <button type="button" class="history-toggle-btn" id="toggleHistoryBtn">
+                        <span class="history-toggle-title">📖 秘密時光回憶錄 <span class="history-count" id="historyCount"></span></span>
+                        <span class="history-arrow" id="historyArrow">▼ 展開</span>
+                    </button>
+                    <div id="secretHistoryWrap" class="history-wrap" hidden>
+                        <div id="secretHistoryList" class="history-list"></div>
                     </div>
                 </div>
             </section>
@@ -208,12 +225,12 @@
         </nav>
     </div>
 
-    <script src="js/config.js?v=4"></script>
-    <script src="js/api.js?v=4"></script>
-    <script src="js/ideas.js?v=4"></script>
-    <script src="js/app.js?v=4"></script>
-    <script src="js/secret.js?v=4"></script>
-    <script src="js/lists.js?v=4"></script>
+    <script src="js/config.js?v=5"></script>
+    <script src="js/api.js?v=5"></script>
+    <script src="js/ideas.js?v=5"></script>
+    <script src="js/app.js?v=5"></script>
+    <script src="js/secret.js?v=5"></script>
+    <script src="js/lists.js?v=5"></script>
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('service-worker.js').then(reg => {

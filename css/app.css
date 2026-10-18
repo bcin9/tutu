@@ -847,3 +847,171 @@ textarea:focus {
   color: var(--ink);
   line-height: 1.6;
 }
+
+/* ============================================================
+   交換秘密：近 3 天切換與歷史回憶錄
+   ============================================================ */
+.secret-days-nav {
+  display: flex;
+  gap: 8px;
+  margin: 16px 0 12px 0;
+  background: rgba(74, 63, 53, 0.05);
+  padding: 6px;
+  border-radius: 18px;
+}
+.secret-day-btn {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 8px 4px;
+  border-radius: 13px;
+  color: var(--ink-soft);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+}
+.secret-day-btn.active {
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: 0 4px 12px rgba(110, 84, 58, 0.08);
+}
+.secret-day-btn .day-title {
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+.secret-day-btn .day-date {
+  font-size: 0.72rem;
+  opacity: 0.75;
+}
+.secret-day-btn .day-tag {
+  font-size: 0.68rem;
+  margin-top: 2px;
+  padding: 1px 6px;
+  border-radius: 8px;
+  background: rgba(74, 63, 53, 0.06);
+}
+.secret-day-btn.active .day-tag.unlocked {
+  background: var(--sage-soft);
+  color: var(--sage);
+  font-weight: 600;
+}
+.secret-day-btn.active .day-tag.pending {
+  background: var(--pink-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.secret-date-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.secret-badge {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* 歷史回憶錄 */
+.history-section {
+  margin-top: 32px;
+  margin-bottom: 30px;
+}
+.history-toggle-btn {
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  color: var(--ink);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.history-toggle-btn:active {
+  transform: scale(0.99);
+}
+.history-toggle-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 1rem;
+}
+.history-count {
+  font-size: 0.8rem;
+  font-weight: normal;
+  color: var(--ink-soft);
+}
+.history-arrow {
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+.history-wrap {
+  margin-top: 14px;
+}
+.history-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--line);
+}
+.history-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  margin-bottom: 8px;
+}
+.history-card-q {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.45;
+  margin-bottom: 12px;
+}
+.history-answers-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--bg);
+  padding: 12px 14px;
+  border-radius: 14px;
+}
+.history-ans-row {
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+.history-ans-name {
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: var(--ink-soft);
+  margin-bottom: 2px;
+}
+.history-catchup-btn {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 0.82rem;
+  color: var(--accent);
+  background: var(--accent-soft);
+  padding: 5px 12px;
+  border-radius: 10px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+
