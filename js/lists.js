@@ -22,6 +22,15 @@
 
   const GACHA_CACHE_KEY = 'tutu_gacha_synced_state';
 
+  // 基準種子配對：確保 5 項配對成功的約會清單 100% 永久存在、秒開立現
+  const SEED_MATCHES = [
+    { ideaId: 'T10', matchedAt: '2026-10-17T06:26:27.958Z', status: 'pending', target: '' },
+    { ideaId: 'C11', matchedAt: '2026-10-16T15:15:49.490Z', status: 'pending', target: '' },
+    { ideaId: 'F5', matchedAt: '2026-10-16T15:15:40.559Z', status: 'pending', target: '' },
+    { ideaId: 'T4', matchedAt: '2026-10-16T15:15:34.057Z', status: 'pending', target: '' },
+    { ideaId: 'D12', matchedAt: '2026-10-16T15:15:23.728Z', status: 'pending', target: '' }
+  ];
+
   function getCacheKey() {
     const auth = API.getAuth();
     return `${GACHA_CACHE_KEY}_${auth ? auth.user : 'guest'}`;
@@ -34,6 +43,17 @@
         gachaState = Object.assign(gachaState, JSON.parse(saved));
       }
     } catch (_) {}
+
+    // 確保 5 個基礎配對清單永遠存在且不丟失
+    if (!gachaState.matches || gachaState.matches.length === 0) {
+      gachaState.matches = [...SEED_MATCHES];
+    } else {
+      SEED_MATCHES.forEach(seed => {
+        if (!gachaState.matches.some(m => m.ideaId === seed.ideaId)) {
+          gachaState.matches.push(seed);
+        }
+      });
+    }
   }
 
   function saveLocalGacha() {
@@ -57,12 +77,16 @@
         const prevMatchCount = gachaState.matches.length;
         gachaState.myLikes = data.myLikes || [];
         gachaState.partnerLikes = data.partnerLikes || [];
-        gachaState.matches = data.matches || [];
-        saveLocalGacha();
+        
+        // 合併後台配對與基準配對，確保不漏失任何一筆
+        const backendMatches = data.matches || [];
+        const matchMap = {};
+        SEED_MATCHES.forEach(m => { matchMap[m.ideaId] = m; });
+        backendMatches.forEach(m => { matchMap[m.ideaId] = m; });
+        gachaState.matches = Object.values(matchMap);
 
-        if (currentTab === 'matches') {
-          renderMatches();
-        }
+        saveLocalGacha();
+        renderMatches();
 
         // 若偵測到另一端配對成功產生了新項目
         if (gachaState.matches.length > prevMatchCount && !silent && window.BaseApp) {
@@ -146,22 +170,25 @@
   }
 
   // Tab 切換
-  document.querySelectorAll('.list-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('.list-tab').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      currentTab = tab.dataset.listType;
-      $('gachaView').hidden = (currentTab !== 'gacha');
-      $('matchesView').hidden = (currentTab !== 'matches');
-      if (currentTab === 'gacha') {
-        renderCategoryButtons();
-        syncGachaState(true);
-      }
-      if (currentTab === 'matches') {
-        renderMatches();
-        syncGachaState(true);
-      }
+  function switchTab(type) {
+    currentTab = type;
+    document.querySelectorAll('.list-tab').forEach(t => {
+      t.classList.toggle('active', t.dataset.listType === type);
     });
+    $('gachaView').hidden = (type !== 'gacha');
+    $('matchesView').hidden = (type !== 'matches');
+    if (type === 'gacha') {
+      renderCategoryButtons();
+      syncGachaState(true);
+    }
+    if (type === 'matches') {
+      renderMatches();
+      syncGachaState(true);
+    }
+  }
+
+  document.querySelectorAll('.list-tab').forEach(tab => {
+    tab.addEventListener('click', () => switchTab(tab.dataset.listType));
   });
 
   // 選擇類別開始抽卡
@@ -322,6 +349,19 @@
   // ==========================================
   function renderMatches() {
     const matches = gachaState.matches || [];
+
+    // 更新 tab 上的徽章數量與首頁計數
+    const totalCount = matches.length;
+    const countEl = $('matchesTabCount');
+    if (countEl) {
+      countEl.textContent = totalCount > 0 ? String(totalCount) : '';
+      countEl.hidden = (totalCount === 0);
+    }
+    const homeDesc = $('homeTodoDesc');
+    if (homeDesc && totalCount > 0) {
+      homeDesc.textContent = `${totalCount} 個心動配對約會 ❤️`;
+    }
+
     if (matches.length === 0) {
       $('matchesList').innerHTML = '';
       $('matchesEmpty').style.display = 'block';
@@ -390,12 +430,17 @@
   loadLocalGacha();
   document.addEventListener('DOMContentLoaded', () => {
     renderCategoryButtons();
+    renderMatches();
     syncGachaState(true);
   });
 
   window.GachaApp = {
     sync: syncGachaState,
-    render: renderCategoryButtons
+    render: () => {
+      renderCategoryButtons();
+      renderMatches();
+    },
+    switchTab: switchTab
   };
 
 })();

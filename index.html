@@ -73,7 +73,7 @@
                     <button class="entry" type="button" data-go="lists" data-list="todo">
                         <span class="entry-icon">💡</span>
                         <span class="entry-name">想一起做的事</span>
-                        <span class="entry-desc">專屬願望清單</span>
+                        <span class="entry-desc" id="homeTodoDesc">專屬願望清單</span>
                     </button>
                     <button class="entry" type="button" data-go="lists" data-list="places">
                         <span class="entry-icon">✈️</span>
@@ -141,7 +141,7 @@
                 
                 <div class="list-tabs">
                     <button class="list-tab active" data-list-type="gacha">🃏 心動抽卡</button>
-                    <button class="list-tab" data-list-type="matches">📅 約會清單</button>
+                    <button class="list-tab" data-list-type="matches">📅 約會清單 <span id="matchesTabCount" style="font-size:0.75rem; background:var(--pink); color:#fff; padding:2px 7px; border-radius:10px; margin-left:4px; font-weight:bold;"></span></button>
                 </div>
                 
                 <div id="listLoading" class="soon" hidden>
@@ -224,12 +224,12 @@
         </nav>
     </div>
 
-    <script src="js/config.js?v=9"></script>
-    <script src="js/api.js?v=9"></script>
-    <script src="js/ideas.js?v=9"></script>
-    <script src="js/app.js?v=9"></script>
-    <script src="js/secret.js?v=9"></script>
-    <script src="js/lists.js?v=9"></script>
+    <script src="js/config.js?v=10"></script>
+    <script src="js/api.js?v=10"></script>
+    <script src="js/ideas.js?v=10"></script>
+    <script src="js/app.js?v=10"></script>
+    <script src="js/secret.js?v=10"></script>
+    <script src="js/lists.js?v=10"></script>
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('service-worker.js').then(reg => {

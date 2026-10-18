@@ -164,7 +164,14 @@
 
   tabs.forEach(t => t.addEventListener('click', () => showView(t.dataset.tab)));
   document.querySelectorAll('[data-go]').forEach(el => {
-    el.addEventListener('click', () => showView(el.dataset.go));
+    el.addEventListener('click', () => {
+      showView(el.dataset.go);
+      if (el.dataset.go === 'lists' && (el.dataset.list === 'todo' || el.dataset.list === 'matches')) {
+        if (window.GachaApp && window.GachaApp.switchTab) {
+          window.GachaApp.switchTab('matches');
+        }
+      }
+    });
   });
 
   // ============================================================
