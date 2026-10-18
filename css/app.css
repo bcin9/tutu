@@ -849,61 +849,8 @@ textarea:focus {
 }
 
 /* ============================================================
-   交換秘密：近 3 天切換與歷史回憶錄
+   交換秘密：歷史回憶錄
    ============================================================ */
-.secret-days-nav {
-  display: flex;
-  gap: 8px;
-  margin: 16px 0 12px 0;
-  background: rgba(74, 63, 53, 0.05);
-  padding: 6px;
-  border-radius: 18px;
-}
-.secret-day-btn {
-  flex: 1;
-  border: none;
-  background: transparent;
-  padding: 8px 4px;
-  border-radius: 13px;
-  color: var(--ink-soft);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  cursor: pointer;
-}
-.secret-day-btn.active {
-  background: var(--card);
-  color: var(--ink);
-  box-shadow: 0 4px 12px rgba(110, 84, 58, 0.08);
-}
-.secret-day-btn .day-title {
-  font-size: 0.88rem;
-  font-weight: 600;
-}
-.secret-day-btn .day-date {
-  font-size: 0.72rem;
-  opacity: 0.75;
-}
-.secret-day-btn .day-tag {
-  font-size: 0.68rem;
-  margin-top: 2px;
-  padding: 1px 6px;
-  border-radius: 8px;
-  background: rgba(74, 63, 53, 0.06);
-}
-.secret-day-btn.active .day-tag.unlocked {
-  background: var(--sage-soft);
-  color: var(--sage);
-  font-weight: 600;
-}
-.secret-day-btn.active .day-tag.pending {
-  background: var(--pink-soft);
-  color: var(--accent);
-  font-weight: 600;
-}
-
 .secret-date-row {
   display: flex;
   align-items: center;
@@ -925,41 +872,28 @@ textarea:focus {
   margin-top: 32px;
   margin-bottom: 30px;
 }
-.history-toggle-btn {
-  width: 100%;
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 16px 20px;
+.history-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-weight: 600;
-  color: var(--ink);
-  box-shadow: var(--shadow);
-  cursor: pointer;
-  transition: all 0.2s;
+  margin-bottom: 14px;
+  padding: 0 4px;
 }
-.history-toggle-btn:active {
-  transform: scale(0.99);
-}
-.history-toggle-title {
+.history-title {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 1rem;
+  gap: 8px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ink);
 }
 .history-count {
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   font-weight: normal;
   color: var(--ink-soft);
 }
-.history-arrow {
-  font-size: 0.85rem;
-  color: var(--ink-soft);
-}
 .history-wrap {
-  margin-top: 14px;
+  margin-top: 10px;
 }
 .history-card {
   background: var(--card);

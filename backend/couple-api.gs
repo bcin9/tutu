@@ -483,7 +483,7 @@ function isValidDateKey(dateKey) {
 function questionForDate(dateKey) {
   const parts = dateKey.split('-').map(Number);
   const dayNumber = Math.floor(Date.UTC(parts[0], parts[1] - 1, parts[2]) / 86400000);
-  const index = ((dayNumber % SECRET_QUESTIONS.length) + SECRET_QUESTIONS.length) % SECRET_QUESTIONS.length;
+  const index = ((dayNumber - 20700) % SECRET_QUESTIONS.length + SECRET_QUESTIONS.length) % SECRET_QUESTIONS.length;
   return SECRET_QUESTIONS[index];
 }
 
@@ -521,7 +521,9 @@ function normalizeDateCell(value) {
   if (value instanceof Date) {
     return Utilities.formatDate(value, COUPLE_TZ, 'yyyy-MM-dd');
   }
-  return String(value || '');
+  let str = String(value || '');
+  if (str.charAt(0) === "'") str = str.substring(1);
+  return str;
 }
 
 /**
@@ -562,11 +564,13 @@ function coupleSecretGet(params, user) {
 }
 
 function coupleSecretAnswer(params, user) {
-  const dateKey = sanitizeText(params.date || coupleToday(), 10);
+  const today = coupleToday();
+  const dateKey = sanitizeText(params.date || today, 10);
   const answer = sanitizeText(params.answer || '', 1000);
 
-  if (!isValidDateKey(dateKey) || dateKey > coupleToday()) {
-    return jsonResponse({ ok: false, error: 'invalid-date' }, 400);
+  // 只能回答當日秘密，不允許補寫過往題目
+  if (dateKey !== today) {
+    return jsonResponse({ ok: false, error: 'can-only-answer-today' }, 400);
   }
   if (!answer) {
     return jsonResponse({ ok: false, error: 'answer-required' }, 400);

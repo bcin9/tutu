@@ -400,7 +400,7 @@
   function questionForDate(dateKey) {
     const parts = dateKey.split('-').map(Number);
     const dayNumber = Math.floor(Date.UTC(parts[0], parts[1] - 1, parts[2]) / 86400000);
-    const index = ((dayNumber % SECRET_QUESTIONS.length) + SECRET_QUESTIONS.length) % SECRET_QUESTIONS.length;
+    const index = ((dayNumber - 20700) % SECRET_QUESTIONS.length + SECRET_QUESTIONS.length) % SECRET_QUESTIONS.length;
     return SECRET_QUESTIONS[index];
   }
 
@@ -423,102 +423,26 @@
     } catch (_) {}
   }
 
-  // 狀態管理
-  let selectedDateKey = getDateKeyOffset(0); // 預設為今天
+  // 狀態管理：僅針對「今天」進行作答
+  const todayKey = getDateKeyOffset(0);
   let currentSecret = null;
-  let isFetching = false;
-  let isHistoryOpen = false;
 
   /**
-   * 渲染「近 3 天」切換標籤列
+   * 載入並渲染今日秘密
    */
-  function renderDaysNav() {
-    const nav = $('secretDaysNav');
-    if (!nav) return;
+  async function loadTodaySecret() {
     const auth = API.getAuth();
     const user = auth ? auth.user : 'a';
-
-    const recentItems = [
-      { offset: 2, label: '前天' },
-      { offset: 1, label: '昨天' },
-      { offset: 0, label: '🌟 今天' }
-    ];
-
-    const todayKey = getDateKeyOffset(0);
-    const recentDateKeys = recentItems.map(i => getDateKeyOffset(i.offset));
-    const isViewingOlder = !recentDateKeys.includes(selectedDateKey);
-
-    let html = recentItems.map(item => {
-      const dateKey = getDateKeyOffset(item.offset);
-      const isActive = dateKey === selectedDateKey;
-      const cached = getCachedSecret(dateKey, user);
-
-      let tagText = '待回答';
-      let tagClass = '';
-      if (cached) {
-        if (cached.myAnswer && cached.partnerAnswered) {
-          tagText = '✨ 解鎖';
-          tagClass = 'unlocked';
-        } else if (cached.myAnswer) {
-          tagText = '⏳ 等對方';
-          tagClass = 'pending';
-        } else if (cached.partnerAnswered) {
-          tagText = '🔒 對方已答';
-          tagClass = 'pending';
-        }
-      }
-
-      return `
-        <button type="button" class="secret-day-btn ${isActive ? 'active' : ''}" data-date="${dateKey}">
-          <span class="day-title">${item.label}</span>
-          <span class="day-date">${formatMD(dateKey)}</span>
-          <span class="day-tag ${tagClass}">${tagText}</span>
-        </button>
-      `;
-    }).join('');
-
-    // 若使用者點了歷史回憶中的更早日期，動態追加一個膠囊標籤
-    if (isViewingOlder) {
-      html += `
-        <button type="button" class="secret-day-btn active" data-date="${selectedDateKey}">
-          <span class="day-title">往日</span>
-          <span class="day-date">${formatMD(selectedDateKey)}</span>
-          <span class="day-tag unlocked">回憶中</span>
-        </button>
-      `;
-    }
-
-    nav.innerHTML = html;
-
-    nav.querySelectorAll('[data-date]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const date = btn.dataset.date;
-        if (date !== selectedDateKey) {
-          selectDate(date);
-        }
-      });
-    });
-  }
-
-  /**
-   * 切換選擇特定日期
-   */
-  async function selectDate(dateKey) {
-    selectedDateKey = dateKey;
-    renderDaysNav();
-
-    const auth = API.getAuth();
-    const user = auth ? auth.user : 'a';
-    const q = questionForDate(dateKey);
+    const q = questionForDate(todayKey);
 
     // 0ms 秒開：優先從本地快取或預算渲染
-    const cached = getCachedSecret(dateKey, user);
+    const cached = getCachedSecret(todayKey, user);
     if (cached) {
       currentSecret = cached;
       renderSecret(cached);
     } else {
       currentSecret = {
-        date: dateKey,
+        date: todayKey,
         question: q,
         myAnswer: null,
         myAnsweredAt: null,
@@ -529,55 +453,22 @@
       renderSecret(currentSecret);
     }
 
-    // 更新日期徽章提示
-    updateDateBadge(dateKey);
-
     // 背景同步後台最新狀態
     if (!auth) return;
     try {
-      const todayKey = getDateKeyOffset(0);
-      const data = dateKey === todayKey ? await API.secretToday() : await API.secretGet(dateKey);
+      const data = await API.secretToday();
       if (data && data.ok) {
-        setCachedSecret(dateKey, user, data);
-        if (selectedDateKey === dateKey) {
-          currentSecret = data;
-          renderSecret(data);
-          renderDaysNav();
-        }
+        setCachedSecret(todayKey, user, data);
+        currentSecret = data;
+        renderSecret(data);
       }
     } catch (e) {
-      console.warn('同步日期秘密失敗:', e);
-    }
-  }
-
-  function updateDateBadge(dateKey) {
-    const badge = $('secretBadge');
-    if (!badge) return;
-    const today = getDateKeyOffset(0);
-    const yesterday = getDateKeyOffset(1);
-    const dayBefore = getDateKeyOffset(2);
-
-    if (dateKey === today) {
-      badge.textContent = '🌟 今日秘密';
-      badge.style.background = 'var(--accent-soft)';
-      badge.style.color = 'var(--accent)';
-    } else if (dateKey === yesterday) {
-      badge.textContent = '昨天補答';
-      badge.style.background = 'var(--pink-soft)';
-      badge.style.color = 'var(--pink)';
-    } else if (dateKey === dayBefore) {
-      badge.textContent = '前天補答';
-      badge.style.background = 'var(--sage-soft)';
-      badge.style.color = 'var(--sage)';
-    } else {
-      badge.textContent = '往日時光';
-      badge.style.background = 'rgba(74, 63, 53, 0.08)';
-      badge.style.color = 'var(--ink-soft)';
+      console.warn('同步今日秘密失敗:', e);
     }
   }
 
   /**
-   * 渲染題目與答案內容
+   * 渲染今日題目與答案內容
    */
   function renderSecret(data) {
     if (!data) return;
@@ -588,24 +479,19 @@
     if ($('secretDate')) $('secretDate').textContent = formatFullDate(data.date);
     if ($('secretQ')) $('secretQ').textContent = data.question;
 
-    // 若顯示的是今天，同步更新首頁卡片
-    if (data.date === getDateKeyOffset(0)) {
-      if ($('homeSecretQ')) $('homeSecretQ').textContent = data.question;
-      if ($('homeSecretStatus')) {
-        $('homeSecretStatus').textContent = data.myAnswer
-          ? (data.partnerAnswered ? '雙方已解鎖 ✨' : '你已回答')
-          : (data.partnerAnswered ? '對方已回答' : '尚未回答');
-      }
+    // 同步更新首頁卡片
+    if ($('homeSecretQ')) $('homeSecretQ').textContent = data.question;
+    if ($('homeSecretStatus')) {
+      $('homeSecretStatus').textContent = data.myAnswer
+        ? (data.partnerAnswered ? '雙方已解鎖 ✨' : '你已回答')
+        : (data.partnerAnswered ? '對方已回答' : '尚未回答');
     }
-
-    updateDateBadge(data.date);
 
     const mySection = $('myAnswerSection');
     const partnerSection = $('partnerAnswerSection');
     if (!mySection || !partnerSection) return;
 
     const partnerName = getPartnerName();
-    const isToday = data.date === getDateKeyOffset(0);
 
     if (data.myAnswer) {
       // 我已經回答過
@@ -624,7 +510,7 @@
             <p>${escapeHTML(data.partnerAnswer || '')}</p>
           </div>
         `;
-        if (isToday && $('secretTabDot')) $('secretTabDot').hidden = true;
+        if ($('secretTabDot')) $('secretTabDot').hidden = true;
       } else {
         // 等待對方回答
         partnerSection.innerHTML = `
@@ -634,15 +520,13 @@
         `;
       }
     } else {
-      // 我尚未回答（可作答或補答）
+      // 尚未回答
       const existingInput = $('myAnswerInput');
       const draft = existingInput ? existingInput.value : '';
-      const placeholder = isToday ? '寫下你的回答...' : `補寫 ${formatMD(data.date)} 的回答...`;
-      const btnText = isToday ? '送出回答' : '補交回答 ✉️';
 
       mySection.innerHTML = `
-        <textarea id="myAnswerInput" placeholder="${placeholder}" rows="4"></textarea>
-        <button type="button" class="btn primary" id="submitAnswerBtn">${btnText}</button>
+        <textarea id="myAnswerInput" placeholder="寫下你的回答..." rows="4"></textarea>
+        <button type="button" class="btn primary" id="submitAnswerBtn">送出回答</button>
         <p class="error-msg" id="answerError"></p>
       `;
       if (draft && $('myAnswerInput')) {
@@ -655,12 +539,12 @@
           ${data.partnerAnswered ? `${partnerName} 已經回答了！快寫下你的答案來解鎖吧 🔒` : '回答後即可看到對方的答案 🔒'}
         </div>
       `;
-      if (isToday && $('secretTabDot')) $('secretTabDot').hidden = !data.partnerAnswered;
+      if ($('secretTabDot')) $('secretTabDot').hidden = !data.partnerAnswered;
     }
   }
 
   /**
-   * 送出回答
+   * 送出今日回答
    */
   async function submitAnswer() {
     const input = $('myAnswerInput').value.trim();
@@ -677,30 +561,25 @@
 
     const auth = API.getAuth();
     const user = auth ? auth.user : 'a';
-    const targetDate = currentSecret.date;
 
     // 樂觀更新
     const optimisticData = Object.assign({}, currentSecret, {
       myAnswer: input,
       myAnsweredAt: new Date().toISOString()
     });
-    setCachedSecret(targetDate, user, optimisticData);
+    setCachedSecret(todayKey, user, optimisticData);
     renderSecret(optimisticData);
-    renderDaysNav();
 
     try {
-      const data = await API.secretAnswer(targetDate, input);
+      const data = await API.secretAnswer(todayKey, input);
       currentSecret = data;
-      setCachedSecret(targetDate, user, data);
+      setCachedSecret(todayKey, user, data);
       renderSecret(data);
-      renderDaysNav();
 
       if (window.BaseApp) window.BaseApp.bunnySay('秘密已經幫你收好囉！');
 
-      // 若回憶錄展開中，同步更新歷史紀錄
-      if (isHistoryOpen) {
-        loadSecretHistory(true);
-      }
+      // 刷新歷史回憶錄
+      loadSecretHistory(true);
     } catch (e) {
       console.error(e);
       if (errorEl) errorEl.textContent = '送出失敗，請檢查網路後再試。';
@@ -742,9 +621,12 @@
   }
 
   function renderHistoryItems(items, container, partnerName) {
-    if (!items || items.length === 0) {
+    // 歷史回憶錄只展示過去的日子 (date < todayKey)
+    const pastItems = (items || []).filter(i => i.date < todayKey);
+
+    if (pastItems.length === 0) {
       container.innerHTML = `
-        <div style="text-align:center; padding:30px 20px; color:var(--ink-soft); font-size:0.9rem;">
+        <div style="text-align:center; padding:30px 20px; color:var(--ink-soft); font-size:0.9rem; background:var(--card); border-radius:var(--radius); border:1px solid var(--line);">
           目前還沒有更多歷史秘密，每天一起寫下回憶吧 🐰
         </div>
       `;
@@ -752,16 +634,16 @@
       return;
     }
 
-    const unlockedCount = items.filter(i => i.myAnswer && i.partnerAnswered).length;
+    const unlockedCount = pastItems.filter(i => i.myAnswer && i.partnerAnswered).length;
     if ($('historyCount')) $('historyCount').textContent = `(${unlockedCount} 篇已解鎖)`;
 
-    container.innerHTML = items.map(item => {
+    container.innerHTML = pastItems.map(item => {
       const isUnlocked = item.myAnswer && item.partnerAnswered;
       let statusHtml = isUnlocked
         ? `<span style="background:var(--sage-soft); color:var(--sage); padding:2px 8px; border-radius:10px; font-weight:600; font-size:0.75rem;">✨ 雙方已解鎖</span>`
         : (item.myAnswer
           ? `<span style="background:var(--accent-soft); color:var(--accent); padding:2px 8px; border-radius:10px; font-size:0.75rem;">⏳ 等待對方</span>`
-          : `<span style="background:var(--pink-soft); color:var(--pink); padding:2px 8px; border-radius:10px; font-size:0.75rem;">🔒 待補答</span>`);
+          : `<span style="background:rgba(74,63,53,0.08); color:var(--ink-soft); padding:2px 8px; border-radius:10px; font-size:0.75rem;">🔒 當時未作答</span>`);
 
       let answersHtml = '';
       if (isUnlocked) {
@@ -789,10 +671,8 @@
         `;
       } else {
         answersHtml = `
-          <div style="background:rgba(255,255,255,0.6); padding:10px 14px; border-radius:12px; border:1px dashed var(--line); font-size:0.85rem; color:var(--ink-soft);">
-            ${item.partnerAnswered ? `${partnerName} 已經寫下答案囉！` : '這一天你們都還沒寫下秘密'}
-            <br>
-            <button type="button" class="history-catchup-btn" onclick="window.SecretApp.selectDate('${item.date}')">補寫這天 ✏️</button>
+          <div style="font-size:0.85rem; color:var(--ink-soft); padding:6px 0;">
+            這一天你們沒有留下秘密 🐰
           </div>
         `;
       }
@@ -808,20 +688,6 @@
         </div>
       `;
     }).join('');
-  }
-
-  function toggleHistory() {
-    isHistoryOpen = !isHistoryOpen;
-    const wrap = $('secretHistoryWrap');
-    const arrow = $('historyArrow');
-    if (!wrap || !arrow) return;
-
-    wrap.hidden = !isHistoryOpen;
-    arrow.textContent = isHistoryOpen ? '▲ 收起' : '▼ 展開';
-
-    if (isHistoryOpen) {
-      loadSecretHistory();
-    }
   }
 
   function getPartnerName() {
@@ -840,33 +706,25 @@
   // 對外介面
   window.SecretApp = {
     init: () => {
-      renderDaysNav();
-      selectDate(getDateKeyOffset(0));
-    },
-    selectDate: dateKey => {
-      selectDate(dateKey);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      loadTodaySecret();
+      loadSecretHistory();
     },
     refresh: () => {
-      selectDate(selectedDateKey);
-      if (isHistoryOpen) loadSecretHistory(true);
+      loadTodaySecret();
+      loadSecretHistory(true);
     }
   };
 
   // 畫面載入就緒
   document.addEventListener('DOMContentLoaded', () => {
-    renderDaysNav();
-    selectDate(getDateKeyOffset(0));
-
-    const toggleBtn = $('toggleHistoryBtn');
-    if (toggleBtn) {
-      toggleBtn.addEventListener('click', toggleHistory);
-    }
+    loadTodaySecret();
+    loadSecretHistory();
 
     const tab = document.querySelector('[data-tab="secret"]');
     if (tab) {
       tab.addEventListener('click', () => {
-        if (!currentSecret) selectDate(getDateKeyOffset(0));
+        loadTodaySecret();
+        loadSecretHistory();
       });
     }
   });
