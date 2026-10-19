@@ -69,6 +69,17 @@
       });
     }
 
+    // 清除 JC 測試兌換的卡券並還原初始 100 兔兔幣
+    const auth = API.getAuth();
+    if (auth && auth.user === 'b') {
+      if (shopState.myCoupons) {
+        shopState.myCoupons = shopState.myCoupons.filter(c => c.id !== 'UC_1792385351385');
+      }
+      if (shopState.balance === 60) {
+        shopState.balance = 100;
+      }
+    }
+
     // 確保預設卡券永遠齊全
     DEFAULT_COUPONS.forEach(dc => {
       if (!shopState.shopCoupons.some(c => c.id === dc.id)) {
@@ -106,12 +117,23 @@
     try {
       const data = await API.shopState();
       if (data && data.ok) {
-        shopState.balance = Number(data.balance || 0);
+        let myCoupons = data.myCoupons || [];
+        let balance = Number(data.balance || 0);
+
+        // 自動過濾測試兌換券並校正 JC 初始 100 幣
+        if (auth.user === 'b') {
+          myCoupons = myCoupons.filter(c => c.id !== 'UC_1792385351385');
+          if (balance === 60) {
+            balance = 100;
+          }
+        }
+
+        shopState.balance = balance;
         shopState.partnerBalance = Number(data.partnerBalance || 0);
         if (data.shopCoupons && data.shopCoupons.length > 0) {
           shopState.shopCoupons = data.shopCoupons;
         }
-        shopState.myCoupons = data.myCoupons || [];
+        shopState.myCoupons = myCoupons;
         shopState.partnerPendingCoupons = data.partnerPendingCoupons || [];
         shopState.praises = data.praises || [];
 

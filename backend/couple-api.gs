@@ -480,6 +480,8 @@ function handleCoupleAction(action, params) {
       return coupleCouponUse(params, user);
     case 'couple_coupon_complete':
       return coupleCouponComplete(params, user);
+    case 'couple_shop_reset':
+      return coupleShopReset(params, user);
     default:
       return jsonResponse({ ok: false, error: 'unknown-action' }, 400);
   }
@@ -1183,4 +1185,62 @@ function coupleCouponComplete(params, user) {
   } finally {
     lock.releaseLock();
   }
+}
+
+function coupleShopReset(params, user) {
+  const targetUser = params.targetUser || user || 'b';
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    // 1. 清理指定使用者的卡包
+    const ucSheet = getOrCreateSheet(COUPLE_USER_COUPONS_SHEET, COUPLE_USER_COUPONS_HEADER);
+    const ucRows = ucSheet.getDataRange().getValues();
+    for (let i = ucRows.length - 1; i >= 1; i--) {
+      if (String(ucRows[i][6]) === targetUser) {
+        ucSheet.deleteRow(i + 1);
+      }
+    }
+
+    // 2. 清理指定使用者的金幣消費紀錄（保留 INIT_ 見面禮）
+    const coinSheet = getOrCreateSheet(COUPLE_COINS_SHEET, COUPLE_COINS_HEADER);
+    const coinRows = coinSheet.getDataRange().getValues();
+    for (let i = coinRows.length - 1; i >= 1; i--) {
+      const rowUser = String(coinRows[i][1]);
+      const rowId = String(coinRows[i][0]);
+      if (rowId.indexOf('INIT_') !== 0 && rowUser === targetUser) {
+        coinSheet.deleteRow(i + 1);
+      }
+    }
+
+    return coupleShopState(user);
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
+ * 手動一鍵重設 JC（女朋友）的測試花費與卡券
+ * 在 Apps Script 編輯器上方函式選單選擇「resetJCTestCoinsAndCoupons」並按「執行」即可！
+ */
+function resetJCTestCoinsAndCoupons() {
+  const targetUser = 'b'; // JC
+  const ucSheet = getOrCreateSheet(COUPLE_USER_COUPONS_SHEET, COUPLE_USER_COUPONS_HEADER);
+  const ucRows = ucSheet.getDataRange().getValues();
+  for (let i = ucRows.length - 1; i >= 1; i--) {
+    if (String(ucRows[i][6]) === targetUser) {
+      ucSheet.deleteRow(i + 1);
+    }
+  }
+
+  const coinSheet = getOrCreateSheet(COUPLE_COINS_SHEET, COUPLE_COINS_HEADER);
+  const coinRows = coinSheet.getDataRange().getValues();
+  for (let i = coinRows.length - 1; i >= 1; i--) {
+    const rowUser = String(coinRows[i][1]);
+    const rowId = String(coinRows[i][0]);
+    if (rowId.indexOf('INIT_') !== 0 && rowUser === targetUser) {
+      coinSheet.deleteRow(i + 1);
+    }
+  }
+
+  Logger.log('✅ 已成功將 JC (b) 的測試卡包清空，並還原初始 100 兔兔幣！');
 }

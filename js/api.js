@@ -367,6 +367,7 @@
     shopAddCoupon: (title, desc, cost, icon) => call('couple_coupon_add', { title, desc, cost: String(cost), icon }),
     shopRedeem: couponId => call('couple_coupon_redeem', { couponId }),
     shopUse: userCouponId => call('couple_coupon_use', { userCouponId }),
-    shopComplete: userCouponId => call('couple_coupon_complete', { userCouponId })
+    shopComplete: userCouponId => call('couple_coupon_complete', { userCouponId }),
+    shopReset: targetUser => call('couple_shop_reset', { targetUser })
   };
 })();
