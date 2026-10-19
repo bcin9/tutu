@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tutu-pwa-v14';
+const CACHE_NAME = 'tutu-pwa-v15';
 const urlsToCache = [
   './',
   './index.html',
@@ -13,6 +13,7 @@ const urlsToCache = [
   './js/secret.js',
   './js/lists.js',
   './js/ideas.js',
+  './js/shop.js',
   './js/bunny.js',
   './images/art/lock-door.jpg',
   './images/art/hero-island.jpg',

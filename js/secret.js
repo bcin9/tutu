@@ -426,6 +426,56 @@
   // 狀態管理：僅針對「今天」進行作答
   const todayKey = getDateKeyOffset(0);
   let currentSecret = null;
+  let secretPollTimer = null;
+
+  function startSecretPolling() {
+    stopSecretPolling();
+    secretPollTimer = setInterval(async () => {
+      if (!currentSecret || currentSecret.partnerAnswered) {
+        stopSecretPolling();
+        return;
+      }
+      const auth = API.getAuth();
+      if (!auth) return;
+      try {
+        const data = await API.secretToday();
+        if (data && data.ok && data.partnerAnswered) {
+          setCachedSecret(todayKey, auth.user, data);
+          currentSecret = data;
+          renderSecret(data);
+          stopSecretPolling();
+          if (window.BaseApp) window.BaseApp.bunnySay('叮咚！對方的回答送達囉 ✨');
+          loadSecretHistory(true);
+        }
+      } catch (_) {}
+    }, 12000);
+  }
+
+  function stopSecretPolling() {
+    if (secretPollTimer) {
+      clearInterval(secretPollTimer);
+      secretPollTimer = null;
+    }
+  }
+
+  function renderUserBadge() {
+    const auth = API.getAuth();
+    const nameEl = $('secretCurrentUserName');
+    if (auth && nameEl) {
+      const person = CONFIG.people[auth.user];
+      nameEl.textContent = `目前身分：${person.emoji} ${person.name}`;
+    }
+    const switchBtn = $('secretSwitchUserBtn');
+    if (switchBtn && !switchBtn._bound) {
+      switchBtn._bound = true;
+      switchBtn.addEventListener('click', () => {
+        if (confirm('確定要切換身分（更換登入者）嗎？')) {
+          API.clearAuth();
+          location.reload();
+        }
+      });
+    }
+  }
 
   /**
    * 載入並渲染今日秘密
@@ -491,6 +541,7 @@
     const partnerSection = $('partnerAnswerSection');
     if (!mySection || !partnerSection) return;
 
+    renderUserBadge();
     const partnerName = getPartnerName();
 
     if (data.myAnswer) {
@@ -503,6 +554,7 @@
       `;
 
       if (data.partnerAnswered) {
+        stopSecretPolling();
         // 雙方皆已回答（解鎖顯示）
         partnerSection.innerHTML = `
           <div class="answer-card partner">
@@ -512,12 +564,45 @@
         `;
         if ($('secretTabDot')) $('secretTabDot').hidden = true;
       } else {
-        // 等待對方回答
+        // 等待對方回答，啟動自動輪詢
+        startSecretPolling();
         partnerSection.innerHTML = `
           <div class="wait-card">
-            等待 ${partnerName} 回答後解鎖... 🐰
+            <p style="margin-bottom: 8px;">等待 ${partnerName} 回答後解鎖... 🐰</p>
+            <button type="button" class="btn secondary" id="checkPartnerBtn" style="font-size: 0.85rem; padding: 6px 14px; border-radius: 20px;">🔄 檢查對方是否回答</button>
+            <span id="checkPartnerMsg" style="display:block; font-size:0.75rem; color:var(--ink-soft); margin-top:6px;"></span>
           </div>
         `;
+        const checkBtn = $('checkPartnerBtn');
+        if (checkBtn) {
+          checkBtn.addEventListener('click', async () => {
+            checkBtn.disabled = true;
+            checkBtn.textContent = '檢查中...';
+            try {
+              const res = await API.secretToday();
+              if (res && res.ok) {
+                setCachedSecret(todayKey, user, res);
+                currentSecret = res;
+                renderSecret(res);
+                if (res.partnerAnswered) {
+                  if (window.BaseApp) window.BaseApp.bunnySay('太棒了！對方回答已解鎖 ✨');
+                  loadSecretHistory(true);
+                } else {
+                  const msg = $('checkPartnerMsg');
+                  if (msg) msg.textContent = `${partnerName} 還在思考中喔，等等再試試！`;
+                }
+              }
+            } catch (_) {
+              const msg = $('checkPartnerMsg');
+              if (msg) msg.textContent = '連線檢查失敗，請稍候再試';
+            } finally {
+              if (checkBtn && currentSecret && !currentSecret.partnerAnswered) {
+                checkBtn.disabled = false;
+                checkBtn.textContent = '🔄 檢查對方是否回答';
+              }
+            }
+          });
+        }
       }
     } else {
       // 尚未回答

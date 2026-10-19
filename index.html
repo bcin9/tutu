@@ -75,10 +75,10 @@
                         <span class="entry-name">想一起做的事</span>
                         <span class="entry-desc" id="homeTodoDesc">專屬願望清單</span>
                     </button>
-                    <button class="entry" type="button" data-go="lists" data-list="places">
-                        <span class="entry-icon">✈️</span>
-                        <span class="entry-name">想一起去的地方</span>
-                        <span class="entry-desc">國內外旅遊計畫</span>
+                    <button class="entry" type="button" data-go="shop">
+                        <span class="entry-icon">🛒</span>
+                        <span class="entry-name">兔兔願望市集</span>
+                        <span class="entry-desc" id="homeShopDesc">特權卡券＆甜蜜集點 🐰</span>
                     </button>
                     <a class="entry wide" href="bunny.html">
                         <span class="entry-icon">🌈</span>
@@ -96,6 +96,10 @@
                     <div>
                         <p class="greet">每天一題，回答後才能看到對方的答案</p>
                         <h1 class="title">交換秘密</h1>
+                    </div>
+                    <div id="secretUserBadge" class="user-badge-pill" style="font-size:0.8rem; background:rgba(255,255,255,0.85); border:1px solid var(--line); border-radius:16px; padding:4px 10px; display:inline-flex; align-items:center; gap:6px;">
+                        <span id="secretCurrentUserName"></span>
+                        <button type="button" id="secretSwitchUserBtn" style="border:none; background:none; color:var(--pink); font-size:0.75rem; cursor:pointer; font-weight:bold; padding:0;">換人</button>
                     </div>
                 </div>
                 
@@ -191,7 +195,147 @@
                     </div>
                 </div>
             </section>
+
+            <!-- 兔兔願望市集（卡券與點數商城） -->
+            <section class="view" data-view="shop" hidden>
+                <div class="topbar">
+                    <div>
+                        <p class="greet">集點兌換專屬特權，甜蜜放閃 🐰</p>
+                        <h1 class="title">兔兔願望市集</h1>
+                    </div>
+                    <div class="shop-coin-pill" id="shopCoinBadge" style="display:flex; align-items:center; gap:6px; background:linear-gradient(135deg, #FFF0F5, #FFE4E1); border:1.5px solid var(--pink); border-radius:20px; padding:6px 14px; font-weight:bold; color:var(--ink); box-shadow:0 2px 8px rgba(255,107,139,0.15);">
+                        <span style="font-size:1.1rem;">🐰</span>
+                        <span id="shopCoinAmount" style="font-size:1.05rem; color:var(--pink); font-weight:800;">100</span>
+                        <span style="font-size:0.8rem; color:var(--ink-soft);">幣</span>
+                    </div>
+                </div>
+
+                <!-- 待履行通知橫幅（若對方出示了卡券，等待我來履行） -->
+                <div id="partnerPendingBanner" class="pending-notice-banner" hidden style="background:linear-gradient(135deg, #FFF3CD, #FFEAA7); border:1px solid #FFE082; border-radius:16px; padding:12px 16px; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span style="font-size:1.5rem;">💌</span>
+                        <div>
+                            <strong id="pendingBannerTitle" style="display:block; font-size:0.95rem; color:#856404;">對方出示了特權券！</strong>
+                            <span id="pendingBannerDesc" style="font-size:0.8rem; color:#856404;">等待你來確認履行喔 ⏳</span>
+                        </div>
+                    </div>
+                    <button type="button" class="btn primary" id="openPendingModalBtn" style="font-size:0.8rem; padding:6px 12px; border-radius:12px;">查看履約</button>
+                </div>
+
+                <!-- 功能快捷列：犒賞另一半 + 新增自訂券 -->
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:16px;">
+                    <button type="button" class="btn secondary" id="openRewardModalBtn" style="display:flex; align-items:center; justify-content:center; gap:6px; padding:10px; border-radius:14px; font-size:0.9rem; font-weight:bold; background:rgba(255,255,255,0.9);">
+                        <span>🎁</span> 犒賞另一半
+                    </button>
+                    <button type="button" class="btn secondary" id="openAddCouponModalBtn" style="display:flex; align-items:center; justify-content:center; gap:6px; padding:10px; border-radius:14px; font-size:0.9rem; font-weight:bold; background:rgba(255,255,255,0.9);">
+                        <span>➕</span> 新增願望券
+                    </button>
+                </div>
+
+                <!-- 商城分頁切換 -->
+                <div class="list-tabs" style="margin-bottom:16px;">
+                    <button class="list-tab active" data-shop-tab="market">🛒 願望市集</button>
+                    <button class="list-tab" data-shop-tab="backpack">🎒 我的卡包 <span id="myCouponsCount" style="font-size:0.75rem; background:var(--pink); color:#fff; padding:2px 7px; border-radius:10px; margin-left:4px; font-weight:bold;"></span></button>
+                    <button class="list-tab" data-shop-tab="praises">💌 甜蜜誇誇</button>
+                </div>
+
+                <!-- 1. 願望市集內容 -->
+                <div id="shopMarketView">
+                    <div id="shopCouponsList" class="coupons-grid" style="display:grid; grid-template-columns:1fr; gap:12px;"></div>
+                </div>
+
+                <!-- 2. 我的卡包內容 -->
+                <div id="shopBackpackView" hidden>
+                    <div id="backpackEmpty" class="soon" style="padding:40px 20px; text-align:center; display:none;">
+                        <span style="font-size:3rem; display:block; margin-bottom:8px;">🎒</span>
+                        <h3 style="font-size:1.05rem; color:var(--ink-soft); margin-bottom:6px;">卡包空空如也</h3>
+                        <p style="font-size:0.85rem; color:var(--ink-soft); margin-bottom:14px;">快去市集用兔兔幣兌換你想要的特權券吧！</p>
+                        <button type="button" class="btn primary" id="goToMarketBtn" style="font-size:0.85rem; padding:8px 18px; border-radius:20px;">前往市集逛逛</button>
+                    </div>
+                    <div id="backpackCouponsList" style="display:grid; grid-template-columns:1fr; gap:12px;"></div>
+                </div>
+
+                <!-- 3. 甜蜜誇誇牆 -->
+                <div id="shopPraisesView" hidden>
+                    <div id="praisesEmpty" class="soon" style="padding:40px 20px; text-align:center; display:none;">
+                        <span style="font-size:3rem; display:block; margin-bottom:8px;">💌</span>
+                        <h3 style="font-size:1.05rem; color:var(--ink-soft); margin-bottom:6px;">還沒有誇誇紀錄</h3>
+                        <p style="font-size:0.85rem; color:var(--ink-soft);">點擊上方的「🎁 犒賞另一半」發送第一份誇誇與兔兔幣吧！</p>
+                    </div>
+                    <div id="praisesList" style="display:flex; flex-direction:column; gap:10px;"></div>
+                </div>
+            </section>
         </main>
+
+        <!-- 彈窗：🎁 犒賞另一半 -->
+        <div class="modal-overlay" id="rewardModal">
+            <div class="modal-sheet">
+                <div class="modal-header">
+                    <h3 class="modal-title">🎁 犒賞另一半・甜蜜打賞</h3>
+                    <button type="button" class="modal-close" data-modal-close="rewardModal">&times;</button>
+                </div>
+                <p style="font-size:0.85rem; color:var(--ink-soft); margin-top:0; margin-bottom:14px;">給對方送上滿滿的兔兔幣與誇誇，感謝對方的陪伴與付出 ❤️</p>
+                
+                <label style="font-size:0.85rem; font-weight:bold; display:block; margin-bottom:8px;">選擇打賞兔兔幣：</label>
+                <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin-bottom:14px;" id="rewardAmountGroup">
+                    <button type="button" class="btn secondary active-reward" data-amount="10" style="padding:10px 4px; font-size:0.88rem; border-radius:12px; border:1.5px solid var(--pink); background:var(--pink-soft); font-weight:bold;">+10 甜甜</button>
+                    <button type="button" class="btn secondary" data-amount="30" style="padding:10px 4px; font-size:0.88rem; border-radius:12px; font-weight:bold;">+30 貼心</button>
+                    <button type="button" class="btn secondary" data-amount="50" style="padding:10px 4px; font-size:0.88rem; border-radius:12px; font-weight:bold;">+50 超棒</button>
+                </div>
+
+                <label style="font-size:0.85rem; font-weight:bold; display:block; margin-bottom:8px;">附上一句誇誇理由：</label>
+                <textarea id="rewardReasonInput" placeholder="例如：今天幫忙洗碗超貼心！辛苦了❤️" rows="3" style="width:100%; border:1.5px solid var(--line); border-radius:14px; padding:12px; font-family:inherit; font-size:0.9rem; margin-bottom:14px; box-sizing:border-box;"></textarea>
+
+                <button type="button" class="btn primary" id="submitRewardBtn" style="width:100%; padding:12px; border-radius:16px; font-weight:bold;">發送誇誇與兔兔幣 ✨</button>
+            </div>
+        </div>
+
+        <!-- 彈窗：➕ 新增願望券 -->
+        <div class="modal-overlay" id="addCouponModal">
+            <div class="modal-sheet">
+                <div class="modal-header">
+                    <h3 class="modal-title">➕ 新增專屬願望券</h3>
+                    <button type="button" class="modal-close" data-modal-close="addCouponModal">&times;</button>
+                </div>
+                <p style="font-size:0.85rem; color:var(--ink-soft); margin-top:0; margin-bottom:14px;">設定你們專屬的特權券上架到市集！</p>
+
+                <label style="font-size:0.85rem; font-weight:bold; display:block; margin-bottom:6px;">選擇圖示：</label>
+                <div id="couponIconGroup" style="display:flex; gap:8px; overflow-x:auto; padding-bottom:8px; margin-bottom:12px;">
+                    <button type="button" class="btn secondary active-icon" data-icon="🎟️" style="font-size:1.3rem; padding:6px 10px; border-radius:12px; border:1.5px solid var(--pink); background:var(--pink-soft);">🎟️</button>
+                    <button type="button" class="btn secondary" data-icon="💆‍♂️" style="font-size:1.3rem; padding:6px 10px; border-radius:12px;">💆‍♂️</button>
+                    <button type="button" class="btn secondary" data-icon="🍽️" style="font-size:1.3rem; padding:6px 10px; border-radius:12px;">🍽️</button>
+                    <button type="button" class="btn secondary" data-icon="🤫" style="font-size:1.3rem; padding:6px 10px; border-radius:12px;">🤫</button>
+                    <button type="button" class="btn secondary" data-icon="🎮" style="font-size:1.3rem; padding:6px 10px; border-radius:12px;">🎮</button>
+                    <button type="button" class="btn secondary" data-icon="🛌" style="font-size:1.3rem; padding:6px 10px; border-radius:12px;">🛌</button>
+                    <button type="button" class="btn secondary" data-icon="💋" style="font-size:1.3rem; padding:6px 10px; border-radius:12px;">💋</button>
+                    <button type="button" class="btn secondary" data-icon="🥤" style="font-size:1.3rem; padding:6px 10px; border-radius:12px;">🥤</button>
+                    <button type="button" class="btn secondary" data-icon="🚗" style="font-size:1.3rem; padding:6px 10px; border-radius:12px;">🚗</button>
+                    <button type="button" class="btn secondary" data-icon="🍦" style="font-size:1.3rem; padding:6px 10px; border-radius:12px;">🍦</button>
+                </div>
+
+                <label style="font-size:0.85rem; font-weight:bold; display:block; margin-bottom:6px;">卡券名稱：</label>
+                <input type="text" id="couponTitleInput" placeholder="例如：陪逛街一整天不喊累券" style="width:100%; border:1.5px solid var(--line); border-radius:14px; padding:10px 12px; font-family:inherit; font-size:0.9rem; margin-bottom:12px; box-sizing:border-box;">
+
+                <label style="font-size:0.85rem; font-weight:bold; display:block; margin-bottom:6px;">特權說明：</label>
+                <input type="text" id="couponDescInput" placeholder="例如：出示此券對方必須耐心陪逛街且幫忙提袋子" style="width:100%; border:1.5px solid var(--line); border-radius:14px; padding:10px 12px; font-family:inherit; font-size:0.9rem; margin-bottom:12px; box-sizing:border-box;">
+
+                <label style="font-size:0.85rem; font-weight:bold; display:block; margin-bottom:6px;">兌換所需兔兔幣：</label>
+                <input type="number" id="couponCostInput" value="30" min="5" max="300" style="width:100%; border:1.5px solid var(--line); border-radius:14px; padding:10px 12px; font-family:inherit; font-size:0.9rem; margin-bottom:16px; box-sizing:border-box;">
+
+                <button type="button" class="btn primary" id="submitAddCouponBtn" style="width:100%; padding:12px; border-radius:16px; font-weight:bold;">上架到願望市集 🛒</button>
+            </div>
+        </div>
+
+        <!-- 彈窗：待履行特權確認 -->
+        <div class="modal-overlay" id="pendingModal">
+            <div class="modal-sheet">
+                <div class="modal-header">
+                    <h3 class="modal-title">💌 履行對方的特權券</h3>
+                    <button type="button" class="modal-close" data-modal-close="pendingModal">&times;</button>
+                </div>
+                <div id="pendingModalContent" style="display:flex; flex-direction:column; gap:12px; margin-bottom:16px;"></div>
+            </div>
+        </div>
 
         <!-- 兔兔信差 -->
         <button class="messenger" id="messenger" type="button" aria-label="兔兔信差">
@@ -224,12 +368,13 @@
         </nav>
     </div>
 
-    <script src="js/config.js?v=10"></script>
-    <script src="js/api.js?v=10"></script>
-    <script src="js/ideas.js?v=10"></script>
-    <script src="js/app.js?v=10"></script>
-    <script src="js/secret.js?v=10"></script>
-    <script src="js/lists.js?v=10"></script>
+    <script src="js/config.js?v=11"></script>
+    <script src="js/api.js?v=11"></script>
+    <script src="js/ideas.js?v=11"></script>
+    <script src="js/app.js?v=11"></script>
+    <script src="js/secret.js?v=11"></script>
+    <script src="js/lists.js?v=11"></script>
+    <script src="js/shop.js?v=11"></script>
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('service-worker.js').then(reg => {

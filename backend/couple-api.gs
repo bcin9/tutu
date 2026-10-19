@@ -27,6 +27,25 @@ const GACHA_LIKES_HEADER = ['ideaId', 'user', 'likedAt'];
 const GACHA_MATCHES_SHEET = 'gacha_matches';
 const GACHA_MATCHES_HEADER = ['ideaId', 'matchedAt', 'status', 'target'];
 
+const COUPLE_COINS_SHEET = 'couple_coins';
+const COUPLE_COINS_HEADER = ['id', 'user', 'amount', 'reason', 'fromUser', 'createdAt'];
+
+const COUPLE_COUPONS_SHEET = 'couple_coupons';
+const COUPLE_COUPONS_HEADER = ['id', 'title', 'desc', 'cost', 'icon', 'createdBy', 'createdAt'];
+
+const COUPLE_USER_COUPONS_SHEET = 'couple_user_coupons';
+const COUPLE_USER_COUPONS_HEADER = ['id', 'couponId', 'title', 'desc', 'cost', 'icon', 'owner', 'status', 'usedAt', 'completedAt', 'createdAt'];
+
+const DEFAULT_COUPONS = [
+  { id: 'C_MASSAGE', title: '全身舒壓按摩 20 分鐘券', desc: '對方無條件提供 20 分鐘舒服按摩（搥背、捏肩、精油）', cost: 40, icon: '💆‍♂️' },
+  { id: 'C_PEACE', title: '吵架立刻和好 / 主動抱抱券', desc: '出示時雙方必須停止爭吵，對方主動擁抱，不許翻舊帳', cost: 30, icon: '🤫' },
+  { id: 'C_DINNER', title: '任選大餐券（對方買單）', desc: '今天的約會餐廳由持有者任選，對方豪爽結帳', cost: 80, icon: '🍽️' },
+  { id: 'C_CHORES', title: '家事全包 / 讓我賴床券', desc: '今天所有家事由對方包辦，自己可以安心賴床放空', cost: 50, icon: '🛌' },
+  { id: 'C_GAMING', title: '打電動 / 追劇暢玩放空一天券', desc: '一整天不被打擾、不被催促，盡情玩遊戲或追劇', cost: 40, icon: '🎮' },
+  { id: 'C_KISS', title: '隨時索取親親抱抱券', desc: '隨時隨地無條件討一個深吻或大大的擁抱', cost: 20, icon: '💋' },
+  { id: 'C_ERRAND', title: '專屬外送跑腿券', desc: '對方負責幫忙買飲料或宵夜送上桌', cost: 30, icon: '🥤' }
+];
+
 const COUPLE_LISTS = {
   places: {
     sheet: 'places',
@@ -450,6 +469,18 @@ function handleCoupleAction(action, params) {
       return coupleGachaLike(params, user);
     case 'couple_gacha_update_match':
       return coupleGachaUpdateMatch(params);
+    case 'couple_shop_state':
+      return coupleShopState(user);
+    case 'couple_coins_reward':
+      return coupleCoinsReward(params, user);
+    case 'couple_coupon_add':
+      return coupleCouponAdd(params, user);
+    case 'couple_coupon_redeem':
+      return coupleCouponRedeem(params, user);
+    case 'couple_coupon_use':
+      return coupleCouponUse(params, user);
+    case 'couple_coupon_complete':
+      return coupleCouponComplete(params, user);
     default:
       return jsonResponse({ ok: false, error: 'unknown-action' }, 400);
   }
@@ -511,7 +542,7 @@ function readAllAnswers() {
   });
 
   try {
-    CacheService.getScriptCache().put(CACHE_KEY_ANSWERS, JSON.stringify(answers), 21600);
+    CacheService.getScriptCache().put(CACHE_KEY_ANSWERS, JSON.stringify(answers), 30);
   } catch (_) {}
 
   return answers;
@@ -531,8 +562,10 @@ function normalizeDateCell(value) {
  * 對方的答案只有在這裡、條件成立時才會被放進回傳資料。
  */
 function buildSecretView(dateKey, user, answers) {
-  const mine = answers.filter(function (a) { return a.date === dateKey && a.user === user; })[0];
-  const theirs = answers.filter(function (a) { return a.date === dateKey && a.user === partnerOf(user); })[0];
+  const myAnswers = answers.filter(function (a) { return a.date === dateKey && a.user === user; });
+  const theirAnswers = answers.filter(function (a) { return a.date === dateKey && a.user === partnerOf(user); });
+  const mine = myAnswers.length > 0 ? myAnswers[myAnswers.length - 1] : null;
+  const theirs = theirAnswers.length > 0 ? theirAnswers[theirAnswers.length - 1] : null;
 
   const view = {
     date: dateKey,
@@ -591,8 +624,18 @@ function coupleSecretAnswer(params, user) {
     sheet.appendRow(["'" + dateKey, user, answer, now]);
     answers.push({ date: dateKey, user: user, answer: answer, answeredAt: now });
     try {
-      CacheService.getScriptCache().put(CACHE_KEY_ANSWERS, JSON.stringify(answers), 21600);
+      CacheService.getScriptCache().put(CACHE_KEY_ANSWERS, JSON.stringify(answers), 30);
     } catch (_) {}
+
+    // 若今日雙方皆已回答，各發放每日秘密獎勵 10 兔兔幣
+    try {
+      const partnerUser = partnerOf(user);
+      const partnerAnswered = answers.some(function (a) { return a.date === dateKey && a.user === partnerUser; });
+      if (partnerAnswered) {
+        awardDailySecretCoins(dateKey);
+      }
+    } catch (_) {}
+
     return jsonResponse(Object.assign({ ok: true }, buildSecretView(dateKey, user, answers)));
   } finally {
     lock.releaseLock();
@@ -889,6 +932,253 @@ function coupleGachaUpdateMatch(params) {
     } catch (_) {}
 
     return jsonResponse({ ok: true });
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+// ============================================================
+// 6) 兔兔願望市集、特權券與點數系統 (Coins & Coupons)
+// ============================================================
+function getOrCreateCoinRecords() {
+  const sheet = getOrCreateSheet(COUPLE_COINS_SHEET, COUPLE_COINS_HEADER);
+  const rows = sheet.getDataRange().getValues().slice(1);
+  if (rows.length === 0) {
+    // 首次初始化：贈送 BC 與 JC 各 100 兔兔幣見面禮
+    const now = new Date().toISOString();
+    sheet.appendRow(['INIT_a', 'a', 100, '新手見面禮 🐰', 'system', now]);
+    sheet.appendRow(['INIT_b', 'b', 100, '新手見面禮 🐰', 'system', now]);
+    return [
+      { id: 'INIT_a', user: 'a', amount: 100, reason: '新手見面禮 🐰', fromUser: 'system', createdAt: now },
+      { id: 'INIT_b', user: 'b', amount: 100, reason: '新手見面禮 🐰', fromUser: 'system', createdAt: now }
+    ];
+  }
+  return rows.map(function (row) {
+    return {
+      id: String(row[0] || ''),
+      user: String(row[1] || ''),
+      amount: Number(row[2] || 0),
+      reason: String(row[3] || ''),
+      fromUser: String(row[4] || ''),
+      createdAt: String(row[5] || '')
+    };
+  });
+}
+
+function calculateCoinBalance(user, records) {
+  return records.filter(function (r) { return r.user === user; })
+                .reduce(function (sum, r) { return sum + r.amount; }, 0);
+}
+
+function awardDailySecretCoins(dateKey) {
+  const records = getOrCreateCoinRecords();
+  const alreadyAwarded = records.some(function (r) {
+    return r.reason === '每日交換秘密完成獎勵 🌟' && r.id.indexOf('SECRET_' + dateKey) === 0;
+  });
+  if (alreadyAwarded) return;
+
+  const sheet = getOrCreateSheet(COUPLE_COINS_SHEET, COUPLE_COINS_HEADER);
+  const now = new Date().toISOString();
+  sheet.appendRow(['SECRET_' + dateKey + '_a', 'a', 10, '每日交換秘密完成獎勵 🌟', 'system', now]);
+  sheet.appendRow(['SECRET_' + dateKey + '_b', 'b', 10, '每日交換秘密完成獎勵 🌟', 'system', now]);
+}
+
+function getShopCoupons() {
+  const sheet = getOrCreateSheet(COUPLE_COUPONS_SHEET, COUPLE_COUPONS_HEADER);
+  const rows = sheet.getDataRange().getValues().slice(1);
+  const customCoupons = rows.map(function (row) {
+    return {
+      id: String(row[0] || ''),
+      title: String(row[1] || ''),
+      desc: String(row[2] || ''),
+      cost: Number(row[3] || 10),
+      icon: String(row[4] || '🎟️'),
+      createdBy: String(row[5] || ''),
+      createdAt: String(row[6] || '')
+    };
+  });
+  return DEFAULT_COUPONS.concat(customCoupons);
+}
+
+function getUserCoupons() {
+  const sheet = getOrCreateSheet(COUPLE_USER_COUPONS_SHEET, COUPLE_USER_COUPONS_HEADER);
+  const rows = sheet.getDataRange().getValues().slice(1);
+  return rows.map(function (row) {
+    return {
+      id: String(row[0] || ''),
+      couponId: String(row[1] || ''),
+      title: String(row[2] || ''),
+      desc: String(row[3] || ''),
+      cost: Number(row[4] || 0),
+      icon: String(row[5] || '🎟️'),
+      owner: String(row[6] || ''),
+      status: String(row[7] || 'available'),
+      usedAt: String(row[8] || ''),
+      completedAt: String(row[9] || ''),
+      createdAt: String(row[10] || '')
+    };
+  });
+}
+
+function coupleShopState(user) {
+  const records = getOrCreateCoinRecords();
+  const partner = partnerOf(user);
+  const myBalance = calculateCoinBalance(user, records);
+  const partnerBalance = calculateCoinBalance(partner, records);
+
+  const praises = records.filter(function (r) {
+    return r.fromUser !== 'system' && r.amount > 0;
+  }).reverse().slice(0, 50);
+
+  const shopCoupons = getShopCoupons();
+  const allUserCoupons = getUserCoupons();
+
+  const myCoupons = allUserCoupons.filter(function (c) { return c.owner === user; });
+  const partnerPendingCoupons = allUserCoupons.filter(function (c) {
+    return c.owner === partner && c.status === 'using';
+  });
+
+  return jsonResponse({
+    ok: true,
+    user: user,
+    balance: myBalance,
+    partnerBalance: partnerBalance,
+    shopCoupons: shopCoupons,
+    myCoupons: myCoupons,
+    partnerPendingCoupons: partnerPendingCoupons,
+    praises: praises
+  });
+}
+
+function coupleCoinsReward(params, user) {
+  const amount = parseInt(params.amount || '10', 10);
+  if (isNaN(amount) || amount <= 0 || amount > 500) {
+    return jsonResponse({ ok: false, error: 'invalid-amount' }, 400);
+  }
+  const reason = sanitizeText(params.reason || '表現超棒！給予甜甜獎勵 ❤️', 200);
+  const partner = partnerOf(user);
+
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    const sheet = getOrCreateSheet(COUPLE_COINS_SHEET, COUPLE_COINS_HEADER);
+    const now = new Date().toISOString();
+    const id = 'REW_' + new Date().getTime();
+    sheet.appendRow([id, partner, amount, reason, user, now]);
+
+    return coupleShopState(user);
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function coupleCouponAdd(params, user) {
+  const title = sanitizeText(params.title || '', 60);
+  const desc = sanitizeText(params.desc || '', 200);
+  const cost = parseInt(params.cost || '30', 10);
+  const icon = sanitizeText(params.icon || '🎟️', 10);
+
+  if (!title) return jsonResponse({ ok: false, error: 'title-required' }, 400);
+  if (isNaN(cost) || cost < 1 || cost > 999) return jsonResponse({ ok: false, error: 'invalid-cost' }, 400);
+
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    const sheet = getOrCreateSheet(COUPLE_COUPONS_SHEET, COUPLE_COUPONS_HEADER);
+    const now = new Date().toISOString();
+    const id = 'CUSTOM_' + new Date().getTime();
+    sheet.appendRow([id, title, desc, cost, icon, user, now]);
+
+    return coupleShopState(user);
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function coupleCouponRedeem(params, user) {
+  const couponId = sanitizeText(params.couponId || '', 50);
+  if (!couponId) return jsonResponse({ ok: false, error: 'couponId-required' }, 400);
+
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    const shopCoupons = getShopCoupons();
+    const target = shopCoupons.filter(function (c) { return c.id === couponId; })[0];
+    if (!target) return jsonResponse({ ok: false, error: 'coupon-not-found' }, 404);
+
+    const records = getOrCreateCoinRecords();
+    const currentBalance = calculateCoinBalance(user, records);
+    if (currentBalance < target.cost) {
+      return jsonResponse({ ok: false, error: 'insufficient-coins', balance: currentBalance, cost: target.cost }, 400);
+    }
+
+    const now = new Date().toISOString();
+    const coinSheet = getOrCreateSheet(COUPLE_COINS_SHEET, COUPLE_COINS_HEADER);
+    const coinId = 'BUY_' + new Date().getTime();
+    coinSheet.appendRow([coinId, user, -target.cost, '兌換【' + target.title + '】', 'system', now]);
+
+    const userCouponSheet = getOrCreateSheet(COUPLE_USER_COUPONS_SHEET, COUPLE_USER_COUPONS_HEADER);
+    const ucId = 'UC_' + new Date().getTime();
+    userCouponSheet.appendRow([ucId, target.id, target.title, target.desc, target.cost, target.icon, user, 'available', '', '', now]);
+
+    return coupleShopState(user);
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function coupleCouponUse(params, user) {
+  const userCouponId = sanitizeText(params.userCouponId || '', 50);
+  if (!userCouponId) return jsonResponse({ ok: false, error: 'userCouponId-required' }, 400);
+
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    const sheet = getOrCreateSheet(COUPLE_USER_COUPONS_SHEET, COUPLE_USER_COUPONS_HEADER);
+    const data = sheet.getDataRange().getValues();
+    let rowIndex = -1;
+    for (let i = 1; i < data.length; i++) {
+      if (String(data[i][0]) === userCouponId && String(data[i][6]) === user) {
+        rowIndex = i + 1;
+        break;
+      }
+    }
+    if (rowIndex === -1) return jsonResponse({ ok: false, error: 'user-coupon-not-found' }, 404);
+
+    const now = new Date().toISOString();
+    sheet.getRange(rowIndex, 8).setValue('using');
+    sheet.getRange(rowIndex, 9).setValue(now);
+
+    return coupleShopState(user);
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function coupleCouponComplete(params, user) {
+  const userCouponId = sanitizeText(params.userCouponId || '', 50);
+  if (!userCouponId) return jsonResponse({ ok: false, error: 'userCouponId-required' }, 400);
+
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    const sheet = getOrCreateSheet(COUPLE_USER_COUPONS_SHEET, COUPLE_USER_COUPONS_HEADER);
+    const data = sheet.getDataRange().getValues();
+    const partner = partnerOf(user);
+    let rowIndex = -1;
+    for (let i = 1; i < data.length; i++) {
+      if (String(data[i][0]) === userCouponId && String(data[i][6]) === partner) {
+        rowIndex = i + 1;
+        break;
+      }
+    }
+    if (rowIndex === -1) return jsonResponse({ ok: false, error: 'user-coupon-not-found' }, 404);
+
+    const now = new Date().toISOString();
+    sheet.getRange(rowIndex, 8).setValue('completed');
+    sheet.getRange(rowIndex, 10).setValue(now);
+
+    return coupleShopState(user);
   } finally {
     lock.releaseLock();
   }

@@ -160,6 +160,10 @@
     if (name === 'lists' && window.GachaApp && window.GachaApp.render) {
       window.GachaApp.render();
     }
+    if (name === 'shop' && window.ShopApp && window.ShopApp.render) {
+      window.ShopApp.render();
+      window.ShopApp.sync(true);
+    }
   }
 
   tabs.forEach(t => t.addEventListener('click', () => showView(t.dataset.tab)));
@@ -253,6 +257,9 @@
     }
     if (window.GachaApp && window.GachaApp.sync) {
       window.GachaApp.sync(true);
+    }
+    if (window.ShopApp && window.ShopApp.sync) {
+      window.ShopApp.sync(true);
     }
   }
 

@@ -976,4 +976,201 @@ textarea:focus {
   box-shadow: var(--shadow);
 }
 
+/* ============================================================
+   兔兔願望市集 & 特權卡券樣式
+   ============================================================ */
+.shop-coin-pill {
+  transition: transform 0.2s ease;
+}
+.shop-coin-pill.bounce {
+  animation: coinBounce 0.5s ease;
+}
+@keyframes coinBounce {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+.coupon-ticket {
+  background: var(--card);
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+.coupon-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.coupon-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.coupon-icon {
+  font-size: 1.5rem;
+}
+.coupon-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0;
+}
+.coupon-cost {
+  font-size: 0.88rem;
+  font-weight: bold;
+  color: var(--accent);
+  background: var(--accent-soft);
+  padding: 4px 10px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+.coupon-desc {
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  line-height: 1.45;
+  margin: 0;
+}
+.coupon-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+
+.coupon-status-tag {
+  font-size: 0.75rem;
+  font-weight: bold;
+  padding: 3px 8px;
+  border-radius: 8px;
+}
+.coupon-status-tag.available {
+  background: var(--sage-soft);
+  color: var(--sage);
+}
+.coupon-status-tag.using {
+  background: #FFF3CD;
+  color: #856404;
+  border: 1px dashed #FFE082;
+  animation: pulseUsing 1.5s infinite;
+}
+@keyframes pulseUsing {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+.coupon-status-tag.completed {
+  background: rgba(74, 63, 53, 0.08);
+  color: var(--ink-soft);
+}
+
+.stamp-seal {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  border: 2px dashed var(--pink);
+  color: var(--pink);
+  font-size: 0.8rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 8px;
+  transform: rotate(-12deg);
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+.praise-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 14px 16px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.praise-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+}
+.praise-badge {
+  color: var(--pink);
+  font-weight: bold;
+  background: var(--pink-soft);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+.praise-text {
+  font-size: 0.92rem;
+  color: var(--ink);
+  line-height: 1.45;
+  margin: 0;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.modal-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+.modal-sheet {
+  background: var(--card);
+  border-radius: 28px 28px 0 0;
+  width: 100%;
+  max-width: 480px;
+  padding: 24px 20px calc(var(--safe-bottom) + 24px);
+  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.15);
+  transform: translateY(100%);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  max-height: 85vh;
+  overflow-y: auto;
+}
+.modal-overlay.show .modal-sheet {
+  transform: translateY(0);
+}
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.modal-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0;
+}
+.modal-close {
+  border: none;
+  background: rgba(74, 63, 53, 0.08);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
 

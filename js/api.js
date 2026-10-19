@@ -199,6 +199,125 @@
         }
         return { ok: true };
       }
+      case 'couple_shop_state': {
+        const defaultCoupons = [
+          { id: 'C_MASSAGE', title: '全身舒壓按摩 20 分鐘券', desc: '對方無條件提供 20 分鐘舒服按摩（搥背、捏肩、精油）', cost: 40, icon: '💆‍♂️' },
+          { id: 'C_PEACE', title: '吵架立刻和好 / 主動抱抱券', desc: '出示時雙方必須停止爭吵，對方主動擁抱，不許翻舊帳', cost: 30, icon: '🤫' },
+          { id: 'C_DINNER', title: '任選大餐券（對方買單）', desc: '今天的約會餐廳由持有者任選，對方豪爽結帳', cost: 80, icon: '🍽️' },
+          { id: 'C_CHORES', title: '家事全包 / 讓我賴床券', desc: '今天所有家事由對方包辦，自己可以安心賴床放空', cost: 50, icon: '🛌' },
+          { id: 'C_GAMING', title: '打電動 / 追劇暢玩放空一天券', desc: '一整天不被打擾、不被催促，盡情玩遊戲或追劇', cost: 40, icon: '🎮' },
+          { id: 'C_KISS', title: '隨時索取親親抱抱券', desc: '隨時隨地無條件討一個深吻或大大的擁抱', cost: 20, icon: '💋' },
+          { id: 'C_ERRAND', title: '專屬外送跑腿券', desc: '對方負責幫忙買飲料或宵夜送上桌', cost: 30, icon: '🥤' }
+        ];
+        let records = demoStore.read('coins', [
+          { id: 'INIT_a', user: 'a', amount: 100, reason: '新手見面禮 🐰', fromUser: 'system', createdAt: new Date().toISOString() },
+          { id: 'INIT_b', user: 'b', amount: 100, reason: '新手見面禮 🐰', fromUser: 'system', createdAt: new Date().toISOString() }
+        ]);
+        let customCoupons = demoStore.read('custom_coupons', []);
+        let userCoupons = demoStore.read('user_coupons', []);
+        const partner = user === 'a' ? 'b' : 'a';
+
+        const myBal = records.filter(r => r.user === user).reduce((s, r) => s + r.amount, 0);
+        const partnerBal = records.filter(r => r.user === partner).reduce((s, r) => s + r.amount, 0);
+        const praises = records.filter(r => r.fromUser !== 'system' && r.amount > 0).reverse().slice(0, 50);
+
+        return {
+          ok: true,
+          user,
+          balance: myBal,
+          partnerBalance: partnerBal,
+          shopCoupons: defaultCoupons.concat(customCoupons),
+          myCoupons: userCoupons.filter(c => c.owner === user),
+          partnerPendingCoupons: userCoupons.filter(c => c.owner === partner && c.status === 'using'),
+          praises
+        };
+      }
+      case 'couple_coins_reward': {
+        const partner = user === 'a' ? 'b' : 'a';
+        let records = demoStore.read('coins', [
+          { id: 'INIT_a', user: 'a', amount: 100, reason: '新手見面禮 🐰', fromUser: 'system', createdAt: new Date().toISOString() },
+          { id: 'INIT_b', user: 'b', amount: 100, reason: '新手見面禮 🐰', fromUser: 'system', createdAt: new Date().toISOString() }
+        ]);
+        records.push({
+          id: 'REW_' + Date.now(),
+          user: partner,
+          amount: parseInt(params.amount || '10', 10),
+          reason: params.reason || '表現超棒！給予甜甜獎勵 ❤️',
+          fromUser: user,
+          createdAt: new Date().toISOString()
+        });
+        demoStore.write('coins', records);
+        return callDemo('couple_shop_state', params);
+      }
+      case 'couple_coupon_add': {
+        let customCoupons = demoStore.read('custom_coupons', []);
+        customCoupons.push({
+          id: 'CUSTOM_' + Date.now(),
+          title: params.title,
+          desc: params.desc,
+          cost: parseInt(params.cost || '30', 10),
+          icon: params.icon || '🎟️',
+          createdBy: user,
+          createdAt: new Date().toISOString()
+        });
+        demoStore.write('custom_coupons', customCoupons);
+        return callDemo('couple_shop_state', params);
+      }
+      case 'couple_coupon_redeem': {
+        const state = await callDemo('couple_shop_state', params);
+        const target = state.shopCoupons.find(c => c.id === params.couponId);
+        if (!target) throw new Error('coupon-not-found');
+        if (state.balance < target.cost) throw new Error('insufficient-coins');
+
+        let records = demoStore.read('coins', []);
+        records.push({
+          id: 'BUY_' + Date.now(),
+          user: user,
+          amount: -target.cost,
+          reason: '兌換【' + target.title + '】',
+          fromUser: 'system',
+          createdAt: new Date().toISOString()
+        });
+        demoStore.write('coins', records);
+
+        let userCoupons = demoStore.read('user_coupons', []);
+        userCoupons.push({
+          id: 'UC_' + Date.now(),
+          couponId: target.id,
+          title: target.title,
+          desc: target.desc,
+          cost: target.cost,
+          icon: target.icon,
+          owner: user,
+          status: 'available',
+          usedAt: '',
+          completedAt: '',
+          createdAt: new Date().toISOString()
+        });
+        demoStore.write('user_coupons', userCoupons);
+        return callDemo('couple_shop_state', params);
+      }
+      case 'couple_coupon_use': {
+        let userCoupons = demoStore.read('user_coupons', []);
+        const item = userCoupons.find(c => c.id === params.userCouponId && c.owner === user);
+        if (item) {
+          item.status = 'using';
+          item.usedAt = new Date().toISOString();
+          demoStore.write('user_coupons', userCoupons);
+        }
+        return callDemo('couple_shop_state', params);
+      }
+      case 'couple_coupon_complete': {
+        const partner = user === 'a' ? 'b' : 'a';
+        let userCoupons = demoStore.read('user_coupons', []);
+        const item = userCoupons.find(c => c.id === params.userCouponId && c.owner === partner);
+        if (item) {
+          item.status = 'completed';
+          item.completedAt = new Date().toISOString();
+          demoStore.write('user_coupons', userCoupons);
+        }
+        return callDemo('couple_shop_state', params);
+      }
       default:
         throw new Error('unknown-action');
     }
@@ -240,6 +359,13 @@
 
     gachaState: () => call('couple_gacha_state'),
     gachaLike: ideaId => call('couple_gacha_like', { ideaId }),
-    gachaUpdateMatch: (ideaId, fields) => call('couple_gacha_update_match', { ideaId, fields: JSON.stringify(fields) })
+    gachaUpdateMatch: (ideaId, fields) => call('couple_gacha_update_match', { ideaId, fields: JSON.stringify(fields) }),
+
+    shopState: () => call('couple_shop_state'),
+    shopReward: (amount, reason) => call('couple_coins_reward', { amount: String(amount), reason }),
+    shopAddCoupon: (title, desc, cost, icon) => call('couple_coupon_add', { title, desc, cost: String(cost), icon }),
+    shopRedeem: couponId => call('couple_coupon_redeem', { couponId }),
+    shopUse: userCouponId => call('couple_coupon_use', { userCouponId }),
+    shopComplete: userCouponId => call('couple_coupon_complete', { userCouponId })
   };
 })();
