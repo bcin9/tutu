@@ -158,9 +158,6 @@
 
       card.innerHTML = `
         <div class="coupon-main">
-          <div class="coupon-tag-line">
-            <span>🎟️ ${coupon.createdBy ? '自訂願望' : '情侶特權'}</span>
-          </div>
           <div class="coupon-title-wrap">
             <span class="coupon-icon">${coupon.icon || '🎟️'}</span>
             <h4 class="coupon-title">${escapeHTML(coupon.title)}</h4>
@@ -211,22 +208,18 @@
 
       let stubContent = '';
       let stamp = '';
-      let tagText = '專屬特權券';
 
       if (uc.status === 'using') {
-        tagText = '⏳ 正在履行中';
         stubContent = `
           <span style="font-size:0.7rem; color:#856404; font-weight:800;">履約中</span>
           <span style="font-size:0.62rem; color:var(--ink-soft);">等${partnerName}</span>
         `;
       } else if (uc.status === 'completed') {
-        tagText = '✨ 兌現完成';
         stamp = `<div class="stamp-seal">已履行</div>`;
         stubContent = `
           <span style="font-size:0.68rem; color:var(--ink-soft); font-weight:600;">已核銷</span>
         `;
       } else {
-        tagText = `向 ${partnerName} 出示`;
         stubContent = `
           <span style="font-size:0.68rem; color:var(--sage); font-weight:700;">可使用</span>
           <button type="button" class="stub-btn primary use-btn">出示</button>
@@ -235,9 +228,6 @@
 
       card.innerHTML = `
         <div class="coupon-main">
-          <div class="coupon-tag-line">
-            <span>🎟️ ${tagText}</span>
-          </div>
           <div class="coupon-title-wrap">
             <span class="coupon-icon">${uc.icon || '🎟️'}</span>
             <h4 class="coupon-title">${escapeHTML(uc.title)}</h4>
@@ -550,9 +540,6 @@
           item.className = 'coupon-ticket is-using';
           item.innerHTML = `
             <div class="coupon-main">
-              <div class="coupon-tag-line">
-                <span>💌 對方出示特權</span>
-              </div>
               <div class="coupon-title-wrap">
                 <span class="coupon-icon">${uc.icon || '🎟️'}</span>
                 <h4 class="coupon-title">${escapeHTML(uc.title)}</h4>

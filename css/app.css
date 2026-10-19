@@ -980,16 +980,12 @@ textarea:focus {
    兔兔願望市集 & 特權票券樣式（精緻票根、字體精巧緊湊）
    ============================================================ */
 [data-view="shop"] .topbar {
-  margin-bottom: 10px;
+  align-items: center;
+  margin-bottom: 12px;
 }
 [data-view="shop"] .title {
   font-size: 1.15rem;
   letter-spacing: 0.02em;
-}
-[data-view="shop"] .greet {
-  font-size: 0.78rem;
-  color: var(--ink-soft);
-  margin-bottom: 2px;
 }
 .shop-coin-pill {
   transition: transform 0.2s ease;
