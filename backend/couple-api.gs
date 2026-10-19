@@ -41,8 +41,7 @@ const DEFAULT_COUPONS = [
   { id: 'C_PEACE', title: '吵架立刻和好 / 主動抱抱券', desc: '出示時雙方必須停止爭吵，對方主動擁抱，不許翻舊帳', cost: 30, icon: '🤫' },
   { id: 'C_DINNER', title: '任選大餐券（對方買單）', desc: '今天的約會餐廳由持有者任選，對方豪爽結帳', cost: 80, icon: '🍽️' },
   { id: 'C_CHORES', title: '家事全包 / 讓我賴床券', desc: '今天所有家事由對方包辦，自己可以安心賴床放空', cost: 50, icon: '🛌' },
-  { id: 'C_GAMING', title: '打電動 / 追劇暢玩放空一天券', desc: '一整天不被打擾、不被催促，盡情玩遊戲或追劇', cost: 40, icon: '🎮' },
-  { id: 'C_KISS', title: '隨時索取親親抱抱券', desc: '隨時隨地無條件討一個深吻或大大的擁抱', cost: 20, icon: '💋' },
+  { id: 'C_GAMING', title: '耍廢一天券', desc: '一整天不被打擾、不被催促，盡情耍廢放空', cost: 40, icon: '🛋️' },
   { id: 'C_ERRAND', title: '專屬外送跑腿券', desc: '對方負責幫忙買飲料或宵夜送上桌', cost: 30, icon: '🥤' }
 ];
 

@@ -16,7 +16,7 @@
     <meta name="theme-color" content="#FAF5EC">
 
     <title>我們的秘密基地</title>
-    <link rel="stylesheet" href="css/app.css?v=5">
+    <link rel="stylesheet" href="css/app.css?v=6">
 </head>
 <body>
 
@@ -231,7 +231,7 @@
                 <div class="list-tabs" style="margin-bottom:14px;">
                     <button class="list-tab active" data-shop-tab="market">🛒 願望市集</button>
                     <button class="list-tab" data-shop-tab="backpack">🎒 我的卡包 <span id="myCouponsCount" style="font-size:0.75rem; background:var(--pink); color:#fff; padding:2px 7px; border-radius:10px; margin-left:4px; font-weight:bold;"></span></button>
-                    <button class="list-tab" data-shop-tab="praises">💌 甜蜜誇誇</button>
+                    <button class="list-tab" data-shop-tab="praises">💌 打賞紀錄</button>
                 </div>
 
                 <!-- 1. 願望市集內容 -->
@@ -250,20 +250,12 @@
                     <div id="backpackCouponsList" style="display:grid; grid-template-columns:1fr; gap:12px;"></div>
                 </div>
 
-                <!-- 3. 甜蜜誇誇牆 -->
+                <!-- 3. 打賞紀錄 -->
                 <div id="shopPraisesView" hidden>
-                    <div class="praise-hero-banner" id="praiseHeroRewardBtn">
-                        <div class="praise-hero-icon">🎁</div>
-                        <div class="praise-hero-info">
-                            <strong style="font-size:0.88rem; color:var(--ink); display:block; margin-bottom:2px;">犒賞另一半・甜蜜打賞</strong>
-                            <span style="font-size:0.72rem; color:var(--ink-soft);">送出兔兔幣與暖心誇誇，感謝對方的陪伴 ❤️</span>
-                        </div>
-                        <button type="button" class="btn primary praise-hero-btn" style="font-size:0.75rem; padding:6px 14px; border-radius:14px; white-space:nowrap;">去打賞</button>
-                    </div>
-                    <div id="praisesEmpty" class="soon" style="padding:30px 20px; text-align:center; display:none;">
-                        <span style="font-size:2.6rem; display:block; margin-bottom:6px;">💌</span>
-                        <h3 style="font-size:1rem; color:var(--ink-soft); margin-bottom:4px;">還沒有誇誇紀錄</h3>
-                        <p style="font-size:0.8rem; color:var(--ink-soft); margin-bottom:12px;">點擊上方「去打賞」發送第一份誇誇與兔兔幣吧！</p>
+                    <div id="praisesEmpty" class="soon" style="padding:40px 20px; text-align:center; display:none;">
+                        <span style="font-size:2.6rem; display:block; margin-bottom:8px;">💌</span>
+                        <h3 style="font-size:0.95rem; color:var(--ink-soft); margin-bottom:4px;">尚無打賞紀錄</h3>
+                        <p style="font-size:0.8rem; color:var(--ink-soft);">點擊右上角「🎁 打賞」送給另一半兔兔幣吧！</p>
                     </div>
                     <div id="praisesList" style="display:flex; flex-direction:column; gap:10px;"></div>
                 </div>
@@ -371,14 +363,14 @@
         </nav>
     </div>
 
-    <script src="js/config.js?v=15"></script>
-    <script src="js/api.js?v=15"></script>
-    <script src="js/ideas.js?v=15"></script>
-    <script src="js/app.js?v=15"></script>
-    <script src="js/secret.js?v=15"></script>
-    <script src="js/lists.js?v=15"></script>
-    <script src="js/shop.js?v=15"></script>
-    <script src="js/notify.js?v=15"></script>
+    <script src="js/config.js?v=16"></script>
+    <script src="js/api.js?v=16"></script>
+    <script src="js/ideas.js?v=16"></script>
+    <script src="js/app.js?v=16"></script>
+    <script src="js/secret.js?v=16"></script>
+    <script src="js/lists.js?v=16"></script>
+    <script src="js/shop.js?v=16"></script>
+    <script src="js/notify.js?v=16"></script>
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('service-worker.js').then(reg => {

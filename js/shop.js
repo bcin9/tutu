@@ -17,8 +17,7 @@
     { id: 'C_PEACE', title: '吵架立刻和好 / 主動抱抱券', desc: '出示時雙方必須停止爭吵，對方主動擁抱，不許翻舊帳', cost: 30, icon: '🤫' },
     { id: 'C_DINNER', title: '任選大餐券（對方買單）', desc: '今天的約會餐廳由持有者任選，對方豪爽結帳', cost: 80, icon: '🍽️' },
     { id: 'C_CHORES', title: '家事全包 / 讓我賴床券', desc: '今天所有家事由對方包辦，自己可以安心賴床放空', cost: 50, icon: '🛌' },
-    { id: 'C_GAMING', title: '打電動 / 追劇暢玩放空一天券', desc: '一整天不被打擾、不被催促，盡情玩遊戲或追劇', cost: 40, icon: '🎮' },
-    { id: 'C_KISS', title: '隨時索取親親抱抱券', desc: '隨時隨地無條件討一個深吻或大大的擁抱', cost: 20, icon: '💋' },
+    { id: 'C_GAMING', title: '耍廢一天券', desc: '一整天不被打擾、不被催促，盡情耍廢放空', cost: 40, icon: '🛋️' },
     { id: 'C_ERRAND', title: '專屬外送跑腿券', desc: '對方負責幫忙買飲料或宵夜送上桌', cost: 30, icon: '🥤' }
   ];
 
@@ -49,10 +48,31 @@
       }
     } catch (_) {}
 
+    // 清理已刪除的卡券，並更新舊有名稱
+    if (shopState.shopCoupons) {
+      shopState.shopCoupons = shopState.shopCoupons.filter(c => c.id !== 'C_KISS' && c.title !== '隨時索取親親抱抱券');
+      const gaming = shopState.shopCoupons.find(c => c.id === 'C_GAMING' || (c.title && c.title.includes('打電動')));
+      if (gaming) {
+        gaming.title = '耍廢一天券';
+        gaming.desc = '一整天不被打擾、不被催促，盡情耍廢放空';
+        gaming.icon = '🛋️';
+      }
+    }
+
+    if (shopState.myCoupons) {
+      shopState.myCoupons.forEach(uc => {
+        if (uc.couponId === 'C_GAMING' || (uc.title && uc.title.includes('打電動'))) {
+          uc.title = '耍廢一天券';
+          uc.desc = '一整天不被打擾、不被催促，盡情耍廢放空';
+          uc.icon = '🛋️';
+        }
+      });
+    }
+
     // 確保預設卡券永遠齊全
     DEFAULT_COUPONS.forEach(dc => {
       if (!shopState.shopCoupons.some(c => c.id === dc.id)) {
-        shopState.shopCoupons.unshift(dc);
+        shopState.shopCoupons.push(dc);
       }
     });
   }
@@ -293,11 +313,11 @@
 
       card.innerHTML = `
         <div class="praise-meta">
-          <span>${fromName} 贈送給 ${toName}</span>
+          <span><strong>${fromName}</strong> 打賞給 <strong>${toName}</strong></span>
           <span class="praise-badge">+${p.amount} 兔兔幣 🐰</span>
         </div>
         <p class="praise-text">「${escapeHTML(p.reason)}」</p>
-        <div style="font-size:0.72rem; color:var(--ink-soft); text-align:right;">
+        <div style="font-size:0.7rem; color:var(--ink-soft); text-align:right;">
           ${p.createdAt ? new Date(p.createdAt).toLocaleDateString([], {month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit'}) : ''}
         </div>
       `;
@@ -434,8 +454,8 @@
       });
     });
 
-    // 1. 打賞彈窗 triggers (頂部打賞按鈕、誇誇頁橫幅等)
-    const rewardTriggers = ['openRewardModalBtn', 'topbarRewardBtn', 'praiseHeroRewardBtn'];
+    // 1. 打賞彈窗 triggers (頂部打賞按鈕等)
+    const rewardTriggers = ['openRewardModalBtn', 'topbarRewardBtn'];
     rewardTriggers.forEach(id => {
       const el = $(id);
       if (el) el.addEventListener('click', () => openModal('rewardModal'));

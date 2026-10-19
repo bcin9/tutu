@@ -1032,32 +1032,6 @@ textarea:focus {
   transform: scale(0.92);
 }
 
-.praise-hero-banner {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: linear-gradient(135deg, #FFF0F5 0%, #FFF8E7 100%);
-  border: 1.5px solid rgba(255, 107, 139, 0.25);
-  border-radius: 14px;
-  padding: 11px 14px;
-  margin-bottom: 12px;
-  box-shadow: 0 2px 8px rgba(255, 107, 139, 0.08);
-  cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-.praise-hero-banner:active {
-  transform: scale(0.985);
-}
-.praise-hero-icon {
-  font-size: 1.6rem;
-  line-height: 1;
-  flex-shrink: 0;
-}
-.praise-hero-info {
-  flex: 1;
-  min-width: 0;
-}
-
 [data-view="shop"] .list-tab {
   font-size: 0.78rem !important;
   padding: 6px 10px !important;
