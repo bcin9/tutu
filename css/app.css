@@ -1013,15 +1013,65 @@ textarea:focus {
   font-size: 0.72rem;
 }
 
-.shop-quick-btn {
-  font-size: 0.8rem !important;
-  padding: 8px 10px !important;
-  border-radius: 12px !important;
+.shop-topbar-gift-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, #FFF8E7, #FFE8B8);
+  border: 1.5px solid #FFD166;
+  border-radius: 20px;
+  padding: 5px 11px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #856404;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(255, 209, 102, 0.2);
+  transition: transform 0.15s ease;
+}
+.shop-topbar-gift-btn:active {
+  transform: scale(0.92);
+}
+
+.praise-hero-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, #FFF0F5 0%, #FFF8E7 100%);
+  border: 1.5px solid rgba(255, 107, 139, 0.25);
+  border-radius: 14px;
+  padding: 11px 14px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(255, 107, 139, 0.08);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.praise-hero-banner:active {
+  transform: scale(0.985);
+}
+.praise-hero-icon {
+  font-size: 1.6rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.praise-hero-info {
+  flex: 1;
+  min-width: 0;
 }
 
 [data-view="shop"] .list-tab {
   font-size: 0.78rem !important;
   padding: 6px 10px !important;
+}
+
+/* 市集尾端手寫空白票券 */
+.coupon-add-card {
+  border: 1.5px dashed rgba(255, 107, 139, 0.45) !important;
+  background: rgba(255, 255, 255, 0.75) !important;
+  cursor: pointer;
+}
+.coupon-add-card:active {
+  transform: scale(0.985);
+  background: #FFF0F5 !important;
 }
 
 /* 實體票券風格 (Authentic Ticket / Coupon Stub) */

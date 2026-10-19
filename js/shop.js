@@ -179,6 +179,26 @@
       }
       listEl.appendChild(card);
     });
+
+    // 尾端空白手寫虛線票券：新增自訂願望
+    const addCard = document.createElement('div');
+    addCard.className = 'coupon-ticket coupon-add-card';
+    addCard.id = 'openAddCouponCard';
+    addCard.innerHTML = `
+      <div class="coupon-main" style="padding:11px 12px;">
+        <div class="coupon-title-wrap">
+          <span class="coupon-icon" style="font-size:1.15rem;">✏️</span>
+          <h4 class="coupon-title" style="color:var(--ink);">手寫自訂特權券</h4>
+        </div>
+        <p class="coupon-desc" style="color:var(--ink-soft);">想兌換什麼願望由你們決定，點此新增 ＋</p>
+      </div>
+      <div class="coupon-divider"></div>
+      <div class="coupon-stub" style="background:var(--pink-soft); border-left:1px dashed rgba(255,107,139,0.35);">
+        <button type="button" class="stub-btn primary" style="background:var(--pink); border-color:var(--pink); font-size:0.75rem; padding:6px 10px;">新增</button>
+      </div>
+    `;
+    addCard.addEventListener('click', () => openModal('addCouponModal'));
+    listEl.appendChild(addCard);
   }
 
   // 渲染我的卡包
@@ -414,9 +434,11 @@
       });
     });
 
-    // 1. 打賞彈窗
-    $('openRewardModalBtn').addEventListener('click', () => {
-      openModal('rewardModal');
+    // 1. 打賞彈窗 triggers (頂部打賞按鈕、誇誇頁橫幅等)
+    const rewardTriggers = ['openRewardModalBtn', 'topbarRewardBtn', 'praiseHeroRewardBtn'];
+    rewardTriggers.forEach(id => {
+      const el = $(id);
+      if (el) el.addEventListener('click', () => openModal('rewardModal'));
     });
 
     let selectedAmount = 10;
@@ -468,8 +490,10 @@
     });
 
     // 2. 新增自訂券彈窗
-    $('openAddCouponModalBtn').addEventListener('click', () => {
-      openModal('addCouponModal');
+    const addCouponTriggers = ['openAddCouponModalBtn', 'openAddCouponCard'];
+    addCouponTriggers.forEach(id => {
+      const el = $(id);
+      if (el) el.addEventListener('click', () => openModal('addCouponModal'));
     });
 
     let selectedIcon = '🎟️';
