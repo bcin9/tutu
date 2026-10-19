@@ -458,25 +458,6 @@
     }
   }
 
-  function renderUserBadge() {
-    const auth = API.getAuth();
-    const nameEl = $('secretCurrentUserName');
-    if (auth && nameEl) {
-      const person = CONFIG.people[auth.user];
-      nameEl.textContent = `目前身分：${person.emoji} ${person.name}`;
-    }
-    const switchBtn = $('secretSwitchUserBtn');
-    if (switchBtn && !switchBtn._bound) {
-      switchBtn._bound = true;
-      switchBtn.addEventListener('click', () => {
-        if (confirm('確定要切換身分（更換登入者）嗎？')) {
-          API.clearAuth();
-          location.reload();
-        }
-      });
-    }
-  }
-
   /**
    * 載入並渲染今日秘密
    */
@@ -541,7 +522,6 @@
     const partnerSection = $('partnerAnswerSection');
     if (!mySection || !partnerSection) return;
 
-    renderUserBadge();
     const partnerName = getPartnerName();
 
     if (data.myAnswer) {
@@ -570,7 +550,7 @@
           <div class="wait-card">
             <p style="margin-bottom: 8px;">等待 ${partnerName} 回答後解鎖... 🐰</p>
             <button type="button" class="btn secondary" id="checkPartnerBtn" style="font-size: 0.85rem; padding: 6px 14px; border-radius: 20px;">🔄 檢查對方是否回答</button>
-            <span id="checkPartnerMsg" style="display:block; font-size:0.75rem; color:var(--ink-soft); margin-top:6px;"></span>
+            <span id="checkPartnerMsg" style="display:block; font-size:0.78rem; color:var(--ink-soft); margin-top:6px; font-weight:500;"></span>
           </div>
         `;
         const checkBtn = $('checkPartnerBtn');
@@ -589,7 +569,7 @@
                   loadSecretHistory(true);
                 } else {
                   const msg = $('checkPartnerMsg');
-                  if (msg) msg.textContent = `${partnerName} 還在思考中喔，等等再試試！`;
+                  if (msg) msg.textContent = '對方尚未回答';
                 }
               }
             } catch (_) {

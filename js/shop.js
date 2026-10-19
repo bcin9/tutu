@@ -157,23 +157,29 @@
       const canAfford = shopState.balance >= coupon.cost;
 
       card.innerHTML = `
-        <div class="coupon-header-row">
+        <div class="coupon-main">
+          <div class="coupon-tag-line">
+            <span>🎟️ ${coupon.createdBy ? '自訂願望' : '情侶特權'}</span>
+          </div>
           <div class="coupon-title-wrap">
             <span class="coupon-icon">${coupon.icon || '🎟️'}</span>
             <h4 class="coupon-title">${escapeHTML(coupon.title)}</h4>
           </div>
-          <span class="coupon-cost">${coupon.cost} 兔兔幣</span>
+          <p class="coupon-desc">${escapeHTML(coupon.desc || '')}</p>
         </div>
-        <p class="coupon-desc">${escapeHTML(coupon.desc || '')}</p>
-        <div class="coupon-footer">
-          <span style="font-size:0.75rem; color:var(--ink-soft);">${coupon.createdBy ? '自訂願望券 ✨' : '情侶精選特權'}</span>
-          <button type="button" class="btn primary redeem-btn" data-id="${coupon.id}" ${canAfford ? '' : 'disabled'} style="font-size:0.82rem; padding:6px 14px; border-radius:12px; ${canAfford ? '' : 'opacity:0.5; background:var(--ink-soft);'}">
-            ${canAfford ? '兌換' : '點數不足'}
+        <div class="coupon-divider"></div>
+        <div class="coupon-stub">
+          <span class="stub-cost-num">${coupon.cost}</span>
+          <span class="stub-cost-unit">兔兔幣</span>
+          <button type="button" class="stub-btn ${canAfford ? 'primary' : 'disabled'} redeem-btn" ${canAfford ? '' : 'disabled'}>
+            ${canAfford ? '兌換' : '不夠'}
           </button>
         </div>
       `;
 
-      card.querySelector('.redeem-btn').addEventListener('click', () => redeemCoupon(coupon));
+      if (canAfford) {
+        card.querySelector('.redeem-btn').addEventListener('click', () => redeemCoupon(coupon));
+      }
       listEl.appendChild(card);
     });
   }
@@ -193,7 +199,6 @@
     emptyEl.style.display = 'none';
     listEl.innerHTML = '';
 
-    // 排序：使用中 (using) > 可使用 (available) > 已完成 (completed)
     const sorted = [...coupons].sort((a, b) => {
       const order = { using: 0, available: 1, completed: 2 };
       return (order[a.status] || 1) - (order[b.status] || 1);
@@ -201,37 +206,47 @@
 
     sorted.forEach(uc => {
       const card = document.createElement('div');
-      card.className = 'coupon-ticket';
       const partnerName = getPartnerName();
+      card.className = `coupon-ticket ${uc.status === 'using' ? 'is-using' : ''} ${uc.status === 'completed' ? 'is-completed' : ''}`;
 
-      let statusBadge = '';
-      let actionBtn = '';
+      let stubContent = '';
       let stamp = '';
+      let tagText = '專屬特權券';
 
       if (uc.status === 'using') {
-        statusBadge = `<span class="coupon-status-tag using">履約中 ⏳</span>`;
-        actionBtn = `<span style="font-size:0.8rem; color:#856404; font-weight:bold;">等待 ${partnerName} 履行核銷中</span>`;
+        tagText = '⏳ 正在履行中';
+        stubContent = `
+          <span style="font-size:0.7rem; color:#856404; font-weight:800;">履約中</span>
+          <span style="font-size:0.62rem; color:var(--ink-soft);">等${partnerName}</span>
+        `;
       } else if (uc.status === 'completed') {
-        statusBadge = `<span class="coupon-status-tag completed">已圓滿核銷 ✨</span>`;
+        tagText = '✨ 兌現完成';
         stamp = `<div class="stamp-seal">已履行</div>`;
-        actionBtn = `<span style="font-size:0.75rem; color:var(--ink-soft);">${uc.completedAt ? new Date(uc.completedAt).toLocaleDateString() : ''} 兌現完成</span>`;
+        stubContent = `
+          <span style="font-size:0.68rem; color:var(--ink-soft); font-weight:600;">已核銷</span>
+        `;
       } else {
-        statusBadge = `<span class="coupon-status-tag available">可出示使用</span>`;
-        actionBtn = `<button type="button" class="btn primary use-btn" data-id="${uc.id}" style="font-size:0.82rem; padding:6px 14px; border-radius:12px;">出示使用</button>`;
+        tagText = `向 ${partnerName} 出示`;
+        stubContent = `
+          <span style="font-size:0.68rem; color:var(--sage); font-weight:700;">可使用</span>
+          <button type="button" class="stub-btn primary use-btn">出示</button>
+        `;
       }
 
       card.innerHTML = `
-        <div class="coupon-header-row">
+        <div class="coupon-main">
+          <div class="coupon-tag-line">
+            <span>🎟️ ${tagText}</span>
+          </div>
           <div class="coupon-title-wrap">
             <span class="coupon-icon">${uc.icon || '🎟️'}</span>
             <h4 class="coupon-title">${escapeHTML(uc.title)}</h4>
           </div>
-          ${statusBadge}
+          <p class="coupon-desc">${escapeHTML(uc.desc || '')}</p>
         </div>
-        <p class="coupon-desc">${escapeHTML(uc.desc || '')}</p>
-        <div class="coupon-footer">
-          <span style="font-size:0.75rem; color:var(--ink-soft);">向 ${partnerName} 出示</span>
-          ${actionBtn}
+        <div class="coupon-divider"></div>
+        <div class="coupon-stub">
+          ${stubContent}
         </div>
         ${stamp}
       `;
@@ -532,19 +547,21 @@
       } else {
         pendingList.forEach(uc => {
           const item = document.createElement('div');
-          item.className = 'coupon-ticket';
+          item.className = 'coupon-ticket is-using';
           item.innerHTML = `
-            <div class="coupon-header-row">
+            <div class="coupon-main">
+              <div class="coupon-tag-line">
+                <span>💌 對方出示特權</span>
+              </div>
               <div class="coupon-title-wrap">
                 <span class="coupon-icon">${uc.icon || '🎟️'}</span>
                 <h4 class="coupon-title">${escapeHTML(uc.title)}</h4>
               </div>
-              <span class="coupon-status-tag using">待履行</span>
+              <p class="coupon-desc">${escapeHTML(uc.desc || '')}</p>
             </div>
-            <p class="coupon-desc">${escapeHTML(uc.desc || '')}</p>
-            <div class="coupon-footer">
-              <span style="font-size:0.75rem; color:var(--ink-soft);">${uc.usedAt ? new Date(uc.usedAt).toLocaleDateString([], {month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit'}) : ''} 出示</span>
-              <button type="button" class="btn primary complete-btn" style="font-size:0.82rem; padding:6px 14px; border-radius:12px;">確認履行完成 ✅</button>
+            <div class="coupon-divider"></div>
+            <div class="coupon-stub" style="width:78px; min-width:78px;">
+              <button type="button" class="stub-btn primary complete-btn" style="font-size:0.72rem; padding:6px 4px;">完成核銷</button>
             </div>
           `;
           item.querySelector('.complete-btn').addEventListener('click', () => completeCoupon(uc));
@@ -603,3 +620,4 @@
   };
 
 })();
+

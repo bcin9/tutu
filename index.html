@@ -97,10 +97,6 @@
                         <p class="greet">每天一題，回答後才能看到對方的答案</p>
                         <h1 class="title">交換秘密</h1>
                     </div>
-                    <div id="secretUserBadge" class="user-badge-pill" style="font-size:0.8rem; background:rgba(255,255,255,0.85); border:1px solid var(--line); border-radius:16px; padding:4px 10px; display:inline-flex; align-items:center; gap:6px;">
-                        <span id="secretCurrentUserName"></span>
-                        <button type="button" id="secretSwitchUserBtn" style="border:none; background:none; color:var(--pink); font-size:0.75rem; cursor:pointer; font-weight:bold; padding:0;">換人</button>
-                    </div>
                 </div>
                 
                 <div id="secretLoading" class="soon" hidden>
@@ -223,11 +219,11 @@
                 </div>
 
                 <!-- 功能快捷列：犒賞另一半 + 新增自訂券 -->
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:16px;">
-                    <button type="button" class="btn secondary" id="openRewardModalBtn" style="display:flex; align-items:center; justify-content:center; gap:6px; padding:10px; border-radius:14px; font-size:0.9rem; font-weight:bold; background:rgba(255,255,255,0.9);">
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:12px;">
+                    <button type="button" class="btn secondary shop-quick-btn" id="openRewardModalBtn" style="display:flex; align-items:center; justify-content:center; gap:6px; background:rgba(255,255,255,0.9);">
                         <span>🎁</span> 犒賞另一半
                     </button>
-                    <button type="button" class="btn secondary" id="openAddCouponModalBtn" style="display:flex; align-items:center; justify-content:center; gap:6px; padding:10px; border-radius:14px; font-size:0.9rem; font-weight:bold; background:rgba(255,255,255,0.9);">
+                    <button type="button" class="btn secondary shop-quick-btn" id="openAddCouponModalBtn" style="display:flex; align-items:center; justify-content:center; gap:6px; background:rgba(255,255,255,0.9);">
                         <span>➕</span> 新增願望券
                     </button>
                 </div>
@@ -368,13 +364,13 @@
         </nav>
     </div>
 
-    <script src="js/config.js?v=11"></script>
-    <script src="js/api.js?v=11"></script>
-    <script src="js/ideas.js?v=11"></script>
-    <script src="js/app.js?v=11"></script>
-    <script src="js/secret.js?v=11"></script>
-    <script src="js/lists.js?v=11"></script>
-    <script src="js/shop.js?v=11"></script>
+    <script src="js/config.js?v=12"></script>
+    <script src="js/api.js?v=12"></script>
+    <script src="js/ideas.js?v=12"></script>
+    <script src="js/app.js?v=12"></script>
+    <script src="js/secret.js?v=12"></script>
+    <script src="js/lists.js?v=12"></script>
+    <script src="js/shop.js?v=12"></script>
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('service-worker.js').then(reg => {

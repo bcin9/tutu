@@ -977,10 +977,25 @@ textarea:focus {
 }
 
 /* ============================================================
-   兔兔願望市集 & 特權卡券樣式
+   兔兔願望市集 & 特權票券樣式（精緻票根、字體精巧緊湊）
    ============================================================ */
+[data-view="shop"] .topbar {
+  margin-bottom: 10px;
+}
+[data-view="shop"] .title {
+  font-size: 1.15rem;
+  letter-spacing: 0.02em;
+}
+[data-view="shop"] .greet {
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  margin-bottom: 2px;
+}
 .shop-coin-pill {
   transition: transform 0.2s ease;
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 0.8rem;
 }
 .shop-coin-pill.bounce {
   animation: coinBounce 0.5s ease;
@@ -991,131 +1006,244 @@ textarea:focus {
   100% { transform: scale(1); }
 }
 
+.pending-notice-banner {
+  padding: 8px 12px;
+  border-radius: 14px;
+}
+.pending-notice-banner strong {
+  font-size: 0.82rem;
+}
+.pending-notice-banner span {
+  font-size: 0.72rem;
+}
+
+.shop-quick-btn {
+  font-size: 0.8rem !important;
+  padding: 8px 10px !important;
+  border-radius: 12px !important;
+}
+
+[data-view="shop"] .list-tab {
+  font-size: 0.78rem !important;
+  padding: 6px 10px !important;
+}
+
+/* 實體票券風格 (Authentic Ticket / Coupon Stub) */
 .coupon-ticket {
+  position: relative;
   background: var(--card);
-  border: 1.5px solid var(--line);
-  border-radius: var(--radius);
-  padding: 16px;
-  box-shadow: var(--shadow);
+  border-radius: 14px;
+  display: flex;
+  align-items: stretch;
+  box-shadow: 0 2px 10px rgba(110, 84, 58, 0.05);
+  border: 1px solid var(--line);
+  margin-bottom: 8px;
+  overflow: visible;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.coupon-ticket:active {
+  transform: scale(0.985);
+}
+
+/* 主券內容 (左側) */
+.coupon-main {
+  flex: 1;
+  padding: 9px 10px 9px 12px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.2s ease;
+  justify-content: center;
+  min-width: 0;
+  gap: 2px;
 }
-.coupon-header-row {
+
+.coupon-tag-line {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 4px;
+  font-size: 0.65rem;
+  color: var(--accent);
+  font-weight: 700;
+  letter-spacing: 0.03em;
 }
+
 .coupon-title-wrap {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 5px;
 }
 .coupon-icon {
-  font-size: 1.5rem;
+  font-size: 1.2rem;
+  line-height: 1;
+  flex-shrink: 0;
 }
 .coupon-title {
-  font-size: 1rem;
+  font-size: 0.86rem;
   font-weight: 700;
   color: var(--ink);
   margin: 0;
-}
-.coupon-cost {
-  font-size: 0.88rem;
-  font-weight: bold;
-  color: var(--accent);
-  background: var(--accent-soft);
-  padding: 4px 10px;
-  border-radius: 12px;
   white-space: nowrap;
-}
-.coupon-desc {
-  font-size: 0.85rem;
-  color: var(--ink-soft);
-  line-height: 1.45;
-  margin: 0;
-}
-.coupon-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.coupon-status-tag {
-  font-size: 0.75rem;
-  font-weight: bold;
-  padding: 3px 8px;
-  border-radius: 8px;
-}
-.coupon-status-tag.available {
-  background: var(--sage-soft);
-  color: var(--sage);
-}
-.coupon-status-tag.using {
-  background: #FFF3CD;
-  color: #856404;
-  border: 1px dashed #FFE082;
-  animation: pulseUsing 1.5s infinite;
-}
-@keyframes pulseUsing {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
-}
-.coupon-status-tag.completed {
-  background: rgba(74, 63, 53, 0.08);
+.coupon-desc {
+  font-size: 0.72rem;
   color: var(--ink-soft);
+  line-height: 1.35;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* 撕角缺口虛線分隔線 (票根界線) */
+.coupon-divider {
+  position: relative;
+  width: 1px;
+  border-left: 1.5px dashed rgba(74, 63, 53, 0.16);
+  margin: 6px 0;
+  flex-shrink: 0;
+}
+/* 上下兩個內凹圓弧咬角 */
+.coupon-divider::before,
+.coupon-divider::after {
+  content: '';
+  position: absolute;
+  left: -6px;
+  width: 10px;
+  height: 10px;
+  background: var(--bg);
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  z-index: 2;
+}
+.coupon-divider::before {
+  top: -11px;
+}
+.coupon-divider::after {
+  bottom: -11px;
+}
+
+/* 票根副券區 (右側) */
+.coupon-stub {
+  width: 74px;
+  min-width: 74px;
+  max-width: 74px;
+  padding: 8px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #FCF9F3;
+  border-radius: 0 14px 14px 0;
+  text-align: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.stub-cost-num {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--pink);
+  line-height: 1;
+}
+.stub-cost-unit {
+  font-size: 0.65rem;
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+
+.stub-btn {
+  font-size: 0.72rem;
+  font-weight: bold;
+  padding: 4px 8px;
+  border-radius: 10px;
+  border: none;
+  width: 100%;
+  text-align: center;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.stub-btn.primary {
+  background: var(--pink);
+  color: #fff;
+}
+.stub-btn.disabled {
+  background: rgba(74, 63, 53, 0.1);
+  color: var(--ink-soft);
+  opacity: 0.65;
+  cursor: default;
+}
+
+/* 履約中票券樣式 */
+.coupon-ticket.is-using {
+  background: linear-gradient(135deg, #FFFDF8, #FFF7E6);
+  border-color: #FFE082;
+}
+.coupon-ticket.is-using .coupon-stub {
+  background: #FFF3CD;
+}
+
+/* 已完成核銷票券樣式 */
+.coupon-ticket.is-completed {
+  opacity: 0.6;
+  background: #F8F5F0;
+}
+.coupon-ticket.is-completed .coupon-stub {
+  background: #EFEBE4;
 }
 
 .stamp-seal {
   position: absolute;
-  right: 12px;
-  bottom: 12px;
-  border: 2px dashed var(--pink);
-  color: var(--pink);
-  font-size: 0.8rem;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%) rotate(-14deg);
+  border: 2px dashed #D9777F;
+  color: #D9777F;
+  font-size: 0.7rem;
   font-weight: 800;
-  padding: 4px 10px;
-  border-radius: 8px;
-  transform: rotate(-12deg);
+  padding: 2px 7px;
+  border-radius: 6px;
   pointer-events: none;
-  opacity: 0.85;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
 }
 
+/* 甜蜜誇誇牆卡片 */
 .praise-card {
   background: var(--card);
   border: 1px solid var(--line);
-  border-radius: 16px;
-  padding: 14px 16px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+  border-radius: 12px;
+  padding: 9px 12px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.03);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 3px;
 }
 .praise-meta {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   color: var(--ink-soft);
 }
 .praise-badge {
   color: var(--pink);
   font-weight: bold;
   background: var(--pink-soft);
-  padding: 2px 8px;
-  border-radius: 10px;
+  padding: 1px 6px;
+  border-radius: 8px;
+  font-size: 0.68rem;
 }
 .praise-text {
-  font-size: 0.92rem;
+  font-size: 0.8rem;
   color: var(--ink);
-  line-height: 1.45;
+  line-height: 1.4;
   margin: 0;
 }
 
+/* 彈窗樣式緊湊化 */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -1136,10 +1264,10 @@ textarea:focus {
 }
 .modal-sheet {
   background: var(--card);
-  border-radius: 28px 28px 0 0;
+  border-radius: 24px 24px 0 0;
   width: 100%;
   max-width: 480px;
-  padding: 24px 20px calc(var(--safe-bottom) + 24px);
+  padding: 20px 18px calc(var(--safe-bottom) + 20px);
   box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.15);
   transform: translateY(100%);
   transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
@@ -1153,24 +1281,39 @@ textarea:focus {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 .modal-title {
-  font-size: 1.15rem;
+  font-size: 1rem;
   font-weight: 700;
   margin: 0;
 }
 .modal-close {
   border: none;
   background: rgba(74, 63, 53, 0.08);
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
+  font-size: 0.9rem;
   cursor: pointer;
+}
+.modal-sheet p {
+  font-size: 0.78rem;
+}
+.modal-sheet label {
+  font-size: 0.78rem;
+}
+.modal-sheet input,
+.modal-sheet textarea {
+  font-size: 0.82rem;
+  padding: 8px 10px;
+}
+.modal-sheet .btn.primary {
+  font-size: 0.85rem;
+  padding: 10px;
 }
 
 
