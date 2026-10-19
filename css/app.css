@@ -1316,4 +1316,60 @@ textarea:focus {
   padding: 10px;
 }
 
+/* 即時懸浮通知 (In-app Notification Toast) */
+.inapp-toast {
+  position: fixed;
+  top: calc(var(--safe-top) + 12px);
+  left: 16px;
+  right: 16px;
+  max-width: 440px;
+  margin: 0 auto;
+  background: var(--card);
+  border: 1.5px solid var(--pink);
+  border-radius: 18px;
+  padding: 10px 14px;
+  box-shadow: 0 8px 24px rgba(255, 107, 139, 0.22);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 2000;
+  transform: translateY(-120%);
+  opacity: 0;
+  transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
+  cursor: pointer;
+}
+.inapp-toast.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+.inapp-toast-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+.inapp-toast-body {
+  flex: 1;
+  min-width: 0;
+}
+.inapp-toast-title {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0 0 2px;
+}
+.inapp-toast-desc {
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+  margin: 0;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.inapp-toast-arrow {
+  font-size: 0.75rem;
+  color: var(--pink);
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
 

@@ -1,3 +1,4 @@
+
 /**
  * 秘密基地主程式
  * ------------------------------------------------------------
@@ -260,6 +261,9 @@
     }
     if (window.ShopApp && window.ShopApp.sync) {
       window.ShopApp.sync(true);
+    }
+    if (window.TutuNotify && window.TutuNotify.start) {
+      window.TutuNotify.start();
     }
   }
 

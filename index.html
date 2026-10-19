@@ -40,6 +40,7 @@
 
     <!-- ===================== 主畫面 ===================== -->
     <div id="app" hidden>
+        <div id="inappToast" class="inapp-toast"></div>
         <main class="app-main">
 
             <!-- 首頁 -->
@@ -49,7 +50,10 @@
                         <p class="greet" id="greet">嗨</p>
                         <h1 class="title" data-bind="baseName">我們的秘密基地</h1>
                     </div>
-                    <button class="chip-btn" id="switchUserBtn" type="button">換人登入</button>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <button class="chip-btn" id="notifBellBtn" type="button" title="開啟手機推播通知" style="padding:6px 10px; font-size:0.8rem;">🔔 通知</button>
+                        <button class="chip-btn" id="switchUserBtn" type="button">換人登入</button>
+                    </div>
                 </div>
 
                 <div class="hero">
@@ -364,13 +368,14 @@
         </nav>
     </div>
 
-    <script src="js/config.js?v=12"></script>
-    <script src="js/api.js?v=12"></script>
-    <script src="js/ideas.js?v=12"></script>
-    <script src="js/app.js?v=12"></script>
-    <script src="js/secret.js?v=12"></script>
-    <script src="js/lists.js?v=12"></script>
-    <script src="js/shop.js?v=12"></script>
+    <script src="js/config.js?v=13"></script>
+    <script src="js/api.js?v=13"></script>
+    <script src="js/ideas.js?v=13"></script>
+    <script src="js/app.js?v=13"></script>
+    <script src="js/secret.js?v=13"></script>
+    <script src="js/lists.js?v=13"></script>
+    <script src="js/shop.js?v=13"></script>
+    <script src="js/notify.js?v=13"></script>
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('service-worker.js').then(reg => {

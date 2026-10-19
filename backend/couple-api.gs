@@ -1034,8 +1034,9 @@ function coupleShopState(user) {
   const allUserCoupons = getUserCoupons();
 
   const myCoupons = allUserCoupons.filter(function (c) { return c.owner === user; });
-  const partnerPendingCoupons = allUserCoupons.filter(function (c) {
-    return c.owner === partner && c.status === 'using';
+  const partnerCoupons = allUserCoupons.filter(function (c) { return c.owner === partner; });
+  const partnerPendingCoupons = partnerCoupons.filter(function (c) {
+    return c.status === 'using';
   });
 
   return jsonResponse({
@@ -1045,6 +1046,7 @@ function coupleShopState(user) {
     partnerBalance: partnerBalance,
     shopCoupons: shopCoupons,
     myCoupons: myCoupons,
+    partnerCoupons: partnerCoupons,
     partnerPendingCoupons: partnerPendingCoupons,
     praises: praises
   });

@@ -228,6 +228,7 @@
           partnerBalance: partnerBal,
           shopCoupons: defaultCoupons.concat(customCoupons),
           myCoupons: userCoupons.filter(c => c.owner === user),
+          partnerCoupons: userCoupons.filter(c => c.owner === partner),
           partnerPendingCoupons: userCoupons.filter(c => c.owner === partner && c.status === 'using'),
           praises
         };
